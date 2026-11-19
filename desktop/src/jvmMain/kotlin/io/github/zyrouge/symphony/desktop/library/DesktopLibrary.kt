@@ -68,6 +68,10 @@ object DesktopLibrary {
         val tracks = mutableListOf<DesktopTrack>()
         val skipped = mutableListOf<SkippedTrack>()
         for (file in files) {
+            if (!Files.isReadable(file.path)) {
+                skipped.add(SkippedTrack(file.path, "not readable"))
+                continue
+            }
             try {
                 val raw = source.read(file)
                 if (raw == null) {

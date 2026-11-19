@@ -1,0 +1,173 @@
+name: Desktop
+
+on:
+    push:
+        branches-ignore:
+            - site
+            - gh-pages
+            - i18n-summary
+            - dependabot/**
+        paths:
+            - desktop/**
+            - core/**
+            - gradle/**
+            - .github/workflows/desktop.yml
+    pull_request:
+        paths:
+            - desktop/**
+            - core/**
+            - gradle/**
+            - .github/workflows/desktop.yml
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-java@v4
+              with:
+                  distribution: zulu
+                  java-version: 25
+                  cache: gradle
+
+            - name: ☕ Cache provisioned JDKs
+              uses: actions/cache@v4
+              with:
+                  path: ~/.gradle/jdks
+                  key: gradle-jdks-${{ runner.os }}-${{ hashFiles('gradle/gradle-daemon-jvm.properties') }}
+                  restore-keys: |
+                      gradle-jdks-${{ runner.os }}-
+
+            - name: 🧪 Run desktop tests
+              run: |
+                  chmod +x ./gradlew
+                  (sleep 300; for p in $(pgrep -f 'Gradle Test Executor' || true); do jcmd $p Thread.print || true; done) &
+                  watchdog=$!
+                  ./gradlew :desktop:jvmTest --console=plain --info
+                  status=$?
+                  kill $watchdog 2>/dev/null || true
+                  exit $status
+
+            - name: ✅ Verify desktop test results
+              run: |
+                  python3 - <<'PY'
+                  import sys
+                  import xml.etree.ElementTree as ET
+                  from pathlib import Path
+
+                  results = Path("desktop/build/test-results/jvmTest")
+                  files = sorted(results.glob("TEST-*.xml"))
+                  if not files:
+                      print(f"ERROR: no test results under {results}", file=sys.stderr)
+                      sys.exit(1)
+                  aggregate = {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+                  diagnostics = []
+                  for path in files:
+                      try:
+                          root = ET.parse(path).getroot()
+                      except (ET.ParseError, OSError) as error:
+                          diagnostics.append(f"{path.name}: unreadable: {error}")
+                          continue
+                      for name in aggregate:
+                          raw = root.get(name)
+                          if raw is None:
+                              diagnostics.append(f"{path.name}: missing attribute '{name}'")
+                              continue
+                          try:
+                              aggregate[name] += int(raw)
+                          except ValueError:
+                              diagnostics.append(f"{path.name}: invalid {name}={raw!r}")
+                  print("Desktop: " + ", ".join(f"{k}={v}" for k, v in aggregate.items()))
+                  if aggregate["tests"] <= 0:
+                      diagnostics.append("tests=0 (expected > 0)")
+                  if aggregate["skipped"] >= aggregate["tests"]:
+                      diagnostics.append("skipped=tests (everything skipped)")
+                  for name in ("failures", "errors"):
+                      if aggregate[name] != 0:
+                          diagnostics.append(f"{name}={aggregate[name]} (expected 0)")
+                  if diagnostics:
+                      for diagnostic in diagnostics:
+                          print(f"ERROR: {diagnostic}", file=sys.stderr)
+                      sys.exit(1)
+                  PY
+
+    package:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-java@v4
+              with:
+                  distribution: zulu
+                  java-version: 25
+                  cache: gradle
+
+            - name: ☕ Cache provisioned JDKs
+              uses: actions/cache@v4
+              with:
+                  path: ~/.gradle/jdks
+                  key: gradle-jdks-${{ runner.os }}-${{ hashFiles('gradle/gradle-daemon-jvm.properties') }}
+                  restore-keys: |
+                      gradle-jdks-${{ runner.os }}-
+
+            - name: 📦 Install packaging tools
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y --no-install-recommends \
+                      dpkg fakeroot libvlc5 vlc-plugin-base
+
+            - name: 🏗️ Build deb
+              run: |
+                  chmod +x ./gradlew
+                  ./gradlew :desktop:patchDebDependencies --console=plain
+
+            - name: ✅ Verify deb metadata
+              run: |
+                  python3 - <<'PY'
+                  import subprocess
+                  import sys
+                  from pathlib import Path
+
+                  debs = sorted(Path("desktop/build/compose/binaries/main/deb").glob("*.deb"))
+                  if len(debs) != 1:
+                      print(f"ERROR: expected exactly one deb, found {len(debs)}", file=sys.stderr)
+                      sys.exit(1)
+                  deb = debs[0]
+                  fields = {}
+                  for line in subprocess.run(
+                      ["dpkg-deb", "-f", str(deb)],
+                      capture_output=True,
+                      text=True,
+                      check=True,
+                  ).stdout.splitlines():
+                      key, _, value = line.partition(":")
+                      fields[key.strip()] = value.strip()
+                  depends = [item.strip() for item in fields.get("Depends", "").split(",") if item.strip()]
+                  names = [item.split("(")[0].strip() for item in depends]
+                  print(f"{deb.name}: {deb.stat().st_size} bytes")
+                  print("Depends: " + ", ".join(depends))
+                  missing = [dep for dep in ("libvlc5", "vlc-plugin-base") if dep not in names]
+                  if missing:
+                      print(f"ERROR: Depends is missing {', '.join(missing)}", file=sys.stderr)
+                      sys.exit(1)
+                  if fields.get("Package") != "symphony-desktop":
+                      print(f"ERROR: unexpected package name {fields.get('Package')!r}", file=sys.stderr)
+                      sys.exit(1)
+                  print("Package metadata: OK")
+                  PY
+
+            - name: 📤 Upload deb
+              uses: actions/upload-artifact@v4
+              with:
+                  name: symphony-desktop-deb
+                  path: desktop/build/compose/binaries/main/deb/*.deb
+                  if-no-files-found: error

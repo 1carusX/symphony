@@ -6,11 +6,14 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 60, unit = TimeUnit.SECONDS)
 class DesktopLibraryTest {
     @TempDir
     lateinit var temp: Path
@@ -128,6 +131,7 @@ class DesktopLibraryTest {
             val scan = DesktopLibrary.scan(temp)
             assertEquals(listOf("audio.mp3"), scan.tracks.map { it.path.fileName.toString() })
             assertEquals(listOf("locked.flac"), scan.skipped.map { it.path.fileName.toString() })
+            assertEquals("not readable", scan.skipped.single().reason)
         } finally {
             Files.setPosixFilePermissions(locked, PosixFilePermissions.fromString("rw-r--r--"))
         }

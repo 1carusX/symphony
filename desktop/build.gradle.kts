@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.time.Duration
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -51,6 +52,7 @@ compose.desktop {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    timeout.set(Duration.ofMinutes(15))
 }
 
 tasks.register<JavaExec>("smokeUi") {
