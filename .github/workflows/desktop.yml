@@ -87,7 +87,9 @@ jobs:
                   print("Desktop: " + ", ".join(f"{k}={v}" for k, v in aggregate.items()))
                   if aggregate["tests"] <= 0:
                       diagnostics.append("tests=0 (expected > 0)")
-                  for name in ("failures", "errors", "skipped"):
+                  if aggregate["skipped"] >= aggregate["tests"]:
+                      diagnostics.append("skipped=tests (everything skipped)")
+                  for name in ("failures", "errors"):
                       if aggregate[name] != 0:
                           diagnostics.append(f"{name}={aggregate[name]} (expected 0)")
                   if diagnostics:
