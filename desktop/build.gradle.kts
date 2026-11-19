@@ -39,6 +39,7 @@ compose.desktop {
             linux {
                 packageName = "symphony-desktop"
                 packageVersion = "0.1.0"
+                debMaintainer = "zyrouge@github"
             }
         }
 
