@@ -16,6 +16,7 @@ kotlin {
             dependencies {
                 implementation(project(":core"))
                 implementation(compose.desktop.currentOs)
+                implementation(compose.material3)
                 implementation("uk.co.caprica:vlcj:4.12.1")
             }
         }
@@ -49,6 +50,16 @@ compose.desktop {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+tasks.register<JavaExec>("smokeUi") {
+    group = "verification"
+    description = "Opens the desktop window, clicks the first track and captures evidence screenshots."
+    val testCompilation = kotlin.targets.getByName("jvm").compilations.getByName("test")
+    classpath = files(testCompilation.output.allOutputs, testCompilation.runtimeDependencyFiles)
+    mainClass.set("io.github.zyrouge.symphony.desktop.ui.DesktopUiSmokeKt")
+    val uiSmokeDir = (findProperty("uiSmokeDir") as String?) ?: "$rootDir/app/src/test/resources"
+    args(uiSmokeDir, "$rootDir/.omo/evidence/symphony-d3")
 }
 
 tasks.register<JavaExec>("smokePlayback") {
