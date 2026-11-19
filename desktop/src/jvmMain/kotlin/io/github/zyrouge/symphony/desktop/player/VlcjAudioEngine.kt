@@ -1,5 +1,7 @@
 package io.github.zyrouge.symphony.desktop.player
 
+import com.sun.jna.Library
+import com.sun.jna.Native
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
@@ -8,7 +10,7 @@ import java.nio.file.Path
 class VlcjAudioEngine(
     private val eventListener: AudioEngineListener,
 ) : AudioEngine {
-    private val factory = MediaPlayerFactory("--quiet")
+    private val factory = createFactory()
     private val player: MediaPlayer = factory.mediaPlayers().newMediaPlayer()
 
     init {
@@ -49,5 +51,24 @@ class VlcjAudioEngine(
     override fun release() {
         player.release()
         factory.release()
+    }
+
+    private companion object {
+        fun createFactory(): MediaPlayerFactory {
+            val bundled = System.getProperty("symphony.vlc.path")?.takeIf { it.isNotBlank() }
+                ?: System.getenv("SYMPHONY_VLC_PATH")?.takeIf { it.isNotBlank() }
+            if (bundled == null) {
+                return MediaPlayerFactory("--quiet")
+            }
+            System.setProperty("jna.library.path", bundled)
+            LibC.setenv("VLC_PLUGIN_PATH", "$bundled/../vlc/plugins", 1)
+            return MediaPlayerFactory("--quiet")
+        }
+    }
+
+    private interface LibC : Library {
+        fun setenv(name: String, value: String, overwrite: Int): Int
+
+        companion object : LibC by Native.load("c", LibC::class.java)
     }
 }

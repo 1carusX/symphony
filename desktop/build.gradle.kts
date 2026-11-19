@@ -34,7 +34,7 @@ compose.desktop {
         mainClass = "io.github.zyrouge.symphony.desktop.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Deb)
+            targetFormats(TargetFormat.Deb, TargetFormat.AppImage)
 
             linux {
                 packageName = "symphony-desktop"
@@ -69,6 +69,7 @@ tasks.register<JavaExec>("smokePlayback") {
     val testCompilation = kotlin.targets.getByName("jvm").compilations.getByName("test")
     classpath = files(testCompilation.output.allOutputs, testCompilation.runtimeDependencyFiles)
     mainClass.set("io.github.zyrouge.symphony.desktop.player.PlayerSmokeKt")
+    (findProperty("vlcPath") as String?)?.let { systemProperty("symphony.vlc.path", it) }
     args("$rootDir/app/src/test/resources/audio.mp3")
 }
 
