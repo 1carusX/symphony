@@ -22,3 +22,5 @@ rootProject.name = "Symphony"
 include(":app")
 include(":core")
 include(":metaphony")
+
+include(":desktop")
