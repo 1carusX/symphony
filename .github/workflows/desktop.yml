@@ -48,6 +48,7 @@ jobs:
             - name: 🧪 Run desktop tests
               run: |
                   chmod +x ./gradlew
+                  (sleep 300; for p in $(pgrep -f 'Gradle Test Executor' || true); do jcmd $p Thread.print || true; done) &
                   ./gradlew :desktop:jvmTest --console=plain --info
 
             - name: ✅ Verify desktop test results
