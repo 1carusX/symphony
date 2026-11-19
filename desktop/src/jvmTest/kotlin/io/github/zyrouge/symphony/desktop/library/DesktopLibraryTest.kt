@@ -128,6 +128,7 @@ class DesktopLibraryTest {
             val scan = DesktopLibrary.scan(temp)
             assertEquals(listOf("audio.mp3"), scan.tracks.map { it.path.fileName.toString() })
             assertEquals(listOf("locked.flac"), scan.skipped.map { it.path.fileName.toString() })
+            assertEquals("not readable", scan.skipped.single().reason)
         } finally {
             Files.setPosixFilePermissions(locked, PosixFilePermissions.fromString("rw-r--r--"))
         }
