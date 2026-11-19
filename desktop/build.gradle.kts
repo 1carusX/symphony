@@ -78,3 +78,33 @@ tasks.register("test") {
     description = "Alias for jvmTest, matching the plain JVM module convention."
     dependsOn("jvmTest")
 }
+
+tasks.register("patchDebDependencies") {
+    group = "distribution"
+    description = "Appends the runtime VLC dependencies that jpackage cannot detect to the deb control file."
+    dependsOn("packageDistributionForCurrentOS")
+    doLast {
+        val debDir = layout.buildDirectory.dir("compose/binaries/main/deb").get().asFile
+        val deb = debDir.listFiles()?.firstOrNull { it.extension == "deb" }
+            ?: error("no .deb found in $debDir")
+        val workDir = layout.buildDirectory.dir("tmp/deb-control").get().asFile
+        workDir.deleteRecursively()
+        workDir.mkdirs()
+
+        fun exec(vararg command: String) {
+            val exit = ProcessBuilder(*command).inheritIO().start().waitFor()
+            check(exit == 0) { "command failed (${exit}): ${command.joinToString(" ")}" }
+        }
+
+        exec("dpkg-deb", "-R", deb.absolutePath, workDir.absolutePath)
+        val control = workDir.resolve("DEBIAN/control")
+        val runtimeDeps = "libvlc5 (>= 3.0), vlc-plugin-base (>= 3.0)"
+        val patched = control.readText().replace(Regex("(?m)^Depends:(.*)$")) { match ->
+            "Depends: ${match.groupValues[1].trimEnd()}, $runtimeDeps"
+        }
+        control.writeText(patched)
+        exec("dpkg-deb", "--root-owner-group", "-b", workDir.absolutePath, deb.absolutePath)
+        println("patched ${deb.name}")
+        println(patched.lineSequence().first { it.startsWith("Depends:") })
+    }
+}
