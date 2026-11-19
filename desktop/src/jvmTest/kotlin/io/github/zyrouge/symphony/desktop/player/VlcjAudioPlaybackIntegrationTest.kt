@@ -3,7 +3,7 @@ package io.github.zyrouge.symphony.desktop.player
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
-import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
@@ -78,8 +78,19 @@ class VlcjAudioPlaybackIntegrationTest {
     }
 }
 
-private fun libvlcAvailable(): Boolean = try {
-    NativeDiscovery().discover()
-} catch (error: Throwable) {
-    false
+private val wellKnownLibvlcPaths = listOf(
+    "/usr/lib/libvlc.so",
+    "/usr/lib/x86_64-linux-gnu/libvlc.so.5",
+    "/usr/lib/x86_64-linux-gnu/libvlc.so",
+    "/usr/lib64/libvlc.so",
+    "/usr/local/lib/libvlc.so",
+    "/Applications/VLC.app/Contents/MacOS/lib/libvlc.dylib",
+    "C:/Program Files/VideoLAN/VLC/libvlc.dll",
+    "C:/Program Files (x86)/VideoLAN/VLC/libvlc.dll",
+)
+
+private fun libvlcAvailable(): Boolean {
+    val override = System.getProperty("symphony.vlc.path")
+    if (override != null) return true
+    return wellKnownLibvlcPaths.any { Files.exists(Path.of(it)) }
 }
