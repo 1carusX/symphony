@@ -51,6 +51,7 @@ compose.desktop {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    timeout.set(java.time.Duration.ofMinutes(15))
 }
 
 tasks.register<JavaExec>("smokeUi") {

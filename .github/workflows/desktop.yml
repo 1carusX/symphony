@@ -26,6 +26,7 @@ permissions:
 jobs:
     test:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
 
         steps:
             - uses: actions/checkout@v4
@@ -47,7 +48,7 @@ jobs:
             - name: 🧪 Run desktop tests
               run: |
                   chmod +x ./gradlew
-                  ./gradlew :desktop:jvmTest --console=plain
+                  ./gradlew :desktop:jvmTest --console=plain --info
 
             - name: ✅ Verify desktop test results
               run: |
@@ -92,6 +93,7 @@ jobs:
 
     package:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
 
         steps:
             - uses: actions/checkout@v4
