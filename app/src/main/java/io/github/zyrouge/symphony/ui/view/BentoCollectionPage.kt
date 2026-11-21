@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.radio.Radio
@@ -122,7 +123,8 @@ fun BentoCollectionPage(
                             Text(
                                 emptyMessage,
                                 style = BentoTypography.rowTitle,
-                                color = colors.sub,
+                                color = colors.fg,
+                                textAlign = TextAlign.Center,
                             )
                         }
                     }

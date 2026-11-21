@@ -308,6 +308,7 @@ private fun AlbumGrid(
                         label = context.symphony.t.ShufflePlay,
                         sub = null,
                         tone = BentoTileTone.TONAL,
+                        narrow = true,
                         onClick = {
                             context.symphony.radio.shorty.playQueue(
                                 trackSongIds,

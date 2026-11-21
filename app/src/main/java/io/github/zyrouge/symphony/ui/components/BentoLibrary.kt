@@ -312,10 +312,12 @@ fun bentoAlbumMatchesQuery(album: io.github.zyrouge.symphony.services.groove.Alb
 
 /** Long durations in the tiles (prototype fmtLong): "1 h 23 min", "45 min". */
 fun formatBentoDurationMinutes(totalMs: Long): String {
+    val totalSeconds = totalMs / 1000
     val minutes = (totalMs / 60_000.0).roundToInt()
     val hours = minutes / 60
     val rest = minutes % 60
     return when {
+        totalSeconds < 60 -> "$totalSeconds s"
         hours >= 1 -> "$hours h $rest min"
         else -> "$minutes min"
     }

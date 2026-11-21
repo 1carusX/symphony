@@ -13,6 +13,7 @@ import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 fun BentoMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
+    modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = LocalBentoColors.current
@@ -30,6 +31,7 @@ fun BentoMenu(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = onDismissRequest,
+            modifier = modifier,
             shape = RoundedCornerShape(BentoRadii.TILE_SMALL.dp),
         ) {
             content()

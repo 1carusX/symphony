@@ -800,7 +800,7 @@ private fun LinkChip(context: ViewContext, icon: ImageVector? = null, label: Str
         modifier = Modifier
             .border(
                 1.dp,
-                MaterialTheme.colorScheme.outlineVariant,
+                io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.line,
                 RoundedCornerShape(4.dp),
             )
             .clip(RoundedCornerShape(4.dp))
@@ -814,7 +814,7 @@ private fun LinkChip(context: ViewContext, icon: ImageVector? = null, label: Str
                 it,
                 null,
                 modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.accent,
             )
             Spacer(modifier = Modifier.width(4.dp))
         }

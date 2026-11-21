@@ -1,5 +1,7 @@
 package io.github.zyrouge.symphony.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,6 +33,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -48,9 +52,10 @@ fun <T : Enum<T>> MediaSortBar(
     onShufflePlay: (() -> Unit)? = null,
     onShowModifyLayout: (() -> Unit)? = null,
 ) {
+    val bentoColors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
     var showDropdown by remember { mutableStateOf(false) }
     val currentTextStyle = MaterialTheme.typography.bodySmall.run {
-        copy(color = MaterialTheme.colorScheme.onSurface)
+        copy(color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.fg)
     }
 
     val iconButtonStyle = IconButtonDefaults.iconButtonColors(
@@ -108,9 +113,14 @@ fun <T : Enum<T>> MediaSortBar(
                                 )
                             },
                             leadingIcon = {
-                                RadioButton(
-                                    selected = it.key == sort,
-                                    onClick = onClick,
+                                Box(
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (it.key == sort) bentoColors.accent else bentoColors.raised,
+                                        )
+                                        .clickable(onClick = onClick),
                                 )
                             },
                             text = {

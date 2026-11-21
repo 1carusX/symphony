@@ -172,7 +172,7 @@ fun NowPlayingSleepTimerSetDialog(
                             style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier
                                 .background(
-                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.raised,
                                     shape,
                                 )
                                 .clip(shape)

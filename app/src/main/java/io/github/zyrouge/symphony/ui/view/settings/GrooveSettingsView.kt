@@ -347,7 +347,7 @@ private fun refreshMediaLibrary(symphony: io.github.zyrouge.symphony.Symphony, c
 private fun SpotlightTile(isInSpotlight: Boolean, content: @Composable (() -> Unit)) {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val highlightAlphaAnimated = remember { Animatable(0f) }
-    val highlightColor = MaterialTheme.colorScheme.surfaceTint
+    val highlightColor = LocalBentoColors.current.accent
 
     LaunchedEffect(isInSpotlight) {
         if (isInSpotlight) {

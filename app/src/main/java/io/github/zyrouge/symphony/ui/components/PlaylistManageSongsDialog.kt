@@ -1,5 +1,6 @@
 package io.github.zyrouge.symphony.ui.components
 
+import io.github.zyrouge.symphony.ui.components.BentoTextField
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -93,23 +94,11 @@ fun PlaylistManageSongsDialog(
         },
         content = {
             Column {
-                TextField(
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RectangleShape,
-                    colors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.float.let {
-                        TextFieldDefaults.colors(
-                            focusedContainerColor = it,
-                            unfocusedContainerColor = it,
-                        )
-                    },
-                    placeholder = {
-                        Text(context.symphony.t.SearchYourMusic)
-                    },
+                BentoTextField(
                     value = terms,
-                    onValueChange = {
-                        terms = it
-                    },
+                    onValueChange = { terms = it },
+                    label = context.symphony.t.SearchYourMusic,
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 when {
                     songIds.isEmpty() -> Box(modifier = Modifier.padding(0.dp, 12.dp)) {

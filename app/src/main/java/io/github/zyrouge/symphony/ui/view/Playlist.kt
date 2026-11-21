@@ -83,7 +83,7 @@ fun PlaylistView(context: ViewContext, route: PlaylistViewRoute) {
                         IconButton(onClick = { showRowMenu = true }) {
                             Icon(Icons.Filled.MoreVert, null)
                         }
-                        androidx.compose.material3.DropdownMenu(
+                        BentoMenu(
                             expanded = showRowMenu,
                             onDismissRequest = { showRowMenu = false },
                         ) {

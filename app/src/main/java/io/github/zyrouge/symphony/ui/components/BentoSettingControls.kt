@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -143,15 +142,9 @@ fun BentoToggleDialog(
                 color = colors.fg,
                 modifier = Modifier.weight(1f),
             )
-            Switch(
+            BentoSwitch(
                 checked = checked,
                 onCheckedChange = onChange,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = colors.onAccent,
-                    checkedTrackColor = colors.accent,
-                    uncheckedThumbColor = colors.sub,
-                    uncheckedTrackColor = colors.raised,
-                ),
             )
         }
     }

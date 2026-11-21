@@ -1,11 +1,11 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
+import io.github.zyrouge.symphony.ui.components.BentoSwitch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,15 +63,9 @@ private fun UpdateSwitchRow(
             color = colors.fg,
             modifier = Modifier.weight(1f),
         )
-        Switch(
+        BentoSwitch(
             checked = checked,
             onCheckedChange = onChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = colors.onAccent,
-                checkedTrackColor = colors.accent,
-                uncheckedThumbColor = colors.sub,
-                uncheckedTrackColor = colors.raised,
-            ),
         )
     }
 }
