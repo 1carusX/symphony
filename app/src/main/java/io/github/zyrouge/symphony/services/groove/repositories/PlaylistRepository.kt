@@ -127,6 +127,7 @@ class PlaylistRepository(private val symphony: Symphony) {
     fun values() = cache.values.toList()
 
     fun get(id: String) = cache[id]
+        ?: if (id == FAVORITE_PLAYLIST) getFavorites() else null
     fun get(ids: List<String>) = ids.mapNotNull { get(it) }
 
     fun getFavorites() = cache[FAVORITE_PLAYLIST]
