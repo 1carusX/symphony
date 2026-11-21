@@ -25,7 +25,6 @@ import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,15 +82,14 @@ fun <T : Enum<T>> MediaSortBar(
                 )
             }
             Box {
-                TextButton(
-                    colors = textButtonStyle,
+                BentoTextButton(
                     onClick = {
                         showDropdown = !showDropdown
                     }
                 ) {
                     Text(sorts[sort]!!(context), style = currentTextStyle)
                 }
-                DropdownMenu(
+                BentoMenu(
                     expanded = showDropdown,
                     onDismissRequest = { showDropdown = false }
                 ) {

@@ -3,7 +3,6 @@ package io.github.zyrouge.symphony.ui.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -31,10 +30,10 @@ fun ConfirmationDialog(
             }
         },
         actions = {
-            TextButton(onClick = { onResult(false) }) {
+            BentoTextButton(onClick = { onResult(false) }) {
                 Text(context.symphony.t.No)
             }
-            TextButton(onClick = { onResult(true) }) {
+            BentoTextButton(onClick = { onResult(true) }) {
                 Text(context.symphony.t.Yes)
             }
         }

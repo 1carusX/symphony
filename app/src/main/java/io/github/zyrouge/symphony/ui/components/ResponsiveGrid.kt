@@ -13,7 +13,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import io.github.zyrouge.symphony.ui.components.settings.SettingsSliderDialog
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 
@@ -70,8 +70,9 @@ fun ResponsiveGridSizeAdjustBottomSheet(
     onColumnsChange: (ResponsiveGridColumns) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    val isVertical = LocalConfiguration.current.run { screenHeightDp > screenWidthDp }
-    val maxWidth = LocalConfiguration.current.screenWidthDp
+    val windowSize = LocalWindowInfo.current.containerDpSize
+    val isVertical = windowSize.height > windowSize.width
+    val maxWidth = windowSize.width.value.toInt()
     val maxColumns = maxWidth / ResponsiveGridColumns.MIN_GRID_WIDTH
     val effectiveColumns by remember(isVertical, columns) {
         derivedStateOf {

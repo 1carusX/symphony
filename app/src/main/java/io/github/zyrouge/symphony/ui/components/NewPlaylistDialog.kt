@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,25 +51,18 @@ fun NewPlaylistDialog(
                 modifier = Modifier
                     .padding(start = 20.dp, end = 20.dp, top = 12.dp)
             ) {
-                OutlinedTextField(
+                BentoTextField(
+                    value = input,
+                    onValueChange = { input = it },
+                    label = context.symphony.t.NewPlaylist,
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester),
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        unfocusedIndicatorColor = DividerDefaults.color,
-                    ),
-                    value = input,
-                    onValueChange = {
-                        input = it
-                    }
                 )
             }
         },
         actions = {
-            TextButton(
+            BentoTextButton(
                 onClick = {
                     showSongsPicker = true
                 }
@@ -78,7 +70,7 @@ fun NewPlaylistDialog(
                 Text(context.symphony.t.AddSongs + " (${songIds.size})")
             }
             Spacer(modifier = Modifier.weight(1f))
-            TextButton(
+            BentoTextButton(
                 enabled = input.isNotBlank(),
                 onClick = {
                     val playlist = context.symphony.groove.playlist.create(

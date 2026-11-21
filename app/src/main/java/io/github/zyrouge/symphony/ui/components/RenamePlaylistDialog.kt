@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,28 +40,21 @@ fun RenamePlaylistDialog(
                 modifier = Modifier
                     .padding(start = 20.dp, end = 20.dp, top = 12.dp)
             ) {
-                OutlinedTextField(
+                BentoTextField(
+                    value = input,
+                    onValueChange = { input = it },
+                    label = context.symphony.t.RenamePlaylist,
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester),
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        unfocusedIndicatorColor = DividerDefaults.color,
-                    ),
-                    value = input,
-                    onValueChange = {
-                        input = it
-                    }
                 )
             }
         },
         actions = {
-            TextButton(onClick = onDismissRequest) {
+            BentoTextButton(onClick = onDismissRequest) {
                 Text(context.symphony.t.Cancel)
             }
-            TextButton(
+            BentoTextButton(
                 enabled = input.isNotBlank() && input != playlist.title,
                 onClick = {
                     onRename()

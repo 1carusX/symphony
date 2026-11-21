@@ -69,7 +69,7 @@ fun AlbumDropdownMenu(
 ) {
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }
 
-    DropdownMenu(
+    BentoMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest
     ) {

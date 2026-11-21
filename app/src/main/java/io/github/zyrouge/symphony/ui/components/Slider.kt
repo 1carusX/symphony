@@ -32,6 +32,7 @@ fun Slider(
     onChange: (Float) -> Unit,
 ) {
     Column(modifier = modifier) {
+        val colors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
         val ratio = RangeUtils.calculateRatioFromValue(value, range)
         var pointerOffsetX = 0f
 
@@ -42,7 +43,7 @@ fun Slider(
             Box(
                 modifier = Modifier
                     .background(
-                        MaterialTheme.colorScheme.surfaceVariant,
+                        colors.track,
                         shape,
                     )
                     .fillMaxWidth()
@@ -77,7 +78,7 @@ fun Slider(
             ) {
                 Box(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.primary, shape)
+                        .background(colors.accent, shape)
                         .animateContentSize()
                         .fillMaxWidth(ratio)
                         .height(height)
@@ -92,11 +93,11 @@ fun Slider(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             val highlightedTextStyle = MaterialTheme.typography.labelMedium.copy(
-                color = MaterialTheme.colorScheme.primary,
+                color = colors.accent,
                 fontWeight = FontWeight.Bold,
             )
             val markerTextStyle = MaterialTheme.typography.labelMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                color = colors.sub,
             )
 
             ProvideTextStyle(markerTextStyle) {

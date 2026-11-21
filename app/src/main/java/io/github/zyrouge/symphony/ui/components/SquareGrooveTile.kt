@@ -1,6 +1,7 @@
 package io.github.zyrouge.symphony.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -16,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,12 +44,13 @@ fun SquareGrooveTile(
     onPlay: () -> Unit,
     onClick: () -> Unit,
 ) {
-    Card(
+    val bentoColors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        onClick = onClick
+            .wrapContentHeight()
+            .clip(RoundedCornerShape(io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE_SMALL.dp))
+            .clickable(onClick = onClick),
     ) {
         Box(modifier = Modifier.padding(12.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -86,7 +87,7 @@ fun SquareGrooveTile(
                         IconButton(
                             modifier = Modifier
                                 .background(
-                                    MaterialTheme.colorScheme.surface,
+                                    bentoColors.float,
                                     RoundedCornerShape(12.dp)
                                 )
                                 .then(Modifier.size(36.dp)),
