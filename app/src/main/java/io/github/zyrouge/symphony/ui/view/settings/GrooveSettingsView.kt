@@ -1,80 +1,90 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.repeatable
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FilterAlt
-import androidx.compose.material.icons.filled.FindInPage
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.RuleFolder
-import androidx.compose.material.icons.filled.SpaceBar
-import androidx.compose.material.icons.filled.Storage
-import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
-import io.github.zyrouge.symphony.Symphony
-import io.github.zyrouge.symphony.services.groove.Groove
-import io.github.zyrouge.symphony.ui.components.AdaptiveSnackbar
-import io.github.zyrouge.symphony.ui.components.IconButtonPlaceholder
-import io.github.zyrouge.symphony.ui.components.TopAppBarMinimalTitle
-import io.github.zyrouge.symphony.ui.components.settings.ConsiderContributingTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsMultiGrooveFolderTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsMultiSystemFolderTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsMultiTextOptionTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsOptionTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsSideHeading
-import io.github.zyrouge.symphony.ui.components.settings.SettingsSimpleTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsSliderTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsSwitchTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsTextInputTile
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import io.github.zyrouge.symphony.ui.helpers.TransitionDurations
-import io.github.zyrouge.symphony.ui.helpers.ViewContext
-import io.github.zyrouge.symphony.ui.view.SettingsViewRoute
-import io.github.zyrouge.symphony.utils.ImageQuality
 import kotlinx.coroutines.delay
+import androidx.compose.ui.Alignment
+import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.components.AdaptiveSnackbar
+import io.github.zyrouge.symphony.ui.components.BentoDialog
+import io.github.zyrouge.symphony.ui.components.settings.BentoSystemFolderPicker
+import io.github.zyrouge.symphony.ui.components.BentoPageHeader
+import io.github.zyrouge.symphony.ui.components.BentoOptionDialog
+import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
+import io.github.zyrouge.symphony.ui.components.BentoSettingRow
+import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
+import io.github.zyrouge.symphony.ui.components.BentoTextDialog
+import io.github.zyrouge.symphony.ui.components.BentoToggleDialog
+import io.github.zyrouge.symphony.ui.components.settings.GrooveFolderPickerDialog
+import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
+import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
+import io.github.zyrouge.symphony.ui.view.SettingsViewRoute
+import kotlin.math.roundToInt
+import io.github.zyrouge.symphony.utils.ImageQuality
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlin.math.roundToInt
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 
 @Serializable
-data class GrooveSettingsViewRoute(val initialElement: String? = null)
+data class GrooveSettingsViewRoute(
+    val initialElement: String? = null,
+)
 
-@OptIn(ExperimentalMaterial3Api::class)
+private enum class GroovePopup {
+    MEDIA_FOLDERS,
+    MEDIA_FILTER,
+    MIN_SONG_DURATION,
+    BLACKLIST_FOLDERS,
+    WHITELIST_FOLDERS,
+    ARTIST_SEPARATORS,
+    GENRE_SEPARATORS,
+    ARTWORK_QUALITY,
+    CASE_SENSITIVE,
+    METAPHONY,
+}
+
 @Composable
 fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
-    val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val colors = LocalBentoColors.current
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var popup by remember { mutableStateOf<GroovePopup?>(null) }
+
     val songsFilterPattern by context.symphony.settings.songsFilterPattern.flow.collectAsState()
     val minSongDuration by context.symphony.settings.minSongDuration.flow.collectAsState()
     val blacklistFolders by context.symphony.settings.blacklistFolders.flow.collectAsState()
@@ -86,239 +96,229 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
     val caseSensitiveSorting by context.symphony.settings.caseSensitiveSorting.flow.collectAsState()
     val useMetaphony by context.symphony.settings.useMetaphony.flow.collectAsState()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        snackbarHost = {
-            SnackbarHost(snackbarHostState) {
-                AdaptiveSnackbar(it)
-            }
-        },
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    TopAppBarMinimalTitle {
-                        Text("${context.symphony.t.Settings} - ${context.symphony.t.Groove}")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                ),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            context.navController.popBackStack()
-                        }
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                    }
-                },
-                actions = {
-                    IconButtonPlaceholder()
-                },
-            )
-        },
-        content = { contentPadding ->
-            Box(
-                modifier = Modifier
-                    .padding(contentPadding)
-                    .fillMaxSize()
-            ) {
-                Column(modifier = Modifier.verticalScroll(scrollState)) {
-                    val defaultSongsFilterPattern = ".*"
-                    val minSongDurationRange = 0f..60f
-
-                    ConsiderContributingTile(context)
-                    SettingsSideHeading(context.symphony.t.Groove)
-                    SpotlightTile(route.initialElement == SettingsViewRoute.ELEMENT_MEDIA_FOLDERS) {
-                        SettingsMultiSystemFolderTile(
-                            context,
-                            icon = {
-                                Icon(Icons.Filled.LibraryMusic, null)
-                            },
-                            title = {
-                                Text(context.symphony.t.MediaFolders)
-                            },
-                            initialValues = mediaFolders,
-                            onChange = { values ->
-                                context.symphony.settings.mediaFolders.setValue(values)
-                                refreshMediaLibrary(context.symphony)
-                            }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colors.bg),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .verticalScroll(scrollState),
+        ) {
+                BentoPageHeader(
+                    title = context.symphony.t.Groove,
+                    windowClass = rememberBentoWindowClass(),
+                    onBack = { context.navController.popBackStack() },
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    BentoSettingGroup {
+                        BentoSettingRow(
+                            label = context.symphony.t.MediaFolders,
+                            value = context.symphony.t.XFolders(mediaFolders.size.toString()),
+                            onClick = { popup = GroovePopup.MEDIA_FOLDERS },
+                        )
+                        BentoSettingRow(
+                            label = context.symphony.t.BlacklistFolders,
+                            value = context.symphony.t.XFolders(blacklistFolders.size.toString()),
+                            onClick = { popup = GroovePopup.BLACKLIST_FOLDERS },
+                        )
+                        BentoSettingRow(
+                            label = context.symphony.t.WhitelistFolders,
+                            value = context.symphony.t.XFolders(whitelistFolders.size.toString()),
+                            onClick = { popup = GroovePopup.WHITELIST_FOLDERS },
                         )
                     }
-                    HorizontalDivider()
-                    SettingsTextInputTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.FilterAlt, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.SongsFilterPattern)
-                        },
-                        value = songsFilterPattern ?: defaultSongsFilterPattern,
-                        onReset = {
-                            context.symphony.settings.songsFilterPattern.setValue(null)
-                        },
-                        onChange = { value ->
-                            context.symphony.settings.songsFilterPattern.setValue(
-                                when (value) {
-                                    defaultSongsFilterPattern -> null
-                                    else -> value
+                    BentoSettingGroup {
+                        BentoSettingRow(
+                            label = context.symphony.t.SongsFilterPattern,
+                            value = songsFilterPattern ?: ".*",
+                            onClick = { popup = GroovePopup.MEDIA_FILTER },
+                        )
+                        BentoSettingRow(
+                            label = context.symphony.t.MinSongDurationFilter,
+                            value = context.symphony.t.XSecs(minSongDuration.toString()),
+                            onClick = { popup = GroovePopup.MIN_SONG_DURATION },
+                        )
+                    }
+                    BentoSettingGroup {
+                        BentoSettingRow(
+                            label = context.symphony.t.ArtistTagValueSeparators,
+                            value = artistTagSeparators.joinToString(", "),
+                            onClick = { popup = GroovePopup.ARTIST_SEPARATORS },
+                        )
+                        BentoSettingRow(
+                            label = context.symphony.t.GenreTagValueSeparators,
+                            value = genreTagSeparators.joinToString(", "),
+                            onClick = { popup = GroovePopup.GENRE_SEPARATORS },
+                        )
+                        BentoSettingRow(
+                            label = context.symphony.t.ArtworkQuality,
+                            value = artworkQuality.label(context),
+                            onClick = { popup = GroovePopup.ARTWORK_QUALITY },
+                        )
+                        BentoSettingRow(
+                            label = context.symphony.t.CaseSensitiveSorting,
+                            value = if (caseSensitiveSorting) "On" else "Off",
+                            onClick = { popup = GroovePopup.CASE_SENSITIVE },
+                        )
+                        BentoSettingRow(
+                            label = context.symphony.t.UseMetaphonyMetadataDecoder,
+                            value = if (useMetaphony) "On" else "Off",
+                            onClick = { popup = GroovePopup.METAPHONY },
+                        )
+                    }
+                    BentoSettingGroup {
+                        BentoSettingRow(
+                            label = context.symphony.t.ClearSongCache,
+                            value = null,
+                            onClick = {
+                                refreshMediaLibrary(context.symphony, true)
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        context.symphony.t.SongCacheCleared,
+                                        withDismissAction = true,
+                                    )
                                 }
-                            )
-                            refreshMediaLibrary(context.symphony)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsSliderTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.FilterAlt, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.MinSongDurationFilter)
-                        },
-                        label = { value ->
-                            Text(context.symphony.t.XSecs(value.toString()))
-                        },
-                        range = minSongDurationRange,
-                        initialValue = minSongDuration.toFloat(),
-                        onValue = { value ->
-                            value.roundToInt().toFloat()
-                        },
-                        onChange = { value ->
-                            context.symphony.settings.minSongDuration.setValue(value.toInt())
-                        },
-                        onReset = {
-                            context.symphony.settings.minSongDuration.setValue(
-                                context.symphony.settings.minSongDuration.defaultValue,
-                            )
-                        },
-                    )
-                    HorizontalDivider()
-                    SettingsMultiGrooveFolderTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.RuleFolder, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.BlacklistFolders)
-                        },
-                        explorer = context.symphony.groove.exposer.explorer,
-                        initialValues = blacklistFolders,
-                        onChange = { values ->
-                            context.symphony.settings.blacklistFolders.setValue(values)
-                            refreshMediaLibrary(context.symphony)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsMultiGrooveFolderTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.RuleFolder, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.WhitelistFolders)
-                        },
-                        explorer = context.symphony.groove.exposer.explorer,
-                        initialValues = whitelistFolders,
-                        onChange = { values ->
-                            context.symphony.settings.whitelistFolders.setValue(values)
-                            refreshMediaLibrary(context.symphony)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsMultiTextOptionTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.SpaceBar, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.ArtistTagValueSeparators)
-                        },
-                        values = artistTagSeparators.toList(),
-                        onChange = {
-                            context.symphony.settings.artistTagSeparators.setValue(it.toSet())
-                            refreshMediaLibrary(context.symphony)
-                        },
-                    )
-                    HorizontalDivider()
-                    SettingsMultiTextOptionTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.SpaceBar, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.GenreTagValueSeparators)
-                        },
-                        values = genreTagSeparators.toList(),
-                        onChange = {
-                            context.symphony.settings.genreTagSeparators.setValue(it.toSet())
-                            refreshMediaLibrary(context.symphony)
-                        },
-                    )
-                    HorizontalDivider()
-                    SettingsOptionTile(
-                        icon = {
-                            Icon(Icons.Filled.Image, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.ArtworkQuality)
-                        },
-                        value = artworkQuality,
-                        values = ImageQuality.entries
-                            .associateWith { it.label(context) },
-                        onChange = { value ->
-                            context.symphony.settings.artworkQuality.setValue(value)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsSwitchTile(
-                        icon = {
-                            Icon(Icons.Filled.TextFields, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.CaseSensitiveSorting)
-                        },
-                        value = caseSensitiveSorting,
-                        onChange = { value ->
-                            context.symphony.settings.caseSensitiveSorting.setValue(value)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsSwitchTile(
-                        icon = {
-                            Icon(Icons.Filled.FindInPage, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.UseMetaphonyMetadataDecoder)
-                        },
-                        value = useMetaphony,
-                        onChange = { value ->
-                            context.symphony.settings.useMetaphony.setValue(value)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsSimpleTile(
-                        icon = {
-                            Icon(Icons.Filled.Storage, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.ClearSongCache)
-                        },
-                        onClick = {
-                            refreshMediaLibrary(context.symphony, true)
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    context.symphony.t.SongCacheCleared,
-                                    withDismissAction = true,
-                                )
-                            }
-                        }
-                    )
+                            },
+                        )
+                    }
+                    Box(Modifier.padding(8.dp))
                 }
             }
+            SnackbarHost(
+                snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .bentoGestureBarPadding(),
+            ) {
+                AdaptiveSnackbar(it)
+            }
         }
-    )
+
+    when (popup) {
+        GroovePopup.MEDIA_FOLDERS -> BentoDialog(
+            title = context.symphony.t.MediaFolders,
+            onDismiss = { popup = null },
+        ) {
+            BentoSystemFolderPicker(
+                context = context,
+                values = mediaFolders,
+                onChange = { values ->
+                    context.symphony.settings.mediaFolders.setValue(values)
+                    refreshMediaLibrary(context.symphony)
+                },
+            )
+        }
+
+        GroovePopup.MEDIA_FILTER -> BentoTextDialog(
+            title = context.symphony.t.SongsFilterPattern,
+            value = songsFilterPattern ?: ".*",
+            placeholder = ".*",
+            onChange = { context.symphony.settings.songsFilterPattern.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        GroovePopup.MIN_SONG_DURATION -> BentoSliderDialog(
+            title = context.symphony.t.MinSongDurationFilter,
+            value = minSongDuration.toFloat(),
+            range = 0f..60f,
+            onValue = { it.roundToInt().toFloat() },
+            label = { context.symphony.t.XSecs(it.roundToInt().toString()) },
+            onChange = { context.symphony.settings.minSongDuration.setValue(it.roundToInt()) },
+            onDismiss = { popup = null },
+        )
+
+        GroovePopup.BLACKLIST_FOLDERS -> GrooveFolderPickerDialog(
+            context = context,
+            explorer = context.symphony.groove.song.explorer,
+            onSelect = { path ->
+                if (path != null) {
+                    context.symphony.settings.blacklistFolders.setValue(
+                        blacklistFolders + path.pathString,
+                    )
+                    refreshMediaLibrary(context.symphony)
+                }
+                popup = null
+            },
+        )
+
+        GroovePopup.WHITELIST_FOLDERS -> GrooveFolderPickerDialog(
+            context = context,
+            explorer = context.symphony.groove.song.explorer,
+            onSelect = { path ->
+                if (path != null) {
+                    context.symphony.settings.whitelistFolders.setValue(
+                        whitelistFolders + path.pathString,
+                    )
+                    refreshMediaLibrary(context.symphony)
+                }
+                popup = null
+            },
+        )
+
+        GroovePopup.ARTIST_SEPARATORS -> BentoTextDialog(
+            title = context.symphony.t.ArtistTagValueSeparators,
+            value = artistTagSeparators.joinToString(", "),
+            placeholder = ", ",
+            onChange = { raw ->
+                context.symphony.settings.artistTagSeparators.setValue(
+                    raw.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet(),
+                )
+            },
+            onDismiss = {
+                refreshMediaLibrary(context.symphony)
+                popup = null
+            },
+        )
+
+        GroovePopup.GENRE_SEPARATORS -> BentoTextDialog(
+            title = context.symphony.t.GenreTagValueSeparators,
+            value = genreTagSeparators.joinToString(", "),
+            placeholder = ", ",
+            onChange = { raw ->
+                context.symphony.settings.genreTagSeparators.setValue(
+                    raw.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet(),
+                )
+            },
+            onDismiss = {
+                refreshMediaLibrary(context.symphony)
+                popup = null
+            },
+        )
+
+        GroovePopup.ARTWORK_QUALITY -> BentoOptionDialog(
+            title = context.symphony.t.ArtworkQuality,
+            options = ImageQuality.entries.map { it.label(context) to (it == artworkQuality) },
+            onSelect = { index ->
+                context.symphony.settings.artworkQuality.setValue(ImageQuality.entries[index])
+                popup = null
+            },
+            onDismiss = { popup = null },
+        )
+
+        GroovePopup.CASE_SENSITIVE -> BentoToggleDialog(
+            title = context.symphony.t.CaseSensitiveSorting,
+            checked = caseSensitiveSorting,
+            onChange = { context.symphony.settings.caseSensitiveSorting.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        GroovePopup.METAPHONY -> BentoToggleDialog(
+            title = context.symphony.t.UseMetaphonyMetadataDecoder,
+            checked = useMetaphony,
+            onChange = { context.symphony.settings.useMetaphony.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        null -> Unit
+    }
 }
 
 fun ImageQuality.label(context: ViewContext) = when (this) {
@@ -328,10 +328,13 @@ fun ImageQuality.label(context: ViewContext) = when (this) {
     ImageQuality.Loseless -> context.symphony.t.Loseless
 }
 
-private fun refreshMediaLibrary(symphony: Symphony, clearCache: Boolean = false) {
+private var refreshMediaLibraryJob: kotlinx.coroutines.Job? = null
+
+private fun refreshMediaLibrary(symphony: io.github.zyrouge.symphony.Symphony, clearCache: Boolean = false) {
     symphony.radio.stop()
-    symphony.groove.coroutineScope.launch {
-        val options = Groove.FetchOptions(
+    refreshMediaLibraryJob?.cancel()
+    refreshMediaLibraryJob = symphony.groove.coroutineScope.launch {
+        val options = io.github.zyrouge.symphony.services.groove.Groove.FetchOptions(
             resetInMemoryCache = true,
             resetPersistentCache = clearCache,
         )

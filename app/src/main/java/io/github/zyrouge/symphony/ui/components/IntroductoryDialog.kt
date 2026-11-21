@@ -91,8 +91,8 @@ private fun OptInTile(
                 }
                 .border(
                     1.dp,
-                    MaterialTheme.colorScheme.surfaceVariant,
-                    RoundedCornerShape(5.dp),
+                    io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.line,
+                    RoundedCornerShape(io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE_SMALL.dp),
                 )
                 .padding(16.dp, 8.dp),
             horizontalArrangement = Arrangement.Center,
@@ -103,8 +103,8 @@ private fun OptInTile(
                     Icons.Filled.Check,
                     null,
                     tint = when {
-                        enabled -> MaterialTheme.colorScheme.primary
-                        else -> MaterialTheme.colorScheme.surfaceVariant
+                        enabled -> io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.accent
+                        else -> io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.muted
                     },
                     modifier = Modifier.size(20.dp),
                 )
@@ -112,12 +112,12 @@ private fun OptInTile(
                 else -> Icon(
                     Icons.Filled.Close,
                     null,
-                    tint = MaterialTheme.colorScheme.surfaceVariant,
+                    tint = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.muted,
                     modifier = Modifier.size(20.dp),
                 )
             }
             Box(modifier = Modifier.width(8.dp))
-            ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+            ProvideTextStyle(io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.secondary) {
                 content()
             }
         }

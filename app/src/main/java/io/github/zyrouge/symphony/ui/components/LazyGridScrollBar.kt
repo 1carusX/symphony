@@ -4,7 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -17,7 +16,7 @@ import io.github.zyrouge.symphony.utils.toSafeFinite
 import kotlin.math.floor
 
 fun Modifier.drawScrollBar(state: LazyGridState, columns: Int): Modifier = composed {
-    val scrollPointerColor = MaterialTheme.colorScheme.surfaceTint
+    val scrollPointerColor = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub
     val isLastItemVisible by remember {
         derivedStateOf {
             state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == state.layoutInfo.totalItemsCount - 1

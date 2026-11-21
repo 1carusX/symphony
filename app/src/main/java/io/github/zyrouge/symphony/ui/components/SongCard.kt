@@ -3,6 +3,7 @@ package io.github.zyrouge.symphony.ui.components
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -24,7 +25,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -78,10 +78,13 @@ fun SongCard(
         derivedStateOf { favoriteSongIds.contains(song.id) }
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        onClick = onClick
+    val bentoColors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE_SMALL.dp))
+            .clickable(onClick = onClick)
     ) {
         Box(modifier = Modifier.padding(12.dp, 12.dp, 4.dp, 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -128,7 +131,7 @@ fun SongCard(
                         song.title,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = when {
-                                highlighted || isCurrentPlaying -> MaterialTheme.colorScheme.primary
+                                highlighted || isCurrentPlaying -> bentoColors.accent
                                 else -> LocalTextStyle.current.color
                             }
                         ),
@@ -158,7 +161,7 @@ fun SongCard(
                                 Icons.Filled.Favorite,
                                 null,
                                 modifier = Modifier.size(24.dp),
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = bentoColors.accent,
                             )
                         }
                     }
@@ -201,7 +204,7 @@ fun SongDropdownMenu(
     var showInfoDialog by remember { mutableStateOf(false) }
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }
 
-    DropdownMenu(
+    BentoMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest
     ) {

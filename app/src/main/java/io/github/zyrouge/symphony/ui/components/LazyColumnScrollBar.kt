@@ -5,7 +5,6 @@ import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -17,7 +16,7 @@ import androidx.compose.ui.draw.drawWithContent
 import io.github.zyrouge.symphony.utils.toSafeFinite
 
 fun Modifier.drawScrollBar(state: LazyListState): Modifier = composed {
-    val scrollPointerColor = MaterialTheme.colorScheme.surfaceTint
+    val scrollPointerColor = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub
     val isLastItemVisible by remember {
         derivedStateOf {
             state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == state.layoutInfo.totalItemsCount - 1

@@ -60,12 +60,16 @@ fun LoaderScaffold(
                     height = it.size.height
                 },
         ) {
+            val colors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-                        RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+                        colors.float,
+                        RoundedCornerShape(
+                            topStart = io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE.dp,
+                            topEnd = io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE.dp,
+                        ),
                     )
                     .padding(16.dp, 12.dp)
             ) {
@@ -75,11 +79,14 @@ fun LoaderScaffold(
                 ) {
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
+                        color = colors.accent,
+                        trackColor = colors.track,
                         modifier = Modifier.size(16.dp),
                     )
                     Text(
                         context.symphony.t.Loading,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.secondary,
+                        color = colors.sub,
                     )
                 }
             }

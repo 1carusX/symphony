@@ -5,14 +5,8 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
-import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.FolderCopy
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -26,34 +20,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.zyrouge.symphony.services.groove.Groove
-import io.github.zyrouge.symphony.ui.components.AddToPlaylistDialog
+import io.github.zyrouge.symphony.services.radio.Radio
+import io.github.zyrouge.symphony.ui.components.BentoGroupFolderCover
+import io.github.zyrouge.symphony.ui.components.BentoGroupTile
+import io.github.zyrouge.symphony.ui.components.BentoGroupedTileColumns
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LoaderScaffold
-import io.github.zyrouge.symphony.ui.components.MediaSortBar
-import io.github.zyrouge.symphony.ui.components.MediaSortBarScaffold
-import io.github.zyrouge.symphony.ui.components.ResponsiveGrid
-import io.github.zyrouge.symphony.ui.components.ResponsiveGridColumns
-import io.github.zyrouge.symphony.ui.components.ResponsiveGridSizeAdjustBottomSheet
-import io.github.zyrouge.symphony.ui.components.SongList
-import io.github.zyrouge.symphony.ui.components.SquareGrooveTile
-import io.github.zyrouge.symphony.ui.components.label
-import io.github.zyrouge.symphony.ui.helpers.Assets
+import io.github.zyrouge.symphony.ui.components.bentoGroupTileHeightDp
+import io.github.zyrouge.symphony.ui.components.bentoNamesGroupComparator
+import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
+import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.FadeTransition
 import io.github.zyrouge.symphony.ui.helpers.SlideTransition
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
-import io.github.zyrouge.symphony.ui.view.nowPlaying.defaultHorizontalPadding
 import io.github.zyrouge.symphony.utils.SimpleFileSystem
-import io.github.zyrouge.symphony.utils.StringListUtils
 import java.util.Stack
 
+/**
+ * The Folders page (DESIGN.md 5.3): one grouped tile per song-containing
+ * folder, in name order, with the folder icon on `tonal` as cover and the
+ * folder's songs as rows showing the artist. Tapping the cover or name opens
+ * the folder's existing browse view, which the kit does not redesign.
+ */
 @Composable
 fun FoldersView(context: ViewContext) {
     val isUpdating by context.symphony.groove.song.isUpdating.collectAsState()
     val id by context.symphony.groove.song.id.collectAsState()
+    val caseSensitive by context.symphony.settings.caseSensitiveSorting.flow.collectAsState()
+    val playingSong = rememberBentoPlayingSong(context)
     val explorer = context.symphony.groove.song.explorer
 
     val folders = remember(id) {
@@ -78,6 +73,16 @@ fun FoldersView(context: ViewContext) {
         }
         entities.toMap()
     }
+    val sortedFolders by remember(folders, caseSensitive) {
+        derivedStateOf {
+            folders.values.sortedWith(
+                bentoNamesGroupComparator(
+                    nameOf = { it.name },
+                    caseSensitive = caseSensitive,
+                ),
+            )
+        }
+    }
     var currentFolder by remember(id) {
         mutableStateOf<SimpleFileSystem.Folder?>(null)
     }
@@ -99,242 +104,99 @@ fun FoldersView(context: ViewContext) {
             },
         ) { folder ->
             if (folder != null) {
-                val songIds by remember(folder) {
-                    derivedStateOf {
-                        folder.children.values.mapNotNull {
-                            when (it) {
-                                is SimpleFileSystem.File -> it.data as String
-                                else -> null
-                            }
-                        }
-                    }
-                }
-
-                Column {
-                    Column(
-                        modifier = Modifier.padding(
-                            start = defaultHorizontalPadding,
-                            end = defaultHorizontalPadding,
-                            top = 4.dp,
-                            bottom = 12.dp,
-                        ),
-                    ) {
-                        folder.parent?.let { parent ->
-                            Text(
-                                "${parent.fullPath}/",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = LocalContentColor.current.copy(alpha = 0.7f),
-                                ),
-                            )
-                        }
-                        Text(folder.name, style = MaterialTheme.typography.bodyLarge)
-                    }
-                    HorizontalDivider()
-                    SongList(context, songIds = songIds, songsCount = songIds.size)
-                }
+                FolderSongsView(context, folder, onBack = { currentFolder = null })
             } else {
-                FoldersGrid(
-                    context,
-                    folders = folders,
-                    onClick = {
-                        currentFolder = it
-                    }
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun FoldersGrid(
-    context: ViewContext,
-    folders: Map<String, SimpleFileSystem.Folder>,
-    onClick: (SimpleFileSystem.Folder) -> Unit,
-) {
-    val sortBy by context.symphony.settings.lastUsedFoldersSortBy.flow.collectAsState()
-    val sortReverse by context.symphony.settings.lastUsedFoldersSortReverse.flow.collectAsState()
-    val sortedFolderNames by remember(folders, sortBy, sortReverse) {
-        derivedStateOf {
-            StringListUtils.sort(folders.keys.toList(), sortBy, sortReverse)
-        }
-    }
-    val horizontalGridColumns by context.symphony.settings.lastUsedFoldersHorizontalGridColumns.flow.collectAsState()
-    val verticalGridColumns by context.symphony.settings.lastUsedFoldersVerticalGridColumns.flow.collectAsState()
-    val gridColumns by remember(horizontalGridColumns, verticalGridColumns) {
-        derivedStateOf {
-            ResponsiveGridColumns(horizontalGridColumns, verticalGridColumns)
-        }
-    }
-    var showModifyLayoutSheet by remember { mutableStateOf(false) }
-
-    MediaSortBarScaffold(
-        mediaSortBar = {
-            MediaSortBar(
-                context,
-                reverse = sortReverse,
-                onReverseChange = {
-                    context.symphony.settings.lastUsedFoldersSortReverse.setValue(it)
-                },
-                sort = sortBy,
-                sorts = StringListUtils.SortBy.entries
-                    .associateWith { x -> ViewContext.parameterizedFn { x.label(context) } },
-                onSortChange = {
-                    context.symphony.settings.lastUsedFoldersSortBy.setValue(it)
-                },
-                label = {
-                    Text(context.symphony.t.XFolders(folders.size.toString()))
-                },
-                onShowModifyLayout = {
-                    showModifyLayoutSheet = true
-                }
-            )
-        },
-        content = {
-            when {
-                sortedFolderNames.isEmpty() -> IconTextBody(
-                    icon = { modifier ->
-                        Icon(
-                            Icons.Filled.FolderCopy,
-                            null,
-                            modifier = modifier,
-                        )
-                    },
-                    content = { Text(context.symphony.t.DamnThisIsSoEmpty) }
-                )
-
-                else -> ResponsiveGrid(gridColumns) {
-                    itemsIndexed(
-                        sortedFolderNames,
-                        key = { i, x -> "$i-$x" },
-                        contentType = { _, _ -> Groove.Kind.ARTIST }
-                    ) { _, folderName ->
-                        folders[folderName]?.let { folder ->
-                            FolderTile(
-                                context, folder = folder,
-                                onClick = { onClick(folder) },
+                when {
+                    sortedFolders.isEmpty() -> IconTextBody(
+                        icon = { modifier ->
+                            Icon(
+                                Icons.Filled.FolderCopy,
+                                null,
+                                modifier = modifier,
                             )
-                        }
+                        },
+                        content = { Text(context.symphony.t.DamnThisIsSoEmpty) },
+                    )
+
+                    else -> BentoGroupedTileColumns(
+                        entries = sortedFolders,
+                        entryHeightDp = { folder ->
+                            bentoGroupTileHeightDp(folder.getSortedSongIds(context).size)
+                        },
+                        modifier = Modifier.padding(top = 4.dp),
+                    ) { folderValue, tileWidth ->
+                        FolderGroupTile(
+                            context = context,
+                            folder = folderValue,
+                            playingSongId = playingSong.songId,
+                            playing = playingSong.isPlaying,
+                            narrow = tileWidth < 340f,
+                            onOpen = { currentFolder = folderValue },
+                        )
                     }
                 }
             }
-
-            if (showModifyLayoutSheet) {
-                ResponsiveGridSizeAdjustBottomSheet(
-                    context,
-                    columns = gridColumns,
-                    onColumnsChange = {
-                        context.symphony.settings.lastUsedFoldersHorizontalGridColumns.setValue(
-                            it.horizontal
-                        )
-                        context.symphony.settings.lastUsedFoldersVerticalGridColumns.setValue(
-                            it.vertical
-                        )
-                    },
-                    onDismissRequest = {
-                        showModifyLayoutSheet = false
-                    }
-                )
-            }
         }
-    )
+    }
 }
 
 @Composable
-private fun FolderTile(
+private fun FolderGroupTile(
     context: ViewContext,
     folder: SimpleFileSystem.Folder,
-    onClick: () -> Unit,
+    playingSongId: String?,
+    playing: Boolean,
+    narrow: Boolean,
+    onOpen: () -> Unit,
 ) {
-    SquareGrooveTile(
-        image = folder.createArtworkImageRequest(context).build(),
-        options = { expanded, onDismissRequest ->
-            var showAddToPlaylistDialog by remember { mutableStateOf(false) }
+    val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
+    val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
+    val songIds by remember(folder, sortBy, sortReverse) {
+        derivedStateOf {
+            context.symphony.groove.song.sort(
+                folder.getSortedSongIds(context),
+                sortBy,
+                sortReverse,
+            )
+        }
+    }
+    val songs by remember(songIds) {
+        derivedStateOf {
+            songIds.mapNotNull { context.symphony.groove.song.get(it) }
+        }
+    }
 
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = onDismissRequest
-            ) {
-                DropdownMenuItem(
-                    leadingIcon = {
-                        Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-                    },
-                    text = {
-                        Text(context.symphony.t.ShufflePlay)
-                    },
-                    onClick = {
-                        onDismissRequest()
-                        context.symphony.radio.shorty.playQueue(
-                            folder.getSortedSongIds(context),
-                            shuffle = true,
-                        )
-                    }
-                )
-                DropdownMenuItem(
-                    leadingIcon = {
-                        Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-                    },
-                    text = {
-                        Text(context.symphony.t.PlayNext)
-                    },
-                    onClick = {
-                        onDismissRequest()
-                        context.symphony.radio.queue.add(
-                            folder.getSortedSongIds(context),
-                            context.symphony.radio.queue.currentSongIndex + 1
-                        )
-                    }
-                )
-                DropdownMenuItem(
-                    leadingIcon = {
-                        Icon(Icons.AutoMirrored.Filled.PlaylistAdd, null)
-                    },
-                    text = {
-                        Text(context.symphony.t.AddToPlaylist)
-                    },
-                    onClick = {
-                        onDismissRequest()
-                        showAddToPlaylistDialog = true
-                    }
-                )
-            }
-
-            if (showAddToPlaylistDialog) {
-                AddToPlaylistDialog(
-                    context,
-                    songIds = folder.getSortedSongIds(context),
-                    onDismissRequest = {
-                        showAddToPlaylistDialog = false
-                    }
-                )
-            }
+    BentoGroupTile(
+        context = context,
+        title = folder.name,
+        subtitle = context.symphony.t.XSongs(songs.size.toString()) +
+            " · " +
+            formatBentoDurationMinutes(songs.sumOf { it.duration }),
+        songs = songs,
+        cover = { BentoGroupFolderCover() },
+        onOpen = onOpen,
+        onPlay = {
+            context.symphony.radio.shorty.playQueue(songIds)
         },
-        content = {
-            Text(
-                folder.name,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+        onPlayAt = { index ->
+            context.symphony.radio.shorty.playQueue(
+                songIds,
+                Radio.PlayOptions(index = index),
             )
         },
-        onPlay = {
-            val sortedSongIds = folder.getSortedSongIds(context)
-            context.symphony.radio.shorty.playQueue(sortedSongIds)
-        },
-        onClick = onClick,
+        rowSecondaryOf = { it.artists.joinToString() },
+        playingSongId = playingSongId,
+        playing = playing,
+        narrow = narrow,
+        showAllLabel = "Show all " + context.symphony.t.XSongs(songs.size.toString()),
+        onShowAll = onOpen,
     )
 }
 
-private fun SimpleFileSystem.Folder.createArtworkImageRequest(context: ViewContext) =
-    children.values
-        .find { it is SimpleFileSystem.File }
-        ?.let {
-            val songId = (it as SimpleFileSystem.File).data as String
-            context.symphony.groove.song.createArtworkImageRequest(songId)
-        }
-        ?: Assets.createPlaceholderImageRequest(context.symphony)
-
+/**
+ * The in-folder browse view, unchanged: the kit does not design the folder
+ * "detail", so it keeps the existing header and song list.
+ */
 private fun SimpleFileSystem.Folder.getSortedSongIds(context: ViewContext): List<String> {
     val songIds = children.values.mapNotNull {
         when (it) {

@@ -43,11 +43,10 @@ fun InformationKeyValue(key: String, value: @Composable () -> Unit) {
     Column {
         Text(
             key,
-            style = MaterialTheme.typography.bodySmall.copy(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
+            style = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.secondary,
+            color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub
         )
-        ProvideTextStyle(value = MaterialTheme.typography.bodyMedium) {
+        ProvideTextStyle(value = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.rowTitle) {
             value()
         }
     }

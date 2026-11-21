@@ -1,0 +1,2783 @@
+{
+ "description": "Design tokens for the Symphony Bento redesign, read from the interactive prototype on 2026-11-18. Sizes are dp (CSS px in the prototype); type sizes are sp. Colors are HSL formulas where \"h\" is the user-selected primary hue; \"hex\" gives the resolved value for each of the five primary hues (8-digit hex includes alpha). A literal hue (e.g. hsl(0 0% 0%)) resolves to one hex for all hues.",
+ "primaryHues": {
+  "rose": 345,
+  "blue": 215,
+  "green": 150,
+  "amber": 38,
+  "violet": 275
+ },
+ "defaults": {
+  "scheme": "tinted",
+  "mode": "system",
+  "primary": "rose"
+ },
+ "modes": {
+  "system": "Follows the OS: light or dark.",
+  "light": "Light surfaces.",
+  "dark": "Dark surfaces.",
+  "black": "Dark with a pure black background for OLED; surfaces slightly darker than dark."
+ },
+ "schemes": {
+  "tinted": "Default. Surfaces carry a little of the primary hue.",
+  "neutral": "Near-gray surfaces; color only on accent and tonal.",
+  "vivid": "Stronger tint on surfaces and fuller selection colors.",
+  "contrast": "Black or white background, tiles outlined with a 1 dp \"line\" ring, highest text contrast."
+ },
+ "colorRoles": {
+  "bg": "Window background behind all tiles.",
+  "surface": "Default tile and list-tile fill (tone \"plain\"); the phone player sheet.",
+  "raised": "Hover and pressed fill on rows; lyrics and queue panel inside the player; search hits.",
+  "high": "Capsule (mini player) and menus.",
+  "float": "Floating player window on wide screens.",
+  "fg": "Primary text and icons.",
+  "sub": "Secondary text (artist lines, inactive icons).",
+  "muted": "Tertiary text (durations, disabled letters in the A-Z index, grip).",
+  "line": "Hairlines, outlined buttons, tile outlines in the Contrast scheme.",
+  "track": "Unplayed part of the seek bar and capsule progress ring.",
+  "accent": "Primary actions only: play buttons, selected tab, Play all tile, active smart filter, seek progress.",
+  "on-accent": "Text and icons on accent.",
+  "on-accent-sub": "Secondary text on accent tiles.",
+  "tonal": "Selection and one secondary highlight: rail selection, chips that are on, Shuffle tile, timer button when on.",
+  "on-tonal": "Text and icons on tonal.",
+  "tonal-sub": "Secondary text on tonal tiles.",
+  "edge": "Hairline ring (1 px, spread) around floating surfaces.",
+  "scrim": "Dim layer behind the phone player sheet and action sheets."
+ },
+ "color": {
+  "tinted": {
+   "light": {
+    "bg": {
+     "hsl": "hsl(h 100% 98%)",
+     "hex": {
+      "rose": "#fff5f7",
+      "blue": "#f5f9ff",
+      "green": "#f5fffa",
+      "amber": "#fffbf5",
+      "violet": "#fbf5ff"
+     }
+    },
+    "surface": {
+     "hsl": "hsl(h 45% 94%)",
+     "hex": {
+      "rose": "#f7e9ec",
+      "blue": "#e9eff7",
+      "green": "#e9f7f0",
+      "amber": "#f7f2e9",
+      "violet": "#f1e9f7"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 38% 90%)",
+     "hex": {
+      "rose": "#efdce1",
+      "blue": "#dce4ef",
+      "green": "#dcefe6",
+      "amber": "#efe8dc",
+      "violet": "#e7dcef"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 36% 88%)",
+     "hex": {
+      "rose": "#ebd5db",
+      "blue": "#d5dfeb",
+      "green": "#d5ebe0",
+      "amber": "#ebe3d5",
+      "violet": "#e2d5eb"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 100% 99.5%)",
+     "hex": {
+      "rose": "#fffcfd",
+      "blue": "#fcfeff",
+      "green": "#fcfffe",
+      "amber": "#fffefc",
+      "violet": "#fefcff"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(h 18% 12%)",
+     "hex": {
+      "rose": "#24191c",
+      "blue": "#191e24",
+      "green": "#19241f",
+      "amber": "#242019",
+      "violet": "#201924"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 10% 33%)",
+     "hex": {
+      "rose": "#5d4c50",
+      "blue": "#4c535d",
+      "green": "#4c5d54",
+      "amber": "#5d564c",
+      "violet": "#564c5d"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 6% 46%)",
+     "hex": {
+      "rose": "#7c6e72",
+      "blue": "#6e747c",
+      "green": "#6e7c75",
+      "amber": "#7c776e",
+      "violet": "#766e7c"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 15% 82%)",
+     "hex": {
+      "rose": "#d8cace",
+      "blue": "#cad0d8",
+      "green": "#cad8d1",
+      "amber": "#d8d3ca",
+      "violet": "#d2cad8"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 18% 82%)",
+     "hex": {
+      "rose": "#d9c9cd",
+      "blue": "#c9d0d9",
+      "green": "#c9d9d1",
+      "amber": "#d9d3c9",
+      "violet": "#d2c9d9"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 52% 40%)",
+     "hex": {
+      "rose": "#9b314b",
+      "blue": "#315d9b",
+      "green": "#319b66",
+      "amber": "#9b7431",
+      "violet": "#6f319b"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 100% 99%)",
+     "hex": {
+      "rose": "#fffafb",
+      "blue": "#fafcff",
+      "green": "#fafffc",
+      "amber": "#fffdfa",
+      "violet": "#fdfaff"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 70% 90%)",
+     "hex": {
+      "rose": "#f7d4dd",
+      "blue": "#d4e3f7",
+      "green": "#d4f7e6",
+      "amber": "#f7ead4",
+      "violet": "#e8d4f7"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 75% 90%)",
+     "hex": {
+      "rose": "#f9d2dc",
+      "blue": "#d2e2f9",
+      "green": "#d2f9e6",
+      "amber": "#f9ebd2",
+      "violet": "#e9d2f9"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 55% 17%)",
+     "hex": {
+      "rose": "#43141f",
+      "blue": "#142743",
+      "green": "#14432b",
+      "amber": "#433214",
+      "violet": "#2f1443"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 28% 36%)",
+     "hex": {
+      "rose": "#76424f",
+      "blue": "#425876",
+      "green": "#42765c",
+      "amber": "#766342",
+      "violet": "#604276"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(h 25% 20% / .1)",
+     "hex": {
+      "rose": "#40262d1a",
+      "blue": "#2631401a",
+      "green": "#2640331a",
+      "amber": "#4036261a",
+      "violet": "#3526401a"
+     }
+    },
+    "scrim": {
+     "hsl": "hsl(h 20% 10% / .35)",
+     "hex": {
+      "rose": "#1f141759",
+      "blue": "#14191f59",
+      "green": "#141f1a59",
+      "amber": "#1f1b1459",
+      "violet": "#1a141f59"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -12px hsl(h 30% 20% / .32), 0 3px 10px hsl(h 30% 20% / .12)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -12.0,
+       "color": {
+        "hsl": "hsl(h 30% 20% / .32)",
+        "hex": {
+         "rose": "#42242b52",
+         "blue": "#24304252",
+         "green": "#24423352",
+         "amber": "#42372452",
+         "violet": "#36244252"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 3.0,
+       "blur": 10.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 30% 20% / .12)",
+        "hex": {
+         "rose": "#42242b1f",
+         "blue": "#2430421f",
+         "green": "#2442331f",
+         "amber": "#4237241f",
+         "violet": "#3624421f"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "dark": {
+    "bg": {
+     "hsl": "hsl(h 17% 9%)",
+     "hex": {
+      "rose": "#1b1315",
+      "blue": "#13161b",
+      "green": "#131b17",
+      "amber": "#1b1813",
+      "violet": "#18131b"
+     }
+    },
+    "surface": {
+     "hsl": "hsl(h 13% 15%)",
+     "hex": {
+      "rose": "#2b2124",
+      "blue": "#21252b",
+      "green": "#212b26",
+      "amber": "#2b2821",
+      "violet": "#27212b"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 11% 20%)",
+     "hex": {
+      "rose": "#392d30",
+      "blue": "#2d3239",
+      "green": "#2d3933",
+      "amber": "#39342d",
+      "violet": "#342d39"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 10% 24%)",
+     "hex": {
+      "rose": "#43373a",
+      "blue": "#373c43",
+      "green": "#37433d",
+      "amber": "#433f37",
+      "violet": "#3e3743"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 12% 22%)",
+     "hex": {
+      "rose": "#3f3135",
+      "blue": "#31373f",
+      "green": "#313f38",
+      "amber": "#3f3a31",
+      "violet": "#39313f"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(h 45% 91%)",
+     "hex": {
+      "rose": "#f2dee3",
+      "blue": "#dee6f2",
+      "green": "#def2e8",
+      "amber": "#f2ebde",
+      "violet": "#eadef2"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 16% 79%)",
+     "hex": {
+      "rose": "#d2c1c5",
+      "blue": "#c1c8d2",
+      "green": "#c1d2c9",
+      "amber": "#d2ccc1",
+      "violet": "#cbc1d2"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 8% 60%)",
+     "hex": {
+      "rose": "#a19195",
+      "blue": "#9198a1",
+      "green": "#91a199",
+      "amber": "#a19b91",
+      "violet": "#9a91a1"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 10% 30%)",
+     "hex": {
+      "rose": "#544549",
+      "blue": "#454b54",
+      "green": "#45544c",
+      "amber": "#544f45",
+      "violet": "#4e4554"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 12% 32%)",
+     "hex": {
+      "rose": "#5b484d",
+      "blue": "#48505b",
+      "green": "#485b52",
+      "amber": "#5b5448",
+      "violet": "#53485b"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 100% 85%)",
+     "hex": {
+      "rose": "#ffb2c6",
+      "blue": "#b2d2ff",
+      "green": "#b2ffd9",
+      "amber": "#ffe3b2",
+      "violet": "#dfb2ff"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 70% 22%)",
+     "hex": {
+      "rose": "#5f1124",
+      "blue": "#11325f",
+      "green": "#115f38",
+      "amber": "#5f4311",
+      "violet": "#3f115f"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 48% 33%)",
+     "hex": {
+      "rose": "#7d2c40",
+      "blue": "#2c4d7d",
+      "green": "#2c7d54",
+      "amber": "#7d5f2c",
+      "violet": "#5b2c7d"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 19% 30%)",
+     "hex": {
+      "rose": "#5b3e45",
+      "blue": "#3e4a5b",
+      "green": "#3e5b4d",
+      "amber": "#5b503e",
+      "violet": "#4f3e5b"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 100% 93%)",
+     "hex": {
+      "rose": "#ffdbe4",
+      "blue": "#dbeaff",
+      "green": "#dbffed",
+      "amber": "#fff2db",
+      "violet": "#f0dbff"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 55% 86%)",
+     "hex": {
+      "rose": "#efc8d1",
+      "blue": "#c8d8ef",
+      "green": "#c8efdb",
+      "amber": "#efe1c8",
+      "violet": "#dfc8ef"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(h 40% 92% / .12)",
+     "hex": {
+      "rose": "#f3e2e71f",
+      "blue": "#e2e9f31f",
+      "green": "#e2f3eb1f",
+      "amber": "#f3ede21f",
+      "violet": "#ece2f31f"
+     }
+    },
+    "scrim": {
+     "hsl": "hsl(h 30% 3% / .55)",
+     "hex": {
+      "rose": "#0a05078c",
+      "blue": "#05070a8c",
+      "green": "#050a088c",
+      "amber": "#0a08058c",
+      "violet": "#08050a8c"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -10px hsl(h 40% 2% / .8), 0 4px 14px hsl(h 40% 2% / .45)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -10.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .8)",
+        "hex": {
+         "rose": "#070304cc",
+         "blue": "#030507cc",
+         "green": "#030705cc",
+         "amber": "#070603cc",
+         "violet": "#050307cc"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 4.0,
+       "blur": 14.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .45)",
+        "hex": {
+         "rose": "#07030473",
+         "blue": "#03050773",
+         "green": "#03070573",
+         "amber": "#07060373",
+         "violet": "#05030773"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "black": {
+    "bg": {
+     "hsl": "hsl(0 0% 0%)",
+     "hex": "#000000"
+    },
+    "surface": {
+     "hsl": "hsl(h 8% 8%)",
+     "hex": {
+      "rose": "#161314",
+      "blue": "#131416",
+      "green": "#131614",
+      "amber": "#161513",
+      "violet": "#151316"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 7% 13%)",
+     "hex": {
+      "rose": "#231f20",
+      "blue": "#1f2123",
+      "green": "#1f2321",
+      "amber": "#23221f",
+      "violet": "#221f23"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 7% 18%)",
+     "hex": {
+      "rose": "#312b2c",
+      "blue": "#2b2d31",
+      "green": "#2b312e",
+      "amber": "#312f2b",
+      "violet": "#2e2b31"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 7% 15%)",
+     "hex": {
+      "rose": "#292425",
+      "blue": "#242629",
+      "green": "#242926",
+      "amber": "#292724",
+      "violet": "#272429"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(h 45% 91%)",
+     "hex": {
+      "rose": "#f2dee3",
+      "blue": "#dee6f2",
+      "green": "#def2e8",
+      "amber": "#f2ebde",
+      "violet": "#eadef2"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 16% 79%)",
+     "hex": {
+      "rose": "#d2c1c5",
+      "blue": "#c1c8d2",
+      "green": "#c1d2c9",
+      "amber": "#d2ccc1",
+      "violet": "#cbc1d2"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 8% 60%)",
+     "hex": {
+      "rose": "#a19195",
+      "blue": "#9198a1",
+      "green": "#91a199",
+      "amber": "#a19b91",
+      "violet": "#9a91a1"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 10% 30%)",
+     "hex": {
+      "rose": "#544549",
+      "blue": "#454b54",
+      "green": "#45544c",
+      "amber": "#544f45",
+      "violet": "#4e4554"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 10% 26%)",
+     "hex": {
+      "rose": "#493c3f",
+      "blue": "#3c4149",
+      "green": "#3c4942",
+      "amber": "#49443c",
+      "violet": "#433c49"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 100% 85%)",
+     "hex": {
+      "rose": "#ffb2c6",
+      "blue": "#b2d2ff",
+      "green": "#b2ffd9",
+      "amber": "#ffe3b2",
+      "violet": "#dfb2ff"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 70% 22%)",
+     "hex": {
+      "rose": "#5f1124",
+      "blue": "#11325f",
+      "green": "#115f38",
+      "amber": "#5f4311",
+      "violet": "#3f115f"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 48% 33%)",
+     "hex": {
+      "rose": "#7d2c40",
+      "blue": "#2c4d7d",
+      "green": "#2c7d54",
+      "amber": "#7d5f2c",
+      "violet": "#5b2c7d"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 19% 30%)",
+     "hex": {
+      "rose": "#5b3e45",
+      "blue": "#3e4a5b",
+      "green": "#3e5b4d",
+      "amber": "#5b503e",
+      "violet": "#4f3e5b"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 100% 93%)",
+     "hex": {
+      "rose": "#ffdbe4",
+      "blue": "#dbeaff",
+      "green": "#dbffed",
+      "amber": "#fff2db",
+      "violet": "#f0dbff"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 55% 86%)",
+     "hex": {
+      "rose": "#efc8d1",
+      "blue": "#c8d8ef",
+      "green": "#c8efdb",
+      "amber": "#efe1c8",
+      "violet": "#dfc8ef"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(h 40% 92% / .12)",
+     "hex": {
+      "rose": "#f3e2e71f",
+      "blue": "#e2e9f31f",
+      "green": "#e2f3eb1f",
+      "amber": "#f3ede21f",
+      "violet": "#ece2f31f"
+     }
+    },
+    "scrim": {
+     "hsl": "hsl(h 30% 3% / .55)",
+     "hex": {
+      "rose": "#0a05078c",
+      "blue": "#05070a8c",
+      "green": "#050a088c",
+      "amber": "#0a08058c",
+      "violet": "#08050a8c"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -10px hsl(h 40% 2% / .8), 0 4px 14px hsl(h 40% 2% / .45)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -10.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .8)",
+        "hex": {
+         "rose": "#070304cc",
+         "blue": "#030507cc",
+         "green": "#030705cc",
+         "amber": "#070603cc",
+         "violet": "#050307cc"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 4.0,
+       "blur": 14.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .45)",
+        "hex": {
+         "rose": "#07030473",
+         "blue": "#03050773",
+         "green": "#03070573",
+         "amber": "#07060373",
+         "violet": "#05030773"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "neutral": {
+   "light": {
+    "bg": {
+     "hsl": "hsl(h 8% 98%)",
+     "hex": {
+      "rose": "#faf9fa",
+      "blue": "#f9fafa",
+      "green": "#f9fafa",
+      "amber": "#fafaf9",
+      "violet": "#faf9fa"
+     }
+    },
+    "surface": {
+     "hsl": "hsl(h 6% 94.5%)",
+     "hex": {
+      "rose": "#f2f0f1",
+      "blue": "#f0f1f2",
+      "green": "#f0f2f1",
+      "amber": "#f2f1f0",
+      "violet": "#f1f0f2"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 6% 90%)",
+     "hex": {
+      "rose": "#e7e4e5",
+      "blue": "#e4e5e7",
+      "green": "#e4e7e6",
+      "amber": "#e7e6e4",
+      "violet": "#e6e4e7"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 6% 87%)",
+     "hex": {
+      "rose": "#e0dcdd",
+      "blue": "#dcdee0",
+      "green": "#dce0de",
+      "amber": "#e0dedc",
+      "violet": "#dedce0"
+     }
+    },
+    "float": {
+     "hsl": "hsl(0 0% 100%)",
+     "hex": "#ffffff"
+    },
+    "fg": {
+     "hsl": "hsl(h 8% 10%)",
+     "hex": {
+      "rose": "#1c1718",
+      "blue": "#17191c",
+      "green": "#171c1a",
+      "amber": "#1c1a17",
+      "violet": "#1a171c"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 4% 32%)",
+     "hex": {
+      "rose": "#554e50",
+      "blue": "#4e5155",
+      "green": "#4e5552",
+      "amber": "#55524e",
+      "violet": "#524e55"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 3% 45%)",
+     "hex": {
+      "rose": "#766f71",
+      "blue": "#6f7276",
+      "green": "#6f7673",
+      "amber": "#76746f",
+      "violet": "#736f76"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 5% 84%)",
+     "hex": {
+      "rose": "#d8d4d5",
+      "blue": "#d4d6d8",
+      "green": "#d4d8d6",
+      "amber": "#d8d7d4",
+      "violet": "#d7d4d8"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 5% 82%)",
+     "hex": {
+      "rose": "#d3cfd0",
+      "blue": "#cfd1d3",
+      "green": "#cfd3d1",
+      "amber": "#d3d2cf",
+      "violet": "#d1cfd3"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 55% 42%)",
+     "hex": {
+      "rose": "#a6304e",
+      "blue": "#3061a6",
+      "green": "#30a66b",
+      "amber": "#a67b30",
+      "violet": "#7530a6"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 100% 99%)",
+     "hex": {
+      "rose": "#fffafb",
+      "blue": "#fafcff",
+      "green": "#fafffc",
+      "amber": "#fffdfa",
+      "violet": "#fdfaff"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 60% 90%)",
+     "hex": {
+      "rose": "#f5d6de",
+      "blue": "#d6e3f5",
+      "green": "#d6f5e6",
+      "amber": "#f5ead6",
+      "violet": "#e8d6f5"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 40% 90%)",
+     "hex": {
+      "rose": "#f0dbe0",
+      "blue": "#dbe4f0",
+      "green": "#dbf0e6",
+      "amber": "#f0e8db",
+      "violet": "#e7dbf0"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 50% 18%)",
+     "hex": {
+      "rose": "#451722",
+      "blue": "#172a45",
+      "green": "#17452e",
+      "amber": "#453417",
+      "violet": "#321745"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 20% 36%)",
+     "hex": {
+      "rose": "#6e4953",
+      "blue": "#49596e",
+      "green": "#496e5c",
+      "amber": "#6e6149",
+      "violet": "#5f496e"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(h 20% 20% / .1)",
+     "hex": {
+      "rose": "#3d292e1a",
+      "blue": "#29313d1a",
+      "green": "#293d331a",
+      "amber": "#3d36291a",
+      "violet": "#35293d1a"
+     }
+    },
+    "scrim": {
+     "hsl": "hsl(h 20% 10% / .35)",
+     "hex": {
+      "rose": "#1f141759",
+      "blue": "#14191f59",
+      "green": "#141f1a59",
+      "amber": "#1f1b1459",
+      "violet": "#1a141f59"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -12px hsl(h 30% 20% / .32), 0 3px 10px hsl(h 30% 20% / .12)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -12.0,
+       "color": {
+        "hsl": "hsl(h 30% 20% / .32)",
+        "hex": {
+         "rose": "#42242b52",
+         "blue": "#24304252",
+         "green": "#24423352",
+         "amber": "#42372452",
+         "violet": "#36244252"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 3.0,
+       "blur": 10.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 30% 20% / .12)",
+        "hex": {
+         "rose": "#42242b1f",
+         "blue": "#2430421f",
+         "green": "#2442331f",
+         "amber": "#4237241f",
+         "violet": "#3624421f"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "dark": {
+    "bg": {
+     "hsl": "hsl(h 4% 8%)",
+     "hex": {
+      "rose": "#151414",
+      "blue": "#141415",
+      "green": "#141514",
+      "amber": "#151514",
+      "violet": "#151415"
+     }
+    },
+    "surface": {
+     "hsl": "hsl(h 4% 13%)",
+     "hex": {
+      "rose": "#222020",
+      "blue": "#202122",
+      "green": "#202221",
+      "amber": "#222220",
+      "violet": "#212022"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 4% 18%)",
+     "hex": {
+      "rose": "#302c2d",
+      "blue": "#2c2e30",
+      "green": "#2c302e",
+      "amber": "#302e2c",
+      "violet": "#2e2c30"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 4% 22%)",
+     "hex": {
+      "rose": "#3a3637",
+      "blue": "#36383a",
+      "green": "#363a38",
+      "amber": "#3a3936",
+      "violet": "#38363a"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 4% 21%)",
+     "hex": {
+      "rose": "#383334",
+      "blue": "#333538",
+      "green": "#333836",
+      "amber": "#383633",
+      "violet": "#363338"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(h 8% 93%)",
+     "hex": {
+      "rose": "#efecec",
+      "blue": "#ecedef",
+      "green": "#ecefed",
+      "amber": "#efeeec",
+      "violet": "#edecef"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 4% 74%)",
+     "hex": {
+      "rose": "#bfbabb",
+      "blue": "#babcbf",
+      "green": "#babfbd",
+      "amber": "#bfbdba",
+      "violet": "#bdbabf"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 3% 56%)",
+     "hex": {
+      "rose": "#928b8d",
+      "blue": "#8b8e92",
+      "green": "#8b928f",
+      "amber": "#92908b",
+      "violet": "#8f8b92"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 4% 27%)",
+     "hex": {
+      "rose": "#484243",
+      "blue": "#424448",
+      "green": "#424845",
+      "amber": "#484642",
+      "violet": "#454248"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 4% 28%)",
+     "hex": {
+      "rose": "#4a4546",
+      "blue": "#45474a",
+      "green": "#454a47",
+      "amber": "#4a4845",
+      "violet": "#48454a"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 90% 80%)",
+     "hex": {
+      "rose": "#fa9eb5",
+      "blue": "#9ec4fa",
+      "green": "#9efacc",
+      "amber": "#fad89e",
+      "violet": "#d49efa"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 60% 18%)",
+     "hex": {
+      "rose": "#491220",
+      "blue": "#122949",
+      "green": "#12492e",
+      "amber": "#493512",
+      "violet": "#321249"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 45% 30%)",
+     "hex": {
+      "rose": "#6f2a3b",
+      "blue": "#2a476f",
+      "green": "#2a6f4d",
+      "amber": "#6f562a",
+      "violet": "#522a6f"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 14% 26%)",
+     "hex": {
+      "rose": "#4c393e",
+      "blue": "#39414c",
+      "green": "#394c42",
+      "amber": "#4c4539",
+      "violet": "#44394c"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 80% 92%)",
+     "hex": {
+      "rose": "#fbdae2",
+      "blue": "#dae8fb",
+      "green": "#dafbeb",
+      "amber": "#fbefda",
+      "violet": "#eddafb"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 30% 80%)",
+     "hex": {
+      "rose": "#dbbdc4",
+      "blue": "#bdc9db",
+      "green": "#bddbcc",
+      "amber": "#dbd0bd",
+      "violet": "#cfbddb"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(0 0% 100% / .12)",
+     "hex": "#ffffff1f"
+    },
+    "scrim": {
+     "hsl": "hsl(h 30% 3% / .55)",
+     "hex": {
+      "rose": "#0a05078c",
+      "blue": "#05070a8c",
+      "green": "#050a088c",
+      "amber": "#0a08058c",
+      "violet": "#08050a8c"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -10px hsl(h 40% 2% / .8), 0 4px 14px hsl(h 40% 2% / .45)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -10.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .8)",
+        "hex": {
+         "rose": "#070304cc",
+         "blue": "#030507cc",
+         "green": "#030705cc",
+         "amber": "#070603cc",
+         "violet": "#050307cc"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 4.0,
+       "blur": 14.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .45)",
+        "hex": {
+         "rose": "#07030473",
+         "blue": "#03050773",
+         "green": "#03070573",
+         "amber": "#07060373",
+         "violet": "#05030773"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "black": {
+    "bg": {
+     "hsl": "hsl(0 0% 0%)",
+     "hex": "#000000"
+    },
+    "surface": {
+     "hsl": "hsl(h 8% 8%)",
+     "hex": {
+      "rose": "#161314",
+      "blue": "#131416",
+      "green": "#131614",
+      "amber": "#161513",
+      "violet": "#151316"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 7% 13%)",
+     "hex": {
+      "rose": "#231f20",
+      "blue": "#1f2123",
+      "green": "#1f2321",
+      "amber": "#23221f",
+      "violet": "#221f23"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 7% 18%)",
+     "hex": {
+      "rose": "#312b2c",
+      "blue": "#2b2d31",
+      "green": "#2b312e",
+      "amber": "#312f2b",
+      "violet": "#2e2b31"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 7% 15%)",
+     "hex": {
+      "rose": "#292425",
+      "blue": "#242629",
+      "green": "#242926",
+      "amber": "#292724",
+      "violet": "#272429"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(h 8% 93%)",
+     "hex": {
+      "rose": "#efecec",
+      "blue": "#ecedef",
+      "green": "#ecefed",
+      "amber": "#efeeec",
+      "violet": "#edecef"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 4% 74%)",
+     "hex": {
+      "rose": "#bfbabb",
+      "blue": "#babcbf",
+      "green": "#babfbd",
+      "amber": "#bfbdba",
+      "violet": "#bdbabf"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 3% 56%)",
+     "hex": {
+      "rose": "#928b8d",
+      "blue": "#8b8e92",
+      "green": "#8b928f",
+      "amber": "#92908b",
+      "violet": "#8f8b92"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 4% 27%)",
+     "hex": {
+      "rose": "#484243",
+      "blue": "#424448",
+      "green": "#424845",
+      "amber": "#484642",
+      "violet": "#454248"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 4% 28%)",
+     "hex": {
+      "rose": "#4a4546",
+      "blue": "#45474a",
+      "green": "#454a47",
+      "amber": "#4a4845",
+      "violet": "#48454a"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 90% 80%)",
+     "hex": {
+      "rose": "#fa9eb5",
+      "blue": "#9ec4fa",
+      "green": "#9efacc",
+      "amber": "#fad89e",
+      "violet": "#d49efa"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 60% 18%)",
+     "hex": {
+      "rose": "#491220",
+      "blue": "#122949",
+      "green": "#12492e",
+      "amber": "#493512",
+      "violet": "#321249"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 45% 30%)",
+     "hex": {
+      "rose": "#6f2a3b",
+      "blue": "#2a476f",
+      "green": "#2a6f4d",
+      "amber": "#6f562a",
+      "violet": "#522a6f"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 14% 26%)",
+     "hex": {
+      "rose": "#4c393e",
+      "blue": "#39414c",
+      "green": "#394c42",
+      "amber": "#4c4539",
+      "violet": "#44394c"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 80% 92%)",
+     "hex": {
+      "rose": "#fbdae2",
+      "blue": "#dae8fb",
+      "green": "#dafbeb",
+      "amber": "#fbefda",
+      "violet": "#eddafb"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 30% 80%)",
+     "hex": {
+      "rose": "#dbbdc4",
+      "blue": "#bdc9db",
+      "green": "#bddbcc",
+      "amber": "#dbd0bd",
+      "violet": "#cfbddb"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(0 0% 100% / .12)",
+     "hex": "#ffffff1f"
+    },
+    "scrim": {
+     "hsl": "hsl(h 30% 3% / .55)",
+     "hex": {
+      "rose": "#0a05078c",
+      "blue": "#05070a8c",
+      "green": "#050a088c",
+      "amber": "#0a08058c",
+      "violet": "#08050a8c"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -10px hsl(h 40% 2% / .8), 0 4px 14px hsl(h 40% 2% / .45)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -10.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .8)",
+        "hex": {
+         "rose": "#070304cc",
+         "blue": "#030507cc",
+         "green": "#030705cc",
+         "amber": "#070603cc",
+         "violet": "#050307cc"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 4.0,
+       "blur": 14.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .45)",
+        "hex": {
+         "rose": "#07030473",
+         "blue": "#03050773",
+         "green": "#03070573",
+         "amber": "#07060373",
+         "violet": "#05030773"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "vivid": {
+   "light": {
+    "bg": {
+     "hsl": "hsl(h 100% 97%)",
+     "hex": {
+      "rose": "#fff0f4",
+      "blue": "#f0f6ff",
+      "green": "#f0fff7",
+      "amber": "#fff9f0",
+      "violet": "#f9f0ff"
+     }
+    },
+    "surface": {
+     "hsl": "hsl(h 70% 92%)",
+     "hex": {
+      "rose": "#f9dce3",
+      "blue": "#dce8f9",
+      "green": "#dcf9eb",
+      "amber": "#f9eedc",
+      "violet": "#eddcf9"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 60% 87%)",
+     "hex": {
+      "rose": "#f2cad4",
+      "blue": "#cadbf2",
+      "green": "#caf2de",
+      "amber": "#f2e3ca",
+      "violet": "#e1caf2"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 55% 84%)",
+     "hex": {
+      "rose": "#edc0cb",
+      "blue": "#c0d2ed",
+      "green": "#c0edd6",
+      "amber": "#eddcc0",
+      "violet": "#dac0ed"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 100% 99%)",
+     "hex": {
+      "rose": "#fffafb",
+      "blue": "#fafcff",
+      "green": "#fafffc",
+      "amber": "#fffdfa",
+      "violet": "#fdfaff"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(h 40% 12%)",
+     "hex": {
+      "rose": "#2b1218",
+      "blue": "#121d2b",
+      "green": "#122b1f",
+      "amber": "#2b2212",
+      "violet": "#21122b"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 20% 30%)",
+     "hex": {
+      "rose": "#5c3d45",
+      "blue": "#3d4a5c",
+      "green": "#3d5c4d",
+      "amber": "#5c513d",
+      "violet": "#4f3d5c"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 10% 44%)",
+     "hex": {
+      "rose": "#7b656b",
+      "blue": "#656e7b",
+      "green": "#657b70",
+      "amber": "#7b7365",
+      "violet": "#72657b"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 30% 80%)",
+     "hex": {
+      "rose": "#dbbdc4",
+      "blue": "#bdc9db",
+      "green": "#bddbcc",
+      "amber": "#dbd0bd",
+      "violet": "#cfbddb"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 30% 80%)",
+     "hex": {
+      "rose": "#dbbdc4",
+      "blue": "#bdc9db",
+      "green": "#bddbcc",
+      "amber": "#dbd0bd",
+      "violet": "#cfbddb"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 65% 42%)",
+     "hex": {
+      "rose": "#b12548",
+      "blue": "#255fb1",
+      "green": "#25b16b",
+      "amber": "#b17e25",
+      "violet": "#7725b1"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 100% 99%)",
+     "hex": {
+      "rose": "#fffafb",
+      "blue": "#fafcff",
+      "green": "#fafffc",
+      "amber": "#fffdfa",
+      "violet": "#fdfaff"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 80% 90%)",
+     "hex": {
+      "rose": "#fad1db",
+      "blue": "#d1e2fa",
+      "green": "#d1fae6",
+      "amber": "#faebd1",
+      "violet": "#e9d1fa"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 90% 85%)",
+     "hex": {
+      "rose": "#fbb6c8",
+      "blue": "#b6d3fb",
+      "green": "#b6fbd9",
+      "amber": "#fbe2b6",
+      "violet": "#deb6fb"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 70% 18%)",
+     "hex": {
+      "rose": "#4e0e1e",
+      "blue": "#0e294e",
+      "green": "#0e4e2e",
+      "amber": "#4e360e",
+      "violet": "#330e4e"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 40% 34%)",
+     "hex": {
+      "rose": "#793445",
+      "blue": "#345179",
+      "green": "#347957",
+      "amber": "#796034",
+      "violet": "#5c3479"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(h 20% 20% / .1)",
+     "hex": {
+      "rose": "#3d292e1a",
+      "blue": "#29313d1a",
+      "green": "#293d331a",
+      "amber": "#3d36291a",
+      "violet": "#35293d1a"
+     }
+    },
+    "scrim": {
+     "hsl": "hsl(h 20% 10% / .35)",
+     "hex": {
+      "rose": "#1f141759",
+      "blue": "#14191f59",
+      "green": "#141f1a59",
+      "amber": "#1f1b1459",
+      "violet": "#1a141f59"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -12px hsl(h 30% 20% / .32), 0 3px 10px hsl(h 30% 20% / .12)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -12.0,
+       "color": {
+        "hsl": "hsl(h 30% 20% / .32)",
+        "hex": {
+         "rose": "#42242b52",
+         "blue": "#24304252",
+         "green": "#24423352",
+         "amber": "#42372452",
+         "violet": "#36244252"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 3.0,
+       "blur": 10.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 30% 20% / .12)",
+        "hex": {
+         "rose": "#42242b1f",
+         "blue": "#2430421f",
+         "green": "#2442331f",
+         "amber": "#4237241f",
+         "violet": "#3624421f"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "dark": {
+    "bg": {
+     "hsl": "hsl(h 30% 9%)",
+     "hex": {
+      "rose": "#1e1014",
+      "blue": "#10161e",
+      "green": "#101e17",
+      "amber": "#1e1910",
+      "violet": "#18101e"
+     }
+    },
+    "surface": {
+     "hsl": "hsl(h 25% 15%)",
+     "hex": {
+      "rose": "#301d21",
+      "blue": "#1d2530",
+      "green": "#1d3026",
+      "amber": "#30291d",
+      "violet": "#281d30"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 22% 21%)",
+     "hex": {
+      "rose": "#412a30",
+      "blue": "#2a3441",
+      "green": "#2a4136",
+      "amber": "#41392a",
+      "violet": "#382a41"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 20% 25%)",
+     "hex": {
+      "rose": "#4c3339",
+      "blue": "#333e4c",
+      "green": "#334c40",
+      "amber": "#4c4333",
+      "violet": "#42334c"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 22% 24%)",
+     "hex": {
+      "rose": "#4b3036",
+      "blue": "#303b4b",
+      "green": "#304b3d",
+      "amber": "#4b4130",
+      "violet": "#3f304b"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(h 60% 93%)",
+     "hex": {
+      "rose": "#f8e2e8",
+      "blue": "#e2ebf8",
+      "green": "#e2f8ed",
+      "amber": "#f8f0e2",
+      "violet": "#efe2f8"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 30% 80%)",
+     "hex": {
+      "rose": "#dbbdc4",
+      "blue": "#bdc9db",
+      "green": "#bddbcc",
+      "amber": "#dbd0bd",
+      "violet": "#cfbddb"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 15% 62%)",
+     "hex": {
+      "rose": "#ad9097",
+      "blue": "#909cad",
+      "green": "#90ad9e",
+      "amber": "#ada290",
+      "violet": "#a190ad"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 18% 30%)",
+     "hex": {
+      "rose": "#5a3f46",
+      "blue": "#3f4a5a",
+      "green": "#3f5a4d",
+      "amber": "#5a503f",
+      "violet": "#4f3f5a"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 20% 32%)",
+     "hex": {
+      "rose": "#624149",
+      "blue": "#414f62",
+      "green": "#416252",
+      "amber": "#625641",
+      "violet": "#544162"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 100% 82%)",
+     "hex": {
+      "rose": "#ffa3ba",
+      "blue": "#a3c9ff",
+      "green": "#a3ffd1",
+      "amber": "#ffdda3",
+      "violet": "#d9a3ff"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 80% 20%)",
+     "hex": {
+      "rose": "#5c0a1f",
+      "blue": "#0a2c5c",
+      "green": "#0a5c33",
+      "amber": "#5c3e0a",
+      "violet": "#3a0a5c"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 55% 32%)",
+     "hex": {
+      "rose": "#7e253b",
+      "blue": "#254a7e",
+      "green": "#257e52",
+      "amber": "#7e5e25",
+      "violet": "#59257e"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 42% 34%)",
+     "hex": {
+      "rose": "#7b3244",
+      "blue": "#32517b",
+      "green": "#327b57",
+      "amber": "#7b6032",
+      "violet": "#5d327b"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 100% 94%)",
+     "hex": {
+      "rose": "#ffe0e8",
+      "blue": "#e0edff",
+      "green": "#e0fff0",
+      "amber": "#fff4e0",
+      "violet": "#f2e0ff"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 70% 86%)",
+     "hex": {
+      "rose": "#f4c2cf",
+      "blue": "#c2d7f4",
+      "green": "#c2f4db",
+      "amber": "#f4e2c2",
+      "violet": "#dfc2f4"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(0 0% 100% / .12)",
+     "hex": "#ffffff1f"
+    },
+    "scrim": {
+     "hsl": "hsl(h 30% 3% / .55)",
+     "hex": {
+      "rose": "#0a05078c",
+      "blue": "#05070a8c",
+      "green": "#050a088c",
+      "amber": "#0a08058c",
+      "violet": "#08050a8c"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -10px hsl(h 40% 2% / .8), 0 4px 14px hsl(h 40% 2% / .45)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -10.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .8)",
+        "hex": {
+         "rose": "#070304cc",
+         "blue": "#030507cc",
+         "green": "#030705cc",
+         "amber": "#070603cc",
+         "violet": "#050307cc"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 4.0,
+       "blur": 14.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .45)",
+        "hex": {
+         "rose": "#07030473",
+         "blue": "#03050773",
+         "green": "#03070573",
+         "amber": "#07060373",
+         "violet": "#05030773"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "black": {
+    "bg": {
+     "hsl": "hsl(0 0% 0%)",
+     "hex": "#000000"
+    },
+    "surface": {
+     "hsl": "hsl(h 8% 8%)",
+     "hex": {
+      "rose": "#161314",
+      "blue": "#131416",
+      "green": "#131614",
+      "amber": "#161513",
+      "violet": "#151316"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 7% 13%)",
+     "hex": {
+      "rose": "#231f20",
+      "blue": "#1f2123",
+      "green": "#1f2321",
+      "amber": "#23221f",
+      "violet": "#221f23"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 7% 18%)",
+     "hex": {
+      "rose": "#312b2c",
+      "blue": "#2b2d31",
+      "green": "#2b312e",
+      "amber": "#312f2b",
+      "violet": "#2e2b31"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 7% 15%)",
+     "hex": {
+      "rose": "#292425",
+      "blue": "#242629",
+      "green": "#242926",
+      "amber": "#292724",
+      "violet": "#272429"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(h 60% 93%)",
+     "hex": {
+      "rose": "#f8e2e8",
+      "blue": "#e2ebf8",
+      "green": "#e2f8ed",
+      "amber": "#f8f0e2",
+      "violet": "#efe2f8"
+     }
+    },
+    "sub": {
+     "hsl": "hsl(h 30% 80%)",
+     "hex": {
+      "rose": "#dbbdc4",
+      "blue": "#bdc9db",
+      "green": "#bddbcc",
+      "amber": "#dbd0bd",
+      "violet": "#cfbddb"
+     }
+    },
+    "muted": {
+     "hsl": "hsl(h 15% 62%)",
+     "hex": {
+      "rose": "#ad9097",
+      "blue": "#909cad",
+      "green": "#90ad9e",
+      "amber": "#ada290",
+      "violet": "#a190ad"
+     }
+    },
+    "line": {
+     "hsl": "hsl(h 18% 30%)",
+     "hex": {
+      "rose": "#5a3f46",
+      "blue": "#3f4a5a",
+      "green": "#3f5a4d",
+      "amber": "#5a503f",
+      "violet": "#4f3f5a"
+     }
+    },
+    "track": {
+     "hsl": "hsl(h 20% 32%)",
+     "hex": {
+      "rose": "#624149",
+      "blue": "#414f62",
+      "green": "#416252",
+      "amber": "#625641",
+      "violet": "#544162"
+     }
+    },
+    "accent": {
+     "hsl": "hsl(h 100% 82%)",
+     "hex": {
+      "rose": "#ffa3ba",
+      "blue": "#a3c9ff",
+      "green": "#a3ffd1",
+      "amber": "#ffdda3",
+      "violet": "#d9a3ff"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(h 80% 20%)",
+     "hex": {
+      "rose": "#5c0a1f",
+      "blue": "#0a2c5c",
+      "green": "#0a5c33",
+      "amber": "#5c3e0a",
+      "violet": "#3a0a5c"
+     }
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 55% 32%)",
+     "hex": {
+      "rose": "#7e253b",
+      "blue": "#254a7e",
+      "green": "#257e52",
+      "amber": "#7e5e25",
+      "violet": "#59257e"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 42% 34%)",
+     "hex": {
+      "rose": "#7b3244",
+      "blue": "#32517b",
+      "green": "#327b57",
+      "amber": "#7b6032",
+      "violet": "#5d327b"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 100% 94%)",
+     "hex": {
+      "rose": "#ffe0e8",
+      "blue": "#e0edff",
+      "green": "#e0fff0",
+      "amber": "#fff4e0",
+      "violet": "#f2e0ff"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 70% 86%)",
+     "hex": {
+      "rose": "#f4c2cf",
+      "blue": "#c2d7f4",
+      "green": "#c2f4db",
+      "amber": "#f4e2c2",
+      "violet": "#dfc2f4"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(0 0% 100% / .12)",
+     "hex": "#ffffff1f"
+    },
+    "scrim": {
+     "hsl": "hsl(h 30% 3% / .55)",
+     "hex": {
+      "rose": "#0a05078c",
+      "blue": "#05070a8c",
+      "green": "#050a088c",
+      "amber": "#0a08058c",
+      "violet": "#08050a8c"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -10px hsl(h 40% 2% / .8), 0 4px 14px hsl(h 40% 2% / .45)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -10.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .8)",
+        "hex": {
+         "rose": "#070304cc",
+         "blue": "#030507cc",
+         "green": "#030705cc",
+         "amber": "#070603cc",
+         "violet": "#050307cc"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 4.0,
+       "blur": 14.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .45)",
+        "hex": {
+         "rose": "#07030473",
+         "blue": "#03050773",
+         "green": "#03070573",
+         "amber": "#07060373",
+         "violet": "#05030773"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "contrast": {
+   "light": {
+    "bg": {
+     "hsl": "hsl(0 0% 100%)",
+     "hex": "#ffffff"
+    },
+    "surface": {
+     "hsl": "hsl(h 10% 96%)",
+     "hex": {
+      "rose": "#f6f4f4",
+      "blue": "#f4f5f6",
+      "green": "#f4f6f5",
+      "amber": "#f6f5f4",
+      "violet": "#f5f4f6"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 10% 91%)",
+     "hex": {
+      "rose": "#eae6e7",
+      "blue": "#e6e8ea",
+      "green": "#e6eae8",
+      "amber": "#eae9e6",
+      "violet": "#e8e6ea"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 10% 88%)",
+     "hex": {
+      "rose": "#e3dddf",
+      "blue": "#dde0e3",
+      "green": "#dde3e0",
+      "amber": "#e3e1dd",
+      "violet": "#e1dde3"
+     }
+    },
+    "float": {
+     "hsl": "hsl(0 0% 100%)",
+     "hex": "#ffffff"
+    },
+    "fg": {
+     "hsl": "hsl(0 0% 0%)",
+     "hex": "#000000"
+    },
+    "sub": {
+     "hsl": "hsl(0 0% 15%)",
+     "hex": "#262626"
+    },
+    "muted": {
+     "hsl": "hsl(0 0% 32%)",
+     "hex": "#525252"
+    },
+    "line": {
+     "hsl": "hsl(0 0% 55%)",
+     "hex": "#8c8c8c"
+    },
+    "track": {
+     "hsl": "hsl(0 0% 70%)",
+     "hex": "#b2b2b2"
+    },
+    "accent": {
+     "hsl": "hsl(h 80% 30%)",
+     "hex": {
+      "rose": "#8a0f2e",
+      "blue": "#0f428a",
+      "green": "#0f8a4d",
+      "amber": "#8a5d0f",
+      "violet": "#570f8a"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(0 0% 100%)",
+     "hex": "#ffffff"
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 60% 88%)",
+     "hex": {
+      "rose": "#f3ced7",
+      "blue": "#ceddf3",
+      "green": "#cef3e0",
+      "amber": "#f3e5ce",
+      "violet": "#e3cef3"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 50% 86%)",
+     "hex": {
+      "rose": "#edc9d2",
+      "blue": "#c9d8ed",
+      "green": "#c9eddb",
+      "amber": "#ede0c9",
+      "violet": "#dec9ed"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(h 80% 12%)",
+     "hex": {
+      "rose": "#370612",
+      "blue": "#061b37",
+      "green": "#06371f",
+      "amber": "#372506",
+      "violet": "#230637"
+     }
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 40% 25%)",
+     "hex": {
+      "rose": "#592633",
+      "blue": "#263b59",
+      "green": "#265940",
+      "amber": "#594726",
+      "violet": "#442659"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(0 0% 0% / .35)",
+     "hex": "#00000059"
+    },
+    "scrim": {
+     "hsl": "hsl(h 20% 10% / .35)",
+     "hex": {
+      "rose": "#1f141759",
+      "blue": "#14191f59",
+      "green": "#141f1a59",
+      "amber": "#1f1b1459",
+      "violet": "#1a141f59"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -12px hsl(h 30% 20% / .32), 0 3px 10px hsl(h 30% 20% / .12)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -12.0,
+       "color": {
+        "hsl": "hsl(h 30% 20% / .32)",
+        "hex": {
+         "rose": "#42242b52",
+         "blue": "#24304252",
+         "green": "#24423352",
+         "amber": "#42372452",
+         "violet": "#36244252"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 3.0,
+       "blur": 10.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 30% 20% / .12)",
+        "hex": {
+         "rose": "#42242b1f",
+         "blue": "#2430421f",
+         "green": "#2442331f",
+         "amber": "#4237241f",
+         "violet": "#3624421f"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "dark": {
+    "bg": {
+     "hsl": "hsl(0 0% 0%)",
+     "hex": "#000000"
+    },
+    "surface": {
+     "hsl": "hsl(h 6% 9%)",
+     "hex": {
+      "rose": "#181616",
+      "blue": "#161718",
+      "green": "#161817",
+      "amber": "#181716",
+      "violet": "#171618"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 6% 16%)",
+     "hex": {
+      "rose": "#2b2628",
+      "blue": "#26282b",
+      "green": "#262b29",
+      "amber": "#2b2926",
+      "violet": "#29262b"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 6% 20%)",
+     "hex": {
+      "rose": "#363031",
+      "blue": "#303236",
+      "green": "#303633",
+      "amber": "#363430",
+      "violet": "#343036"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 6% 14%)",
+     "hex": {
+      "rose": "#262223",
+      "blue": "#222326",
+      "green": "#222624",
+      "amber": "#262422",
+      "violet": "#242226"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(0 0% 100%)",
+     "hex": "#ffffff"
+    },
+    "sub": {
+     "hsl": "hsl(0 0% 88%)",
+     "hex": "#e0e0e0"
+    },
+    "muted": {
+     "hsl": "hsl(0 0% 72%)",
+     "hex": "#b8b8b8"
+    },
+    "line": {
+     "hsl": "hsl(0 0% 42%)",
+     "hex": "#6b6b6b"
+    },
+    "track": {
+     "hsl": "hsl(0 0% 40%)",
+     "hex": "#666666"
+    },
+    "accent": {
+     "hsl": "hsl(h 100% 80%)",
+     "hex": {
+      "rose": "#ff99b2",
+      "blue": "#99c3ff",
+      "green": "#99ffcc",
+      "amber": "#ffda99",
+      "violet": "#d499ff"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(0 0% 0%)",
+     "hex": "#000000"
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 40% 20%)",
+     "hex": {
+      "rose": "#471f29",
+      "blue": "#1f3047",
+      "green": "#1f4733",
+      "amber": "#47381f",
+      "violet": "#361f47"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 30% 28%)",
+     "hex": {
+      "rose": "#5d323d",
+      "blue": "#32445d",
+      "green": "#325d47",
+      "amber": "#5d4d32",
+      "violet": "#4b325d"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(0 0% 100%)",
+     "hex": "#ffffff"
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 40% 90%)",
+     "hex": {
+      "rose": "#f0dbe0",
+      "blue": "#dbe4f0",
+      "green": "#dbf0e6",
+      "amber": "#f0e8db",
+      "violet": "#e7dbf0"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(0 0% 100% / .4)",
+     "hex": "#ffffff66"
+    },
+    "scrim": {
+     "hsl": "hsl(h 30% 3% / .55)",
+     "hex": {
+      "rose": "#0a05078c",
+      "blue": "#05070a8c",
+      "green": "#050a088c",
+      "amber": "#0a08058c",
+      "violet": "#08050a8c"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -10px hsl(h 40% 2% / .8), 0 4px 14px hsl(h 40% 2% / .45)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -10.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .8)",
+        "hex": {
+         "rose": "#070304cc",
+         "blue": "#030507cc",
+         "green": "#030705cc",
+         "amber": "#070603cc",
+         "violet": "#050307cc"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 4.0,
+       "blur": 14.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .45)",
+        "hex": {
+         "rose": "#07030473",
+         "blue": "#03050773",
+         "green": "#03070573",
+         "amber": "#07060373",
+         "violet": "#05030773"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "black": {
+    "bg": {
+     "hsl": "hsl(0 0% 0%)",
+     "hex": "#000000"
+    },
+    "surface": {
+     "hsl": "hsl(h 8% 8%)",
+     "hex": {
+      "rose": "#161314",
+      "blue": "#131416",
+      "green": "#131614",
+      "amber": "#161513",
+      "violet": "#151316"
+     }
+    },
+    "raised": {
+     "hsl": "hsl(h 7% 13%)",
+     "hex": {
+      "rose": "#231f20",
+      "blue": "#1f2123",
+      "green": "#1f2321",
+      "amber": "#23221f",
+      "violet": "#221f23"
+     }
+    },
+    "high": {
+     "hsl": "hsl(h 7% 18%)",
+     "hex": {
+      "rose": "#312b2c",
+      "blue": "#2b2d31",
+      "green": "#2b312e",
+      "amber": "#312f2b",
+      "violet": "#2e2b31"
+     }
+    },
+    "float": {
+     "hsl": "hsl(h 7% 15%)",
+     "hex": {
+      "rose": "#292425",
+      "blue": "#242629",
+      "green": "#242926",
+      "amber": "#292724",
+      "violet": "#272429"
+     }
+    },
+    "fg": {
+     "hsl": "hsl(0 0% 100%)",
+     "hex": "#ffffff"
+    },
+    "sub": {
+     "hsl": "hsl(0 0% 88%)",
+     "hex": "#e0e0e0"
+    },
+    "muted": {
+     "hsl": "hsl(0 0% 72%)",
+     "hex": "#b8b8b8"
+    },
+    "line": {
+     "hsl": "hsl(0 0% 42%)",
+     "hex": "#6b6b6b"
+    },
+    "track": {
+     "hsl": "hsl(0 0% 40%)",
+     "hex": "#666666"
+    },
+    "accent": {
+     "hsl": "hsl(h 100% 80%)",
+     "hex": {
+      "rose": "#ff99b2",
+      "blue": "#99c3ff",
+      "green": "#99ffcc",
+      "amber": "#ffda99",
+      "violet": "#d499ff"
+     }
+    },
+    "on-accent": {
+     "hsl": "hsl(0 0% 0%)",
+     "hex": "#000000"
+    },
+    "on-accent-sub": {
+     "hsl": "hsl(h 40% 20%)",
+     "hex": {
+      "rose": "#471f29",
+      "blue": "#1f3047",
+      "green": "#1f4733",
+      "amber": "#47381f",
+      "violet": "#361f47"
+     }
+    },
+    "tonal": {
+     "hsl": "hsl(h 30% 28%)",
+     "hex": {
+      "rose": "#5d323d",
+      "blue": "#32445d",
+      "green": "#325d47",
+      "amber": "#5d4d32",
+      "violet": "#4b325d"
+     }
+    },
+    "on-tonal": {
+     "hsl": "hsl(0 0% 100%)",
+     "hex": "#ffffff"
+    },
+    "tonal-sub": {
+     "hsl": "hsl(h 40% 90%)",
+     "hex": {
+      "rose": "#f0dbe0",
+      "blue": "#dbe4f0",
+      "green": "#dbf0e6",
+      "amber": "#f0e8db",
+      "violet": "#e7dbf0"
+     }
+    },
+    "edge": {
+     "hsl": "hsl(0 0% 100% / .4)",
+     "hex": "#ffffff66"
+    },
+    "scrim": {
+     "hsl": "hsl(h 30% 3% / .55)",
+     "hex": {
+      "rose": "#0a05078c",
+      "blue": "#05070a8c",
+      "green": "#050a088c",
+      "amber": "#0a08058c",
+      "violet": "#08050a8c"
+     }
+    },
+    "shadow": {
+     "css": "0 20px 48px -10px hsl(h 40% 2% / .8), 0 4px 14px hsl(h 40% 2% / .45)",
+     "layers": [
+      {
+       "x": 0.0,
+       "y": 20.0,
+       "blur": 48.0,
+       "spread": -10.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .8)",
+        "hex": {
+         "rose": "#070304cc",
+         "blue": "#030507cc",
+         "green": "#030705cc",
+         "amber": "#070603cc",
+         "violet": "#050307cc"
+        }
+       }
+      },
+      {
+       "x": 0.0,
+       "y": 4.0,
+       "blur": 14.0,
+       "spread": 0.0,
+       "color": {
+        "hsl": "hsl(h 40% 2% / .45)",
+        "hex": {
+         "rose": "#07030473",
+         "blue": "#03050773",
+         "green": "#03070573",
+         "amber": "#07060373",
+         "violet": "#05030773"
+        }
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "elevation": {
+  "floating": "Floating surfaces (floating player window, capsule, menus) use: fill \"float\" (player) or \"high\" (capsule, menus), shadow from color.<scheme>.<mode>.shadow, plus a 1 dp ring in \"edge\".",
+  "phoneSheet": {
+   "css": "0 -6px 28px hsl(h 30% 3% / .35)",
+   "note": "Bottom sheet shadow, all schemes."
+  }
+ },
+ "typography": {
+  "fontFamily": "Inter (fallback: system UI font)",
+  "baseLineHeight": 1.35,
+  "weights": {
+   "400": "secondary lines (artist, album, durations, sub-labels)",
+   "500": "group row titles, menu items, rail labels",
+   "600": "row and tile titles, buttons, tabs, chips, small labels",
+   "700": "page, player and group titles, stats, letter headers"
+  },
+  "trackingRule": "Negative letter spacing only at 18 sp and up: -0.01em at 18-22 sp, -0.02em at 28 sp and up.",
+  "styles": {
+   "pageTitle": {
+    "size": 34,
+    "weight": 700,
+    "tracking": -0.02,
+    "lineHeight": 1.08,
+    "use": "Page title in the header on rail layouts."
+   },
+   "pageTitleCompact": {
+    "size": 28,
+    "weight": 700,
+    "tracking": -0.02,
+    "lineHeight": 1.08,
+    "use": "Page title on phones (top tabs)."
+   },
+   "pageTitleShort": {
+    "size": 22,
+    "weight": 700,
+    "tracking": -0.01,
+    "use": "Page title on short windows and sub-pages (Album)."
+   },
+   "statLarge": {
+    "size": 40,
+    "weight": 700,
+    "tracking": -0.02,
+    "lineHeight": 1,
+    "use": "Stat value in large tiles."
+   },
+   "display": {
+    "size": 28,
+    "weight": 700,
+    "tracking": -0.02,
+    "use": "Stat value, album title, Now playing tile title over artwork."
+   },
+   "title": {
+    "size": 22,
+    "weight": 700,
+    "tracking": -0.01,
+    "use": "Player song title (medium level), Now playing tile title, large tile labels, lyrics lines."
+   },
+   "groupTitle": {
+    "size": 18,
+    "weight": 700,
+    "tracking": -0.01,
+    "use": "Grouped tile title (album, artist, genre, playlist, folder); player song title at the small level."
+   },
+   "rowTitle": {
+    "size": 15,
+    "weight": 600,
+    "use": "Song row title, tile label, capsule title, menu header. Group rows use 15/500."
+   },
+   "body": {
+    "size": 14,
+    "weight": 400,
+    "use": "Artist line in the player and Now playing tile. Buttons, tabs and chips use 14/600."
+   },
+   "secondary": {
+    "size": 13,
+    "weight": 400,
+    "use": "Artist and album lines, durations, tile sub-labels. Tile header labels, letter headers (700) and player extras use 13/600."
+   },
+   "label": {
+    "size": 12,
+    "weight": 600,
+    "use": "Small labels, rail labels (500, 700 when selected), timer badge (700)."
+   },
+   "index": {
+    "size": 10.5,
+    "weight": 700,
+    "use": "A-Z scrubber letters only."
+   }
+  }
+ },
+ "spacing": {
+  "gutter": {
+   "compact": 16,
+   "other": 24,
+   "note": "Page side padding. compact = window width < 600."
+  },
+  "gap": {
+   "compact": 12,
+   "other": 16,
+   "note": "Gap between tiles."
+  },
+  "tilePadding": {
+   "default": 16,
+   "small": 12,
+   "extraSmall": 8
+  },
+  "listTileContentInset": 16,
+  "playerContentInset": 20
+ },
+ "radius": {
+  "tile": 24,
+  "tileSmall": 20,
+  "tileHover": 30,
+  "row": 16,
+  "menu": 24,
+  "menuSheet": 28,
+  "floatingPlayer": 28,
+  "phoneSheetTop": 30,
+  "playerCover": 20,
+  "capsule": 32,
+  "searchField": 26,
+  "chip": 18,
+  "iconWell40": 12,
+  "iconWell48": 14,
+  "iconWell56": 16,
+  "songArt44": 12,
+  "groupCover64": 16,
+  "queueArt40": 12,
+  "tileListArt36": 10,
+  "groupRowArt30": 8,
+  "playButton": "32% (rounded square) when paused, 50% (circle) when playing",
+  "rule": "Nested corners: inner radius = outer radius - padding."
+ },
+ "size": {
+  "iconButton": 48,
+  "icon": 24,
+  "touchTargetMin": 44,
+  "capsule": {
+   "height": 64,
+   "heightShort": 56,
+   "maxWidth": 560,
+   "art": 48,
+   "play": 48,
+   "bottomInset": {
+    "phone": 20,
+    "other": 16,
+    "short": 10
+   }
+  },
+  "playButton": {
+   "sm": 44,
+   "md": 56,
+   "lg": 76,
+   "xl": 92
+  },
+  "prevNext": {
+   "button": 56,
+   "icon": 32
+  },
+  "rail": {
+   "short": 80,
+   "rail": 96,
+   "wide": 240,
+   "fab": 56,
+   "item": 76
+  },
+  "header": {
+   "minHeight": 80,
+   "minHeightPhone": 66,
+   "minHeightShort": 52
+  },
+  "tab": 40,
+  "searchField": 52,
+  "actionTile": 72,
+  "smartFilter": 64,
+  "smartFilterSideColumn": 56,
+  "genreChip": 36,
+  "songRow": 60,
+  "songRowColumns": 56,
+  "letterHeader": 34,
+  "groupRow": 44,
+  "tileListRow": 48,
+  "queueRow": 56,
+  "menuItem": 48,
+  "floatingPlayer": {
+   "width": 400,
+   "inset": 20,
+   "mediumMaxHeight": 720,
+   "landscapeMediumWidth": 680,
+   "landscapeInset": 8
+  },
+  "phoneSheet": {
+   "topInset": "max(16, 6% of window height)",
+   "smallHeight": "min(300, window height - top inset)",
+   "mediumHeight": "content height + 20 (cover is a full-width square)"
+  },
+  "menuWidth": 288,
+  "sideColumn": 320,
+  "azScrubber": {
+   "width": 24,
+   "maxHeight": 520
+  },
+  "seek": {
+   "height": 30,
+   "track": 4,
+   "thumb": [
+    4,
+    22
+   ]
+  }
+ },
+ "motion": {
+  "phoneSheetOpen": {
+   "ms": 420,
+   "easing": "cubic-bezier(.2, .9, .25, 1)"
+  },
+  "phoneSheetClose": {
+   "ms": 320,
+   "easing": "cubic-bezier(.4, 0, 1, 1)"
+  },
+  "floatingPlayer": {
+   "ms": 300,
+   "easing": "cubic-bezier(.2, .9, .25, 1)",
+   "from": "translateY(24) scale(.92), opacity 0, origin bottom right"
+  },
+  "capsuleShowHide": {
+   "ms": 340,
+   "easing": "cubic-bezier(.2, .9, .25, 1)",
+   "hidden": "translateY(28) scale(.94), opacity 0"
+  },
+  "playButtonMorph": {
+   "ms": 400,
+   "easing": "cubic-bezier(.3, 1.4, .5, 1)"
+  },
+  "levelContentFade": {
+   "ms": 280,
+   "easing": "ease-out"
+  },
+  "menuPopover": {
+   "ms": 180,
+   "from": "scale(.96), opacity 0"
+  },
+  "actionSheet": {
+   "ms": 260,
+   "from": "translateY(40), opacity 0"
+  },
+  "toastDuration": 2400
+ },
+ "breakpoints": {
+  "windowClass": {
+   "compact": "< 600",
+   "medium": "600-839",
+   "expanded": "840-1199",
+   "large": "1200-1599",
+   "extraLarge": ">= 1600"
+  },
+  "shortHeight": "height < 480 and width > height (phone landscape)",
+  "bentoGrid": {
+   "note": "Chosen from the main column width (window minus navigation). [columns, row height, gap].",
+   "c4": {
+    "width": "< 560",
+    "grid": [
+     4,
+     84,
+     12
+    ]
+   },
+   "c6": {
+    "width": "560-879",
+    "grid": [
+     6,
+     110,
+     16
+    ]
+   },
+   "c8": {
+    "width": "880-1299",
+    "grid": [
+     8,
+     112,
+     16
+    ]
+   },
+   "c12": {
+    "width": ">= 1300",
+    "grid": [
+     12,
+     120,
+     16
+    ]
+   },
+   "short": {
+    "width": ">= 600 on a short window",
+    "grid": [
+     8,
+     92,
+     16
+    ]
+   }
+  },
+  "groupedColumns": {
+   "1": "inner width < 560",
+   "2": "560-999",
+   "3": ">= 1000"
+  },
+  "songsColumns": "Title / Artist / Album / Time columns when inner width >= 720",
+  "searchSideColumn": "Filters move to a 320 dp sticky side column when inner width >= 720 and the window is not short"
+ }
+}

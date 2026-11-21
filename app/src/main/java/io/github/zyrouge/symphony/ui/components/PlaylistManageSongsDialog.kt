@@ -97,7 +97,7 @@ fun PlaylistManageSongsDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RectangleShape,
-                    colors = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).let {
+                    colors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.float.let {
                         TextFieldDefaults.colors(
                             focusedContainerColor = it,
                             unfocusedContainerColor = it,

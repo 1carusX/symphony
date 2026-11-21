@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -93,7 +92,7 @@ fun AddToPlaylistDialog(
         },
         removeActionsVerticalPadding = true,
         actions = {
-            TextButton(
+            BentoTextButton(
                 modifier = Modifier.offset(y = (-8).dp),
                 onClick = {
                     showNewPlaylistDialog = !showNewPlaylistDialog
