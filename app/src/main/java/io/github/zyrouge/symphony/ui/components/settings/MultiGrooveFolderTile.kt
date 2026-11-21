@@ -1,5 +1,6 @@
 package io.github.zyrouge.symphony.ui.components.settings
 
+import io.github.zyrouge.symphony.ui.components.BentoTextButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -21,14 +22,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,128 +47,9 @@ import io.github.zyrouge.symphony.utils.SimplePath
 
 private const val SettingsFolderContentType = "folder"
 
-@Composable
-fun SettingsMultiGrooveFolderTile(
-    context: ViewContext,
-    icon: @Composable () -> Unit,
-    title: @Composable () -> Unit,
-    explorer: SimpleFileSystem.Folder,
-    initialValues: Set<String>,
-    onChange: (Set<String>) -> Unit,
-) {
-    var showDialog by remember { mutableStateOf(false) }
-
-    Card(
-        colors = SettingsTileDefaults.cardColors(),
-        onClick = {
-            showDialog = !showDialog
-        }
-    ) {
-        ListItem(
-            colors = SettingsTileDefaults.listItemColors(),
-            leadingContent = { icon() },
-            headlineContent = { title() },
-            supportingContent = {
-                Text(context.symphony.t.XFolders(initialValues.size.toString()))
-            },
-        )
-    }
-
-    if (showDialog) {
-        val values = remember { initialValues.toMutableStateList() }
-        var showPicker by remember { mutableStateOf(false) }
-
-        // TODO: workaround for dialog resize bug
-        //       https://issuetracker.google.com/issues/221643630
-        key(values.size) {
-            ScaffoldDialog(
-                onDismissRequest = {
-                    onChange(values.toSet())
-                    showDialog = false
-                },
-                title = title,
-                contentHeight = ScaffoldDialogDefaults.PreferredMaxHeight,
-                content = {
-                    val lazyListState = rememberLazyListState()
-
-                    LazyColumn(
-                        state = lazyListState,
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .drawScrollBar(lazyListState),
-                    ) {
-                        itemsIndexed(values) { i, x ->
-                            Card(
-                                colors = SettingsTileDefaults.cardColors(),
-                                shape = MaterialTheme.shapes.small,
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {},
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(
-                                        start = 20.dp,
-                                        end = 8.dp,
-                                    ),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(x, modifier = Modifier.weight(1f))
-                                    IconButton(onClick = { values.removeAt(i) }) {
-                                        Icon(Icons.Filled.Delete, null)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                actions = {
-                    TextButton(
-                        onClick = {
-                            showPicker = true
-                        }
-                    ) {
-                        Text(context.symphony.t.AddFolder)
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
-                    TextButton(
-                        onClick = {
-                            showDialog = false
-                        }
-                    ) {
-                        Text(context.symphony.t.Cancel)
-                    }
-                    TextButton(
-                        onClick = {
-                            onChange(values.toSet())
-                            showDialog = false
-                        }
-                    ) {
-                        Text(context.symphony.t.Done)
-                    }
-                }
-            )
-        }
-
-        if (showPicker) {
-            SettingsFolderTilePickerDialog(
-                context,
-                explorer = explorer,
-                onSelect = {
-                    if (it != null) {
-                        val path = SimplePath(it.parts.subList(1, it.size)).pathString
-                        if (!values.contains(path)) {
-                            values.add(path)
-                        }
-                    }
-                    showPicker = false
-                }
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsFolderTilePickerDialog(
+fun GrooveFolderPickerDialog(
     context: ViewContext,
     explorer: SimpleFileSystem.Folder,
     onSelect: (SimplePath?) -> Unit,
@@ -260,32 +140,38 @@ private fun SettingsFolderTilePickerDialog(
                             key = { it.name },
                             contentType = { SettingsFolderContentType }
                         ) { folder ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                                onClick = {
-                                    currentFolder = folder
-                                }
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(20.dp, 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Icon(
-                                        Icons.Filled.Folder,
-                                        null,
-                                        modifier = Modifier.size(32.dp),
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(
+                                        RoundedCornerShape(
+                                            io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.ROW.dp,
+                                        ),
                                     )
-                                    Spacer(modifier = Modifier.width(20.dp))
-                                    Column {
-                                        Text(folder.name)
-                                        Text(
-                                            context.symphony.t.XFolders(
-                                                folder.childFoldersCount.toString()
-                                            ),
-                                            style = MaterialTheme.typography.labelSmall,
-                                        )
-                                    }
+                                    .clickable { currentFolder = folder }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    Icons.Filled.Folder,
+                                    null,
+                                    tint = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub,
+                                    modifier = Modifier.size(28.dp),
+                                )
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Column {
+                                    Text(
+                                        folder.name,
+                                        style = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.rowTitle,
+                                        color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.fg,
+                                    )
+                                    Text(
+                                        context.symphony.t.XFolders(
+                                            folder.childFoldersCount.toString()
+                                        ),
+                                        style = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.secondary,
+                                        color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub,
+                                    )
                                 }
                             }
                         }
@@ -294,10 +180,10 @@ private fun SettingsFolderTilePickerDialog(
             }
         },
         actions = {
-            TextButton(onClick = { onSelect(null) }) {
+            BentoTextButton(onClick = { onSelect(null) }) {
                 Text(context.symphony.t.Cancel)
             }
-            TextButton(onClick = { onSelect(currentPath) }) {
+            BentoTextButton(onClick = { onSelect(currentPath) }) {
                 Text(context.symphony.t.Done)
             }
         },

@@ -1,254 +1,301 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CenterFocusWeak
-import androidx.compose.material.icons.filled.FastForward
-import androidx.compose.material.icons.filled.FastRewind
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.Headset
-import androidx.compose.material.icons.filled.HeadsetOff
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import io.github.zyrouge.symphony.ui.components.IconButtonPlaceholder
-import io.github.zyrouge.symphony.ui.components.TopAppBarMinimalTitle
-import io.github.zyrouge.symphony.ui.components.settings.ConsiderContributingTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsSideHeading
-import io.github.zyrouge.symphony.ui.components.settings.SettingsSliderTile
-import io.github.zyrouge.symphony.ui.components.settings.SettingsSwitchTile
+import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
+import io.github.zyrouge.symphony.ui.components.BentoPageHeader
+import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
+import io.github.zyrouge.symphony.ui.components.BentoSwitch
+import io.github.zyrouge.symphony.ui.components.BentoSettingRow
+import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
+import io.github.zyrouge.symphony.ui.components.BentoToggleDialog
+import io.github.zyrouge.symphony.ui.components.formatSettingSecs
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
+import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 
 @Serializable
 object PlayerSettingsViewRoute
 
-@OptIn(ExperimentalMaterial3Api::class)
+private enum class PlayerSettingPopup {
+    FADE,
+    FADE_DURATION,
+    REQUIRE_AUDIO_FOCUS,
+    IGNORE_AUDIO_FOCUS_LOSS,
+    PLAY_ON_HEADPHONES,
+    PAUSE_ON_HEADPHONES,
+    SEEK_BACK,
+    SEEK_FORWARD,
+    GAPLESS,
+}
+
+private val SEEK_RANGE = 3f..60f
+
 @Composable
 fun PlayerSettingsView(context: ViewContext) {
     val scrollState = rememberScrollState()
+    val windowClass = rememberBentoWindowClass()
+    val colors = LocalBentoColors.current
     val fadePlayback by context.symphony.settings.fadePlayback.flow.collectAsState()
-    val fadePlaybackDuration by context.symphony.settings.fadePlaybackDuration.flow.collectAsState()
+    val fadeDuration by context.symphony.settings.fadePlaybackDuration.flow.collectAsState()
     val requireAudioFocus by context.symphony.settings.requireAudioFocus.flow.collectAsState()
     val ignoreAudioFocusLoss by context.symphony.settings.ignoreAudioFocusLoss.flow.collectAsState()
-    val playOnHeadphonesConnect by context.symphony.settings.playOnHeadphonesConnect.flow.collectAsState()
-    val pauseOnHeadphonesDisconnect by context.symphony.settings.pauseOnHeadphonesDisconnect.flow.collectAsState()
-    val seekBackDuration by context.symphony.settings.seekBackDuration.flow.collectAsState()
-    val seekForwardDuration by context.symphony.settings.seekForwardDuration.flow.collectAsState()
-    val gaplessPlayback by context.symphony.settings.gaplessPlayback.flow.collectAsState()
+    val playOnHeadphones by context.symphony.settings.playOnHeadphonesConnect.flow.collectAsState()
+    val pauseOnHeadphones by context.symphony.settings.pauseOnHeadphonesDisconnect.flow.collectAsState()
+    val seekBack by context.symphony.settings.seekBackDuration.flow.collectAsState()
+    val seekForward by context.symphony.settings.seekForwardDuration.flow.collectAsState()
+    val gapless by context.symphony.settings.gaplessPlayback.flow.collectAsState()
+    var popup by remember { mutableStateOf<PlayerSettingPopup?>(null) }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    TopAppBarMinimalTitle {
-                        Text("${context.symphony.t.Settings} - ${context.symphony.t.Player}")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                ),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            context.navController.popBackStack()
-                        }
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                    }
-                },
-                actions = {
-                    IconButtonPlaceholder()
-                },
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colors.bg),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .verticalScroll(scrollState),
+        ) {
+            BentoPageHeader(
+                title = context.symphony.t.Player,
+                windowClass = windowClass,
+                onBack = { context.navController.popBackStack() },
             )
-        },
-        content = { contentPadding ->
-            Box(
+            Column(
                 modifier = Modifier
-                    .padding(contentPadding)
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Column(modifier = Modifier.verticalScroll(scrollState)) {
-                    val seekDurationRange = 3f..60f
-
-                    ConsiderContributingTile(context)
-                    SettingsSideHeading(context.symphony.t.Player)
-                    SettingsSwitchTile(
-                        icon = {
-                            Icon(Icons.Filled.GraphicEq, null)
+                BentoSettingGroup {
+                    BentoSettingRow(
+                        label = context.symphony.t.FadePlaybackInOut,
+                        value = null,
+                        onClick = {
+                            context.symphony.settings.fadePlayback.setValue(!fadePlayback)
                         },
-                        title = {
-                            Text(context.symphony.t.FadePlaybackInOut)
-                        },
-                        value = fadePlayback,
-                        onChange = { value ->
-                            context.symphony.settings.fadePlayback.setValue(value)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsSliderTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.GraphicEq, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.FadePlaybackInOut)
-                        },
-                        label = { value ->
-                            Text(context.symphony.t.XSecs(value.toString()))
-                        },
-                        range = 0.5f..6f,
-                        initialValue = fadePlaybackDuration,
-                        onValue = { value ->
-                            value.times(2).roundToInt().toFloat().div(2)
-                        },
-                        onChange = { value ->
-                            context.symphony.settings.fadePlaybackDuration.setValue(value)
-                        },
-                        onReset = {
-                            context.symphony.settings.fadePlaybackDuration.setValue(
-                                context.symphony.settings.fadePlaybackDuration.defaultValue,
+                        trailing = {
+                            BentoSwitch(
+                                checked = fadePlayback,
+                                onCheckedChange = {
+                                    context.symphony.settings.fadePlayback.setValue(it)
+                                },
                             )
                         },
                     )
-                    HorizontalDivider()
-                    SettingsSwitchTile(
-                        icon = {
-                            Icon(Icons.Filled.CenterFocusWeak, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.RequireAudioFocus)
-                        },
-                        value = requireAudioFocus,
-                        onChange = { value ->
-                            context.symphony.settings.requireAudioFocus.setValue(value)
-                        }
+                    BentoSettingRow(
+                        label = context.symphony.t.Duration,
+                        value = formatSettingSecs(fadeDuration),
+                        onClick = { popup = PlayerSettingPopup.FADE_DURATION },
                     )
-                    HorizontalDivider()
-                    SettingsSwitchTile(
-                        icon = {
-                            Icon(Icons.Filled.CenterFocusWeak, null)
+                }
+                BentoSettingGroup {
+                    BentoSettingRow(
+                        label = context.symphony.t.RequireAudioFocus,
+                        value = null,
+                        onClick = {
+                            context.symphony.settings.requireAudioFocus.setValue(!requireAudioFocus)
                         },
-                        title = {
-                            Text(context.symphony.t.IgnoreAudioFocusLoss)
-                        },
-                        value = ignoreAudioFocusLoss,
-                        onChange = { value ->
-                            context.symphony.settings.ignoreAudioFocusLoss.setValue(value)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsSwitchTile(
-                        icon = {
-                            Icon(Icons.Filled.Headset, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.PlayOnHeadphonesConnect)
-                        },
-                        value = playOnHeadphonesConnect,
-                        onChange = { value ->
-                            context.symphony.settings.playOnHeadphonesConnect.setValue(value)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsSwitchTile(
-                        icon = {
-                            Icon(Icons.Filled.HeadsetOff, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.PauseOnHeadphonesDisconnect)
-                        },
-                        value = pauseOnHeadphonesDisconnect,
-                        onChange = { value ->
-                            context.symphony.settings.pauseOnHeadphonesDisconnect.setValue(value)
-                        }
-                    )
-                    HorizontalDivider()
-                    SettingsSliderTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.FastRewind, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.FastRewindDuration)
-                        },
-                        label = { value ->
-                            Text(context.symphony.t.XSecs(value.toString()))
-                        },
-                        range = seekDurationRange,
-                        initialValue = seekBackDuration.toFloat(),
-                        onValue = { value ->
-                            value.roundToInt().toFloat()
-                        },
-                        onChange = { value ->
-                            context.symphony.settings.seekBackDuration.setValue(value.toInt())
-                        },
-                        onReset = {
-                            context.symphony.settings.seekBackDuration.setValue(
-                                context.symphony.settings.seekBackDuration.defaultValue,
+                        trailing = {
+                            BentoSwitch(
+                                checked = requireAudioFocus,
+                                onCheckedChange = {
+                                    context.symphony.settings.requireAudioFocus.setValue(it)
+                                },
                             )
                         },
                     )
-                    HorizontalDivider()
-                    SettingsSliderTile(
-                        context,
-                        icon = {
-                            Icon(Icons.Filled.FastForward, null)
+                    BentoSettingRow(
+                        label = context.symphony.t.IgnoreAudioFocusLoss,
+                        value = null,
+                        onClick = {
+                            context.symphony.settings.ignoreAudioFocusLoss.setValue(!ignoreAudioFocusLoss)
                         },
-                        title = {
-                            Text(context.symphony.t.FastForwardDuration)
-                        },
-                        label = { value ->
-                            Text(context.symphony.t.XSecs(value.toString()))
-                        },
-                        range = seekDurationRange,
-                        initialValue = seekForwardDuration.toFloat(),
-                        onValue = { value ->
-                            value.roundToInt().toFloat()
-                        },
-                        onChange = { value ->
-                            context.symphony.settings.seekForwardDuration.setValue(value.toInt())
-                        },
-                        onReset = {
-                            context.symphony.settings.seekForwardDuration.setValue(
-                                context.symphony.settings.seekForwardDuration.defaultValue,
+                        trailing = {
+                            BentoSwitch(
+                                checked = ignoreAudioFocusLoss,
+                                onCheckedChange = {
+                                    context.symphony.settings.ignoreAudioFocusLoss.setValue(it)
+                                },
                             )
-                        },
-                    )
-                    HorizontalDivider()
-                    SettingsSwitchTile(
-                        icon = {
-                            Icon(Icons.Filled.PlayArrow, null)
-                        },
-                        title = {
-                            Text(context.symphony.t.GaplessPlayback)
-                        },
-                        value = gaplessPlayback,
-                        onChange = { value ->
-                            context.symphony.settings.gaplessPlayback.setValue(value)
                         },
                     )
                 }
+                BentoSettingGroup {
+                    BentoSettingRow(
+                        label = context.symphony.t.PlayOnHeadphonesConnect,
+                        value = null,
+                        onClick = {
+                            context.symphony.settings.playOnHeadphonesConnect.setValue(!playOnHeadphones)
+                        },
+                        trailing = {
+                            BentoSwitch(
+                                checked = playOnHeadphones,
+                                onCheckedChange = {
+                                    context.symphony.settings.playOnHeadphonesConnect.setValue(it)
+                                },
+                            )
+                        },
+                    )
+                    BentoSettingRow(
+                        label = context.symphony.t.PauseOnHeadphonesDisconnect,
+                        value = null,
+                        onClick = {
+                            context.symphony.settings.pauseOnHeadphonesDisconnect.setValue(!pauseOnHeadphones)
+                        },
+                        trailing = {
+                            BentoSwitch(
+                                checked = pauseOnHeadphones,
+                                onCheckedChange = {
+                                    context.symphony.settings.pauseOnHeadphonesDisconnect.setValue(it)
+                                },
+                            )
+                        },
+                    )
+                }
+                BentoSettingGroup {
+                    BentoSettingRow(
+                        label = context.symphony.t.FastRewindDuration,
+                        value = formatSettingSecs(seekBack.toFloat()),
+                        onClick = { popup = PlayerSettingPopup.SEEK_BACK },
+                    )
+                    BentoSettingRow(
+                        label = context.symphony.t.FastForwardDuration,
+                        value = formatSettingSecs(seekForward.toFloat()),
+                        onClick = { popup = PlayerSettingPopup.SEEK_FORWARD },
+                    )
+                }
+                BentoSettingGroup {
+                    BentoSettingRow(
+                        label = context.symphony.t.GaplessPlayback,
+                        value = null,
+                        onClick = {
+                            context.symphony.settings.gaplessPlayback.setValue(!gapless)
+                        },
+                        trailing = {
+                            BentoSwitch(
+                                checked = gapless,
+                                onCheckedChange = {
+                                    context.symphony.settings.gaplessPlayback.setValue(it)
+                                },
+                            )
+                        },
+                    )
+                }
+                Box(Modifier.bentoGestureBarPadding())
             }
         }
-    )
+    }
+
+    when (popup) {
+        PlayerSettingPopup.FADE -> BentoToggleDialog(
+            title = context.symphony.t.FadePlaybackInOut,
+            checked = fadePlayback,
+            onChange = { context.symphony.settings.fadePlayback.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        PlayerSettingPopup.FADE_DURATION -> BentoSliderDialog(
+            title = context.symphony.t.FadePlaybackInOut,
+            value = fadeDuration,
+            range = 0.5f..6f,
+            onValue = { value -> value.times(2).roundToInt().toFloat().div(2) },
+            label = ::formatSettingSecs,
+            onChange = { context.symphony.settings.fadePlaybackDuration.setValue(it) },
+            onReset = {
+                context.symphony.settings.fadePlaybackDuration.setValue(
+                    context.symphony.settings.fadePlaybackDuration.defaultValue,
+                )
+            },
+            onDismiss = { popup = null },
+        )
+
+        PlayerSettingPopup.REQUIRE_AUDIO_FOCUS -> BentoToggleDialog(
+            title = context.symphony.t.RequireAudioFocus,
+            checked = requireAudioFocus,
+            onChange = { context.symphony.settings.requireAudioFocus.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        PlayerSettingPopup.IGNORE_AUDIO_FOCUS_LOSS -> BentoToggleDialog(
+            title = context.symphony.t.IgnoreAudioFocusLoss,
+            checked = ignoreAudioFocusLoss,
+            onChange = { context.symphony.settings.ignoreAudioFocusLoss.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        PlayerSettingPopup.PLAY_ON_HEADPHONES -> BentoToggleDialog(
+            title = context.symphony.t.PlayOnHeadphonesConnect,
+            checked = playOnHeadphones,
+            onChange = { context.symphony.settings.playOnHeadphonesConnect.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        PlayerSettingPopup.PAUSE_ON_HEADPHONES -> BentoToggleDialog(
+            title = context.symphony.t.PauseOnHeadphonesDisconnect,
+            checked = pauseOnHeadphones,
+            onChange = { context.symphony.settings.pauseOnHeadphonesDisconnect.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        PlayerSettingPopup.SEEK_BACK -> BentoSliderDialog(
+            title = context.symphony.t.FastRewindDuration,
+            value = seekBack.toFloat(),
+            range = SEEK_RANGE,
+            onValue = { it.roundToInt().toFloat() },
+            label = ::formatSettingSecs,
+            onChange = { context.symphony.settings.seekBackDuration.setValue(it.roundToInt()) },
+            onReset = {
+                context.symphony.settings.seekBackDuration.setValue(
+                    context.symphony.settings.seekBackDuration.defaultValue,
+                )
+            },
+            onDismiss = { popup = null },
+        )
+
+        PlayerSettingPopup.SEEK_FORWARD -> BentoSliderDialog(
+            title = context.symphony.t.FastForwardDuration,
+            value = seekForward.toFloat(),
+            range = SEEK_RANGE,
+            onValue = { it.roundToInt().toFloat() },
+            label = ::formatSettingSecs,
+            onChange = { context.symphony.settings.seekForwardDuration.setValue(it.roundToInt()) },
+            onReset = {
+                context.symphony.settings.seekForwardDuration.setValue(
+                    context.symphony.settings.seekForwardDuration.defaultValue,
+                )
+            },
+            onDismiss = { popup = null },
+        )
+
+        PlayerSettingPopup.GAPLESS -> BentoToggleDialog(
+            title = context.symphony.t.GaplessPlayback,
+            checked = gapless,
+            onChange = { context.symphony.settings.gaplessPlayback.setValue(it) },
+            onDismiss = { popup = null },
+        )
+
+        null -> Unit
+    }
 }
