@@ -45,7 +45,8 @@ fun HomeTabsDialog(context: ViewContext, onDismiss: () -> Unit) {
         onDismiss = onDismiss,
     ) {
         Text(
-            context.symphony.t.SelectAtleast2orAtmost5Tabs,
+            // TODO(i18n): the translated hint still says "at most 5".
+            "Select at least 2 tabs",
             style = BentoTypography.secondary,
             color = colors.sub,
         )
@@ -57,7 +58,7 @@ fun HomeTabsDialog(context: ViewContext, onDismiss: () -> Unit) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     rowEntries.forEach { page ->
                         val selected = page in homeTabs
-                        val canToggle = if (selected) homeTabs.size > 2 else homeTabs.size < 5
+                        val canToggle = !selected || homeTabs.size > 2
                         HomeTabOption(
                             label = page.label(context),
                             selected = selected,

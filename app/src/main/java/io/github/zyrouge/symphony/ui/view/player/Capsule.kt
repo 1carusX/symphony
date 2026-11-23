@@ -10,7 +10,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -54,6 +52,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.pointerInput
 import coil3.compose.AsyncImage
+import io.github.zyrouge.symphony.ui.components.bentoFloatingSurface
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
@@ -106,15 +105,7 @@ private fun ExpandedCapsule(
                     else -> BentoSizes.CAPSULE_HEIGHT.dp
                 },
             )
-            .shadow(
-                elevation = colors.shadow.layers.first().offsetY.dp,
-                shape = shape,
-                ambientColor = colors.shadow.layers.first().color,
-                spotColor = colors.shadow.layers.last().color,
-            )
-            .clip(shape)
-            .background(colors.high)
-            .border(1.dp, colors.edge, shape)
+            .bentoFloatingSurface(shape, colors.high)
             .clickable(onClick = onOpen)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,

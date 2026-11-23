@@ -1,6 +1,5 @@
 package io.github.zyrouge.symphony.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -15,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
@@ -44,8 +42,7 @@ fun BentoDialog(
         Column(
             modifier = modifier
                 .widthIn(max = 560.dp)
-                .clip(RoundedCornerShape(BentoRadii.TILE_HOVER.dp))
-                .background(colors.float)
+                .bentoFloatingSurface(RoundedCornerShape(BentoRadii.TILE_HOVER.dp), colors.float)
                 .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {

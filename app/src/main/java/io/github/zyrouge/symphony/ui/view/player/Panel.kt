@@ -11,7 +11,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -45,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -54,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import io.github.zyrouge.symphony.ui.components.bentoFloatingSurface
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoMotion
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
@@ -242,15 +241,7 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
                 },
             )
             .graphicsLayer { translationY = dragOffset.value }
-            .shadow(
-                elevation = colors.shadow.layers.first().offsetY.dp,
-                shape = shape,
-                ambientColor = colors.shadow.layers.first().color,
-                spotColor = colors.shadow.layers.last().color,
-            )
-            .clip(shape)
-            .border(1.dp, colors.edge, shape)
-            .background(colors.`float`)
+            .bentoFloatingSurface(shape, colors.`float`)
             .pointerInput(Unit) {
                 // Swallow taps that miss a control so they do not reach the page
                 // scrolling underneath the floating panel.

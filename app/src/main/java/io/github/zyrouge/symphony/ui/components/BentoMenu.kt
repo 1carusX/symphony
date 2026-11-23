@@ -2,7 +2,6 @@ package io.github.zyrouge.symphony.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,15 +28,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
-import io.github.zyrouge.symphony.ui.theme.bento.BentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
@@ -150,7 +145,7 @@ private fun BentoMenuSheet(
                 modifier = modifier
                     .fillMaxWidth()
                     .heightIn(max = maxSheetHeight)
-                    .bentoMenuFloatingSurface(shape, colors)
+                    .bentoFloatingSurface(shape, colors.high)
                     // Taps on the header or between items stay in the sheet.
                     .pointerInput(Unit) { detectTapGestures { } }
                     .verticalScroll(rememberScrollState())
@@ -225,19 +220,3 @@ private fun ColumnScope.BentoMenuBody(
 
 /** Depth of the floating menu shadow (tokens.json elevation, first layer offset). */
 private const val BENTO_MENU_SHADOW_ELEVATION = 20
-
-/**
- * The floating surface of a menu (DESIGN.md 3.3): the `high` fill, a 1 dp
- * `edge` ring and a deep shadow in the scheme's shadow colors.
- */
-private fun Modifier.bentoMenuFloatingSurface(shape: Shape, colors: BentoColors): Modifier =
-    this
-        .shadow(
-            elevation = BENTO_MENU_SHADOW_ELEVATION.dp,
-            shape = shape,
-            ambientColor = colors.shadow.layers.first().color,
-            spotColor = colors.shadow.layers.last().color,
-        )
-        .clip(shape)
-        .background(colors.high)
-        .border(1.dp, colors.edge, shape)

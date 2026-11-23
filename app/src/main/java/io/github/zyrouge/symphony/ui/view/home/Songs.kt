@@ -101,7 +101,6 @@ fun SongsView(context: ViewContext) {
     }
     val playingSong = rememberBentoPlayingSong(context)
     val favorites by context.symphony.groove.playlist.favorites.collectAsState()
-    var menuSongId by remember { mutableStateOf<String?>(null) }
     var showSortMenu by remember { mutableStateOf(false) }
 
     LoaderScaffold(context, isLoading = isUpdating) {
@@ -246,8 +245,6 @@ fun SongsView(context: ViewContext) {
                         columnMode = columnMode,
                         showScrubber = showScrubber,
                         favorites = favorites,
-                        menuSongId = menuSongId,
-                        onMenuSongIdChange = { menuSongId = it },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -274,8 +271,6 @@ private fun SongsListTile(
     columnMode: Boolean,
     showScrubber: Boolean,
     favorites: List<String>,
-    menuSongId: String?,
-    onMenuSongIdChange: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalBentoColors.current
@@ -362,31 +357,30 @@ private fun SongsListTile(
                         contentType = { _, _ -> Groove.Kind.SONG },
                     ) { _, song ->
                         val playing = song.id == playingSongId
-                        Box {
-                            BentoSongRow(
-                                context = context,
-                                song = song,
-                                playing = playing,
-                                isPlaying = isPlaying,
-                                columns = columnMode,
-                                onLongClick = { onMenuSongIdChange(song.id) },
-                                onClick = {
-                                    context.symphony.radio.shorty.playQueue(
-                                        sortedSongIds,
-                                        Radio.PlayOptions(
-                                            index = songIndexById[song.id] ?: 0,
-                                        ),
-                                    )
-                                },
-                            )
-                            SongDropdownMenu(
-                                context = context,
-                                song = song,
-                                isFavorite = favorites.contains(song.id),
-                                expanded = menuSongId == song.id,
-                                onDismissRequest = { onMenuSongIdChange(null) },
-                            )
-                        }
+                        BentoSongRow(
+                            context = context,
+                            song = song,
+                            playing = playing,
+                            isPlaying = isPlaying,
+                            columns = columnMode,
+                            menu = { expanded, onDismissRequest ->
+                                SongDropdownMenu(
+                                    context = context,
+                                    song = song,
+                                    isFavorite = favorites.contains(song.id),
+                                    expanded = expanded,
+                                    onDismissRequest = onDismissRequest,
+                                )
+                            },
+                            onClick = {
+                                context.symphony.radio.shorty.playQueue(
+                                    sortedSongIds,
+                                    Radio.PlayOptions(
+                                        index = songIndexById[song.id] ?: 0,
+                                    ),
+                                )
+                            },
+                        )
                     }
                 }
             }

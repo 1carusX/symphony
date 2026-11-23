@@ -40,11 +40,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.AccountTree
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Search
@@ -103,13 +101,11 @@ import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.view.home.AlbumArtistsView
 import io.github.zyrouge.symphony.ui.view.home.AlbumsView
 import io.github.zyrouge.symphony.ui.view.home.ArtistsView
-import io.github.zyrouge.symphony.ui.view.home.BrowserView
 import io.github.zyrouge.symphony.ui.view.home.FoldersView
 import io.github.zyrouge.symphony.ui.view.home.ForYouView
 import io.github.zyrouge.symphony.ui.view.home.GenresView
 import io.github.zyrouge.symphony.ui.view.home.PlaylistsView
 import io.github.zyrouge.symphony.ui.view.home.SongsView
-import io.github.zyrouge.symphony.ui.view.home.TreeView
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
@@ -117,8 +113,8 @@ import kotlin.math.roundToInt
 /**
  * Home page sections. The order follows the bento design spec (DESIGN.md
  * §2.2: For you, Songs, Albums, Artists, Genres, Playlists, Folders); the
- * sections the design kit does not cover (AlbumArtists, Browser, Tree) are
- * appended and keep their previous icons.
+ * section the design kit does not cover (AlbumArtists) is appended and keeps
+ * its previous icon. The former Browser and Tree sections live in Folders.
  */
 enum class HomePage(
     val kind: Groove.Kind? = null,
@@ -162,14 +158,6 @@ enum class HomePage(
         kind = Groove.Kind.ALBUM_ARTIST,
         label = { it.symphony.t.AlbumArtists },
         icon = Icons.Rounded.SupervisorAccount,
-    ),
-    Browser(
-        label = { it.symphony.t.Browser },
-        icon = Icons.Rounded.FolderOpen,
-    ),
-    Tree(
-        label = { it.symphony.t.Tree },
-        icon = Icons.Rounded.AccountTree,
     ),
 }
 
@@ -530,10 +518,8 @@ private fun HomeContent(
             HomePage.Artists -> ArtistsView(context)
             HomePage.AlbumArtists -> AlbumArtistsView(context)
             HomePage.Genres -> GenresView(context)
-            HomePage.Browser -> BrowserView(context)
             HomePage.Folders -> FoldersView(context)
             HomePage.Playlists -> PlaylistsView(context)
-            HomePage.Tree -> TreeView(context)
         }
     }
 }

@@ -171,8 +171,10 @@ fun PlaylistDropdownMenu(
                 Text(context.symphony.t.DeletePlaylist)
             },
             description = {
-                Text(context.symphony.t.AreYouSureThatYouWantToDeleteThisPlaylist)
+                Text("“${playlist.title}” and its song order are removed. The songs stay in your library.")
             },
+            confirmLabel = context.symphony.t.Delete,
+            cancelLabel = context.symphony.t.Cancel,
             onResult = { result ->
                 showDeleteDialog = false
                 if (result) {

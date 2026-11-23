@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.services.radio.Radio
+import io.github.zyrouge.symphony.ui.components.AlbumDropdownMenu
 import io.github.zyrouge.symphony.ui.components.BentoGroupAlbumCover
 import io.github.zyrouge.symphony.ui.components.BentoGroupTile
 import io.github.zyrouge.symphony.ui.components.BentoGroupedTileColumns
@@ -143,5 +144,8 @@ private fun AlbumGroupTile(
         showAllLabel = "Show all " +
             context.symphony.t.XSongs(album.numberOfTracks.toString()),
         onShowAll = { context.navController.navigate(AlbumViewRoute(album.id)) },
+        menu = { expanded, onDismissRequest ->
+            AlbumDropdownMenu(context, album, expanded, onDismissRequest)
+        },
     )
 }

@@ -45,6 +45,7 @@ import io.github.zyrouge.symphony.ui.components.BentoGroupedTileColumns
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LoaderScaffold
 import io.github.zyrouge.symphony.ui.components.NewPlaylistDialog
+import io.github.zyrouge.symphony.ui.components.PlaylistDropdownMenu
 import io.github.zyrouge.symphony.ui.components.bentoGroupTileHeightDp
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
@@ -204,6 +205,14 @@ private fun PlaylistGroupTile(
         showAllLabel = "Show all " +
             context.symphony.t.XSongs(playlist.numberOfTracks.toString()),
         onShowAll = { context.navController.navigate(PlaylistViewRoute(playlist.id)) },
+        menu = { expanded, onDismissRequest ->
+            PlaylistDropdownMenu(
+                context,
+                playlist,
+                expanded = expanded,
+                onDismissRequest = onDismissRequest,
+            )
+        },
     )
 }
 

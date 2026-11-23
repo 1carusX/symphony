@@ -3,6 +3,7 @@ package io.github.zyrouge.symphony.ui.view.home
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,13 +34,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.services.radio.Radio
-import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.ui.components.BentoSongRow
 import io.github.zyrouge.symphony.ui.components.IconTextBody
+import io.github.zyrouge.symphony.ui.components.SongDropdownMenu
 import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
@@ -60,9 +64,14 @@ fun BentoFileExplorer(
     var currentFolder by remember(key) {
         mutableStateOf(initialPath?.let { explorer.navigateToFolder(it) } ?: explorer)
     }
+    // Paths are stored relative to the explorer root, as navigateToFolder reads them.
+    LaunchedEffect(currentFolder) {
+        onPathChange(SimplePath(currentFolder.fullPath.parts.drop(1)))
+    }
     val sortBy by context.symphony.settings.lastUsedBrowserSortBy.flow.collectAsState()
     val sortReverse by context.symphony.settings.lastUsedBrowserSortReverse.flow.collectAsState()
     val playingSong = rememberBentoPlayingSong(context)
+    val favorites by context.symphony.groove.playlist.favorites.collectAsState()
 
     val categorized = currentFolder.listedChildren()
     val folders = if (sortReverse) categorized.folders.sortedBy { it.name }.reversed()
@@ -77,6 +86,7 @@ fun BentoFileExplorer(
 
     Column(modifier = Modifier.fillMaxSize()) {
         PathRow(
+            rootLabel = context.symphony.t.LocalStorage,
             path = currentFolder.fullPath,
             onJump = { depth ->
                 val path = SimplePath(currentFolder.fullPath.parts.subList(1, depth + 1))
@@ -112,9 +122,15 @@ fun BentoFileExplorer(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 items(folders, key = { it.fullPath.pathString }) { folder ->
+                    val folderCount = folder.childFoldersCount
+                    val songCount = folder.children.values.count { it is SimpleFileSystem.File }
                     FolderRow(
                         name = folder.name,
-                        count = folder.children.size,
+                        sub = listOfNotNull(
+                            folderCount.takeIf { it > 0 }
+                                ?.let { context.symphony.t.XFolders(it.toString()) },
+                            context.symphony.t.XSongs(songCount.toString()),
+                        ).joinToString(" · "),
                         onClick = { currentFolder = folder },
                     )
                 }
@@ -124,6 +140,15 @@ fun BentoFileExplorer(
                         song = song,
                         playing = playingSong.songId == song.id,
                         isPlaying = playingSong.isPlaying,
+                        menu = { expanded, onDismissRequest ->
+                            SongDropdownMenu(
+                                context = context,
+                                song = song,
+                                isFavorite = favorites.contains(song.id),
+                                expanded = expanded,
+                                onDismissRequest = onDismissRequest,
+                            )
+                        },
                         onClick = {
                             context.symphony.radio.shorty.playQueue(
                                 songIds,
@@ -137,102 +162,52 @@ fun BentoFileExplorer(
     }
 }
 
+/**
+ * The breadcrumbs (the prototype's `fb-path`): 40 dp chips in a `surface`
+ * tile, the current folder on `tonal`. The explorer root reads as
+ * [rootLabel] and the primary volume prefix is dropped.
+ */
 @Composable
-fun BentoTreeExplorer(
-    context: ViewContext,
-    key: Any?,
-    explorer: SimpleFileSystem.Folder,
-    disabledPaths: Set<String>,
-) {
-    var expanded by remember(key) { mutableStateOf(disabledPaths) }
-    val playingSong = rememberBentoPlayingSong(context)
-
-    fun toggle(folder: SimpleFileSystem.Folder) {
-        val path = folder.fullPath.pathString
-        expanded = if (expanded.contains(path)) expanded - path else expanded + path
-    }
-
-    val rows = mutableListOf<Any>()
-    fun walk(folder: SimpleFileSystem.Folder, depth: Int) {
-        val categorized = folder.listedChildren()
-        categorized.folders.sortedBy { it.name }.forEach {
-            val isOpen = it.fullPath.pathString !in expanded
-            rows.add(Triple(it, depth, isOpen))
-            if (isOpen) walk(it, depth + 1)
-        }
-        context.symphony.groove.song
-            .sort(categorized.files.keys.toList(), SongRepository.SortBy.TITLE, false)
-            .mapNotNull { context.symphony.groove.song.get(it) }
-            .forEach { rows.add(Triple(it, depth, false)) }
-    }
-    walk(explorer, 0)
-
-    if (rows.isEmpty()) {
-        IconTextBody(
-            icon = { modifier -> Icon(Icons.Filled.MusicNote, null, modifier = modifier) },
-            content = { Text(context.symphony.t.DamnThisIsSoEmpty) },
-        )
-        return
-    }
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            start = 12.dp,
-            end = 12.dp,
-            bottom = bentoBottomInset(),
-        ),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        items(rows) { row ->
-            val entry = row as Triple<*, Int, Boolean>
-            when (val value = entry.first) {
-                is SimpleFileSystem.Folder -> FolderRow(
-                    name = value.name,
-                    count = value.children.size,
-                    depth = entry.second,
-                    onClick = { toggle(value) },
-                )
-
-                is Song -> Row(modifier = Modifier.padding(start = (entry.second * 16).dp)) {
-                    BentoSongRow(
-                        context = context,
-                        song = value,
-                        playing = playingSong.songId == value.id,
-                        isPlaying = playingSong.isPlaying,
-                        onClick = {
-                            context.symphony.radio.shorty.playQueue(value.id)
-                        },
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PathRow(path: SimplePath, onJump: (Int) -> Unit) {
+private fun PathRow(rootLabel: String, path: SimplePath, onJump: (Int) -> Unit) {
     val colors = LocalBentoColors.current
+    val scrollState = rememberScrollState()
+    LaunchedEffect(path.pathString, scrollState.maxValue) {
+        scrollState.scrollTo(scrollState.maxValue)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(BentoRadii.TILE.dp))
+            .background(colors.surface)
+            .horizontalScroll(scrollState)
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         path.parts.forEachIndexed { index, part ->
-            Text(
-                part,
-                style = BentoTypography.secondary,
-                color = if (index == path.parts.lastIndex) colors.fg else colors.sub,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            val current = index == path.parts.lastIndex
+            Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(BentoRadii.TILE_SMALL.dp))
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (current) colors.tonal else Color.Transparent)
                     .clickable { onJump(index) }
-                    .padding(horizontal = 6.dp, vertical = 4.dp),
-            )
-            if (index != path.parts.lastIndex) {
+                    .padding(horizontal = 14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    when (index) {
+                        0 -> rootLabel
+                        1 -> part.removePrefix("primary:").ifEmpty { part }
+                        else -> part
+                    },
+                    style = BentoTypography.body.copy(fontWeight = FontWeight.SemiBold),
+                    color = if (current) colors.onTonal else colors.sub,
+                    maxLines = 1,
+                )
+            }
+            if (!current) {
                 Text("/", style = BentoTypography.secondary, color = colors.muted)
             }
         }
@@ -283,34 +258,36 @@ private fun PillAction(icon: @Composable () -> Unit, onClick: () -> Unit) {
     }
 }
 
+/**
+ * A subfolder tile (the prototype's `fb-t`): 72 dp on `surface`, the folder
+ * icon on `tonal`, the name and its folder and song counts.
+ */
 @Composable
 private fun FolderRow(
     name: String,
-    count: Int,
-    depth: Int = 0,
+    sub: String,
     onClick: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = (depth * 16).dp)
-            .height(BentoSizes.SONG_ROW.dp)
-            .clip(RoundedCornerShape(BentoRadii.ROW.dp))
+            .height(BentoSizes.ACTION_TILE.dp)
+            .clip(RoundedCornerShape(BentoRadii.TILE_SMALL.dp))
+            .background(colors.surface)
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(BentoRadii.SONG_ART_44.dp))
-                .background(colors.raised)
-                .padding(horizontal = 12.dp),
+                .size(40.dp)
+                .clip(RoundedCornerShape(BentoRadii.ICON_WELL_40.dp))
+                .background(colors.tonal),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Filled.Folder, null, tint = colors.sub)
+            Icon(Icons.Filled.Folder, null, tint = colors.onTonal, modifier = Modifier.size(22.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -321,9 +298,11 @@ private fun FolderRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                count.toString(),
+                sub,
                 style = BentoTypography.secondary,
                 color = colors.sub,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

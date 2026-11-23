@@ -57,7 +57,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -189,7 +188,6 @@ fun BentoSheetDialog(
         val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
         val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
         val shape = RoundedCornerShape(BentoRadii.MENU_SHEET.dp)
-        val shadow = colors.shadow.layers
         val dragState = rememberDraggableState { delta ->
             dragOffset = (dragOffset + delta).coerceAtLeast(0f)
         }
@@ -232,15 +230,7 @@ fun BentoSheetDialog(
                             scaleY = scale
                         }
                     }
-                    .shadow(
-                        elevation = shadow.first().offsetY.dp,
-                        shape = shape,
-                        ambientColor = shadow.first().color,
-                        spotColor = shadow.last().color,
-                    )
-                    .clip(shape)
-                    .border(1.dp, colors.edge, shape)
-                    .background(colors.`float`)
+                    .bentoFloatingSurface(shape, colors.`float`)
                     // Swallow taps that miss a control so they do not reach the scrim.
                     .pointerInput(Unit) { detectTapGestures { } },
             ) {

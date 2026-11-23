@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.github.zyrouge.symphony.services.groove.AlbumArtist
 import io.github.zyrouge.symphony.services.radio.Radio
+import io.github.zyrouge.symphony.ui.components.AlbumArtistDropdownMenu
 import io.github.zyrouge.symphony.ui.components.BentoGroupArtistCover
 import io.github.zyrouge.symphony.ui.components.BentoGroupTile
 import io.github.zyrouge.symphony.ui.components.BentoGroupedTileColumns
@@ -141,5 +142,8 @@ private fun AlbumArtistGroupTile(
         showAllLabel = "Show all " +
             context.symphony.t.XSongs(artist.numberOfTracks.toString()),
         onShowAll = { context.navController.navigate(AlbumArtistViewRoute(artist.name)) },
+        menu = { expanded, onDismissRequest ->
+            AlbumArtistDropdownMenu(context, artist, expanded, onDismissRequest)
+        },
     )
 }

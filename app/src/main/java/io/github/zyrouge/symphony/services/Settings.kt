@@ -81,9 +81,10 @@ class Settings(private val symphony: Symphony) {
         key: String,
         private val values: EnumEntries<T>,
         val defaultValue: T,
+        private val aliases: Map<String, T> = emptyMap(),
     ) : Entry<T>(key) {
         override fun getValueInternal() = getSharedPreferences().getString(key, null)
-            ?.let { values.find { x -> x.name == it } }
+            ?.let { values.find { x -> x.name == it } ?: aliases[it] }
             ?: defaultValue
 
         override fun setValueInternal(value: T) = getSharedPreferences().edit {
@@ -107,12 +108,13 @@ class Settings(private val symphony: Symphony) {
         key: String,
         values: EnumEntries<T>,
         val defaultValue: Set<T>,
+        private val aliases: Map<String, T> = emptyMap(),
     ) : Entry<Set<T>>(key) {
         private val entries = values.associateBy { it.name }
 
         override fun getValueInternal() = getSharedPreferences().getString(key, null)
             ?.split(",")
-            ?.mapNotNull { entries[it] }
+            ?.mapNotNull { entries[it] ?: aliases[it] }
             ?.toSet()
             ?: defaultValue
 
@@ -273,7 +275,14 @@ class Settings(private val symphony: Symphony) {
                 putString(key, value?.serialize())
             }
     }
-    val lastHomeTab = EnumEntry("home_last_page", enumEntries<HomePage>(), HomePage.Songs)
+    // The Browser and Tree sections became the Browse view of Folders; saved names map onto it.
+    private val legacyHomePages = mapOf("Browser" to HomePage.Folders, "Tree" to HomePage.Folders)
+    val lastHomeTab = EnumEntry(
+        "home_last_page",
+        enumEntries<HomePage>(),
+        HomePage.Songs,
+        aliases = legacyHomePages,
+    )
     val songsFilterPattern = NullableStringEntry("songs_filter_pattern")
     val minSongDuration = IntEntry("min_song_duration", 0)
     val checkForUpdates = BooleanEntry("check_for_updates", false)
@@ -292,8 +301,11 @@ class Settings(private val symphony: Symphony) {
             HomePage.Songs,
             HomePage.Albums,
             HomePage.Artists,
+            HomePage.Genres,
             HomePage.Playlists,
+            HomePage.Folders,
         ),
+        aliases = legacyHomePages,
     )
     val blacklistFolders = StringSetEntry("blacklist_folders", emptySet())
     val whitelistFolders = StringSetEntry("whitelist_folders", emptySet())
@@ -302,7 +314,8 @@ class Settings(private val symphony: Symphony) {
     val nowPlayingSeekControls = BooleanEntry("enable_seek_controls", false)
     val seekBackDuration = IntEntry("seek_back_duration", 15)
     val seekForwardDuration = IntEntry("seek_forward_duration", 30)
-    val miniPlayerTrackControls = BooleanEntry("mini_player_extended_controls", false)
+    // On by default: the Bento capsule shows Next (and Previous on wide windows) unless turned off.
+    val miniPlayerTrackControls = BooleanEntry("mini_player_extended_controls", true)
     val miniPlayerSeekControls = BooleanEntry("mini_player_seek_controls", false)
     val fontFamily = NullableStringEntry("font_family")
     val nowPlayingControlsLayout = EnumEntry(
