@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
@@ -84,7 +85,9 @@ fun PlaylistsView(context: ViewContext) {
         }
     }
 
-    val playlists by remember(playlistIds) {
+    // Renames and edits replace playlists in place, so the version is a key too.
+    val grooveVersion = LocalGrooveVersion.current
+    val playlists by remember(playlistIds, grooveVersion) {
         derivedStateOf {
             playlistIds.mapNotNull { context.symphony.groove.playlist.get(it) }
         }
@@ -152,9 +155,11 @@ private fun PlaylistGroupTile(
     playing: Boolean,
     narrow: Boolean,
 ) {
-    val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
-    val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
-    val songIds by remember(playlist.id, sortBy, sortReverse) {
+    // A playlist keeps its own order (custom by default), not the Songs tab's sort.
+    val sortBy by context.symphony.settings.lastUsedPlaylistSongsSortBy.flow.collectAsState()
+    val sortReverse by context.symphony.settings.lastUsedPlaylistSongsSortReverse.flow.collectAsState()
+    val grooveVersion = LocalGrooveVersion.current
+    val songIds by remember(playlist, sortBy, sortReverse, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 playlist.getSongIds(context.symphony),

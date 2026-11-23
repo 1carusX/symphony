@@ -20,24 +20,34 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 
-/** Popup with a single line of text; edits apply as they are typed. */
+/**
+ * Popup with a single line of text. The text is handed back once, when the
+ * popup closes, and only if it changed and [isValid] accepts it; invalid text
+ * shows [errorText] and is discarded on close.
+ */
 @Composable
 fun BentoTextDialog(
     title: String,
     value: String,
     placeholder: String?,
-    onChange: (String) -> Unit,
+    onDone: (String) -> Unit,
     onDismiss: () -> Unit,
+    isValid: (String) -> Boolean = { true },
+    errorText: String? = null,
 ) {
     val colors = LocalBentoColors.current
     var text by remember { mutableStateOf(value) }
-    BentoDialog(title = title, onDismiss = onDismiss) {
+    val valid = isValid(text)
+    BentoDialog(
+        title = title,
+        onDismiss = {
+            if (valid && text != value) onDone(text)
+            onDismiss()
+        },
+    ) {
         BasicTextField(
             value = text,
-            onValueChange = {
-                text = it
-                onChange(it)
-            },
+            onValueChange = { text = it },
             singleLine = true,
             textStyle = TextStyle(
                 color = colors.fg,
@@ -68,5 +78,8 @@ fun BentoTextDialog(
                 inner()
             },
         )
+        if (!valid && errorText != null) {
+            Text(errorText, style = BentoTypography.secondary, color = colors.accent)
+        }
     }
 }

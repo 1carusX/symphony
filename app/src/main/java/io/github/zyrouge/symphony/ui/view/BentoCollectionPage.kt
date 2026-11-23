@@ -32,7 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.services.Settings
 import io.github.zyrouge.symphony.services.groove.Song
+import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.services.radio.Radio
 import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.components.BentoActionTile
@@ -66,12 +68,15 @@ fun BentoCollectionPage(
     trailingMenu: (@Composable () -> Unit)? = null,
     leading: (@Composable () -> Unit)? = null,
     rowMenu: (@Composable androidx.compose.foundation.layout.RowScope.(Song) -> Unit)? = null,
+    // Playlists pass their own sort settings so their stored (custom) order is kept.
+    sortByEntry: Settings.EnumEntry<SongRepository.SortBy> = context.symphony.settings.lastUsedSongsSortBy,
+    sortReverseEntry: Settings.BooleanEntry = context.symphony.settings.lastUsedSongsSortReverse,
 ) {
     val colors = LocalBentoColors.current
     val windowClass = rememberBentoWindowClass()
     val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
-    val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
-    val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
+    val sortBy by sortByEntry.flow.collectAsState()
+    val sortReverse by sortReverseEntry.flow.collectAsState()
     val sortedSongIds by remember(songIds, sortBy, sortReverse) {
         derivedStateOf {
             context.symphony.groove.song.sort(songIds, sortBy, sortReverse)

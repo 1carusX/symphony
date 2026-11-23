@@ -29,7 +29,18 @@ val symphonyLocales = listOf(
 )
 
 fun localeNativeName(code: String): String =
-    symphonyLocales.firstOrNull { it.code == code }?.nativeName ?: code
+    (symphonyLocales.firstOrNull { it.code == code }
+        // The system reports a bare language ("zh") for codes declared with a script ("zh-Hans").
+        ?: symphonyLocales.firstOrNull { it.code.substringBefore('-') == code })
+        ?.nativeName ?: code
+
+/**
+ * BCP 47 tag for a locale code. Codes whose resources live under a region
+ * qualifier use that region (zh-Hans -> zh-CN), so the values-zh-rCN chunk
+ * matches; a tag without a region would fall back to English.
+ */
+fun localeTag(code: String): String =
+    symphonyLocales.firstOrNull { it.code == code }?.qualifier?.replace("-r", "-") ?: code
 
 fun localeDirection(code: String?): String =
     symphonyLocales.firstOrNull { it.code == code }?.direction ?: "ltr"

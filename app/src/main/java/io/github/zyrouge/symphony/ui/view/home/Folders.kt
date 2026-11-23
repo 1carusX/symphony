@@ -31,6 +31,7 @@ import io.github.zyrouge.symphony.ui.components.bentoNamesGroupComparator
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.FadeTransition
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.SlideTransition
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.utils.SimpleFileSystem
@@ -150,7 +151,8 @@ private fun FolderGroupTile(
 ) {
     val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
     val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
-    val songIds by remember(folder, sortBy, sortReverse) {
+    val grooveVersion = LocalGrooveVersion.current
+    val songIds by remember(folder, sortBy, sortReverse, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 folder.getSortedSongIds(context),

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,6 +56,7 @@ import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LoaderScaffold
 import io.github.zyrouge.symphony.ui.components.SongDropdownMenu
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.components.groupBentoEntriesByLetter
 import io.github.zyrouge.symphony.ui.components.label
@@ -318,6 +320,8 @@ private fun SongsListTile(
     val songIndexById = remember(sortedSongIds) {
         sortedSongIds.withIndex().associate { (index, songId) -> songId to index }
     }
+    // The tile runs under the floating capsule; the list and the scrubber stay clear of it.
+    val bottomInset = bentoBottomInset()
 
     Box(
         modifier = modifier
@@ -336,6 +340,7 @@ private fun SongsListTile(
             }
             LazyColumn(
                 state = listState,
+                contentPadding = PaddingValues(bottom = bottomInset),
                 modifier = Modifier
                     .fillMaxSize()
                     .then(
@@ -390,7 +395,7 @@ private fun SongsListTile(
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .padding(end = 6.dp),
+                    .padding(end = 6.dp, bottom = bottomInset),
             ) {
                 BentoAzScrubber(
                     presentLetters = presentLetters,

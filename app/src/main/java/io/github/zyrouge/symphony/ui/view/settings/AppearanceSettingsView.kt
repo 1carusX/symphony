@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.locales.localeNativeName
+import io.github.zyrouge.symphony.services.locales.localeTag
 import io.github.zyrouge.symphony.services.locales.symphonyLocales
 import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.components.BentoOptionDialog
@@ -27,13 +28,10 @@ import io.github.zyrouge.symphony.ui.components.BentoPageHeader
 import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
 import io.github.zyrouge.symphony.ui.components.BentoSettingRow
 import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
-import io.github.zyrouge.symphony.ui.components.BentoToggleDialog
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.SymphonyTypography
-import io.github.zyrouge.symphony.ui.theme.ThemeMode
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
-import io.github.zyrouge.symphony.ui.theme.PrimaryThemeColor
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 
@@ -45,9 +43,6 @@ private enum class AppearancePopup {
     FONT,
     FONT_SCALE,
     CONTENT_SCALE,
-    THEME,
-    MATERIAL_YOU,
-    PRIMARY_COLOR,
 }
 
 private val SCALE_RANGE = 0.5f..2f
@@ -59,9 +54,6 @@ fun AppearanceSettingsView(context: ViewContext) {
     val colors = LocalBentoColors.current
     val language by context.symphony.settings.language.flow.collectAsState()
     val fontFamily by context.symphony.settings.fontFamily.flow.collectAsState()
-    val themeMode by context.symphony.settings.themeMode.flow.collectAsState()
-    val useMaterialYou by context.symphony.settings.useMaterialYou.flow.collectAsState()
-    val primaryColor by context.symphony.settings.primaryColor.flow.collectAsState()
     val fontScale by context.symphony.settings.fontScale.flow.collectAsState()
     val contentScale by context.symphony.settings.contentScale.flow.collectAsState()
     var popup by remember { mutableStateOf<AppearancePopup?>(null) }
@@ -120,26 +112,6 @@ fun AppearanceSettingsView(context: ViewContext) {
                         onClick = { popup = AppearancePopup.CONTENT_SCALE },
                     )
                 }
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.Theme,
-                        value = themeMode.label(context),
-                        onClick = { popup = AppearancePopup.THEME },
-                    )
-                    BentoSettingRow(
-                        label = context.symphony.t.MaterialYou,
-                        value = if (useMaterialYou) "On" else "Off",
-                        onClick = { popup = AppearancePopup.MATERIAL_YOU },
-                    )
-                    BentoSettingRow(
-                        label = context.symphony.t.PrimaryColor,
-                        value = PrimaryThemeColor.entries
-                            .firstOrNull { it.name == primaryColor }
-                            ?.label(context)
-                            ?: "", 
-                        onClick = { popup = AppearancePopup.PRIMARY_COLOR },
-                    )
-                }
                 Box(Modifier.bentoGestureBarPadding())
             }
         }
@@ -152,24 +124,17 @@ fun AppearanceSettingsView(context: ViewContext) {
             onSelect = { index ->
                 val key = languages[index].first
                 context.symphony.settings.language.setValue(key.takeUnless { it == "" })
-                @Suppress("DEPRECATION")
-                run {
-                    val activity = context.activity
-                    val tag = key.ifEmpty { "en" }
-                    if (android.os.Build.VERSION.SDK_INT >= 33) {
-                        activity.getSystemService(android.app.LocaleManager::class.java)
-                            .applicationLocales = android.os.LocaleList.forLanguageTags(tag)
-                    } else {
-                        val locale = java.util.Locale.forLanguageTag(tag)
-                        val configuration =
-                            android.content.res.Configuration(activity.resources.configuration)
-                        configuration.setLocale(locale)
-                        activity.resources.updateConfiguration(
-                            configuration,
-                            activity.resources.displayMetrics,
-                        )
-                        activity.recreate()
+                val activity = context.activity
+                if (android.os.Build.VERSION.SDK_INT >= 33) {
+                    // "System" clears the per-app locale instead of forcing English.
+                    activity.getSystemService(android.app.LocaleManager::class.java)
+                        .applicationLocales = when {
+                        key.isEmpty() -> android.os.LocaleList.getEmptyLocaleList()
+                        else -> android.os.LocaleList.forLanguageTags(localeTag(key))
                     }
+                } else {
+                    // MainActivity.attachBaseContext applies the saved language on every start.
+                    activity.recreate()
                 }
                 popup = null
             },
@@ -220,73 +185,6 @@ fun AppearanceSettingsView(context: ViewContext) {
             onDismiss = { popup = null },
         )
 
-        AppearancePopup.THEME -> BentoOptionDialog(
-            title = context.symphony.t.Theme,
-            options = themeOptions(context).map { it.first to (it.second == themeMode) },
-            onSelect = { index ->
-                context.symphony.settings.themeMode.setValue(themeOptions(context)[index].second)
-                popup = null
-            },
-            onDismiss = { popup = null },
-        )
-
-        AppearancePopup.MATERIAL_YOU -> BentoToggleDialog(
-            title = context.symphony.t.MaterialYou,
-            checked = useMaterialYou,
-            onChange = { context.symphony.settings.useMaterialYou.setValue(it) },
-            onDismiss = { popup = null },
-        )
-
-        AppearancePopup.PRIMARY_COLOR -> BentoOptionDialog(
-            title = context.symphony.t.PrimaryColor,
-            options = PrimaryThemeColor.entries.map {
-                it.label(context) to (it.name == primaryColor)
-            },
-            onSelect = { index ->
-                context.symphony.settings.primaryColor.setValue(
-                    PrimaryThemeColor.entries[index].name,
-                )
-                popup = null
-            },
-            onDismiss = { popup = null },
-        )
-
         null -> Unit
     }
-}
-
-private fun themeOptions(context: ViewContext) = listOf(
-    context.symphony.t.SystemLightDark to ThemeMode.SYSTEM,
-    context.symphony.t.SystemLightBlack to ThemeMode.SYSTEM_BLACK,
-    context.symphony.t.Light to ThemeMode.LIGHT,
-    context.symphony.t.Dark to ThemeMode.DARK,
-    context.symphony.t.Black to ThemeMode.BLACK,
-)
-
-private fun ThemeMode.label(context: ViewContext) = when (this) {
-    ThemeMode.SYSTEM -> context.symphony.t.SystemLightDark
-    ThemeMode.SYSTEM_BLACK -> context.symphony.t.SystemLightBlack
-    ThemeMode.LIGHT -> context.symphony.t.Light
-    ThemeMode.DARK -> context.symphony.t.Dark
-    ThemeMode.BLACK -> context.symphony.t.Black
-}
-
-fun PrimaryThemeColor.label(context: ViewContext) = when (this) {
-    PrimaryThemeColor.Red -> context.symphony.t.Red
-    PrimaryThemeColor.Orange -> context.symphony.t.Orange
-    PrimaryThemeColor.Amber -> context.symphony.t.Amber
-    PrimaryThemeColor.Yellow -> context.symphony.t.Yellow
-    PrimaryThemeColor.Lime -> context.symphony.t.Lime
-    PrimaryThemeColor.Green -> context.symphony.t.Green
-    PrimaryThemeColor.Emerald -> context.symphony.t.Emerald
-    PrimaryThemeColor.Teal -> context.symphony.t.Teal
-    PrimaryThemeColor.Cyan -> context.symphony.t.Cyan
-    PrimaryThemeColor.Sky -> context.symphony.t.Sky
-    PrimaryThemeColor.Blue -> context.symphony.t.Blue
-    PrimaryThemeColor.Indigo -> context.symphony.t.Indigo
-    PrimaryThemeColor.Violet -> context.symphony.t.Violet
-    PrimaryThemeColor.Purple -> context.symphony.t.Purple
-    PrimaryThemeColor.Fuchsia -> context.symphony.t.Fuchsia
-    PrimaryThemeColor.Pink -> context.symphony.t.Pink
-    PrimaryThemeColor.Rose -> context.symphony.t.Rose
 }

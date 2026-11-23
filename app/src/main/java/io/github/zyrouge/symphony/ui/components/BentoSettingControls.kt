@@ -11,9 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -24,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
@@ -202,7 +208,15 @@ fun BentoOptionDialog(
     val colors = LocalBentoColors.current
     val scheme = LocalBentoColorScheme.current
     BentoDialog(title = title, onDismiss = onDismiss) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Long lists (19 languages) scroll inside the popup so every option and the Done
+        // button stay reachable on short screens.
+        Column(
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .verticalScroll(rememberScrollState())
+                .selectableGroup(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             options.forEachIndexed { index, (label, selected) ->
                 val shape = RoundedCornerShape(BentoRadii.TILE_SMALL.dp)
                 Row(
@@ -219,7 +233,11 @@ fun BentoOptionDialog(
                             },
                         )
                         .background(if (selected) colors.tonal else colors.raised)
-                        .clickable { onSelect(index) }
+                        .selectable(
+                            selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { onSelect(index) },
+                        )
                         .padding(horizontal = 14.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -229,7 +247,11 @@ fun BentoOptionDialog(
                         color = if (selected) colors.onTonal else colors.fg,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
                     )
+                    if (selected) {
+                        Icon(Icons.Rounded.Check, null, tint = colors.onTonal)
+                    }
                 }
             }
         }

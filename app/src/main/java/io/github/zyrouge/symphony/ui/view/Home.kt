@@ -57,6 +57,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
+import io.github.zyrouge.symphony.ui.view.player.LocalBentoPlayerHost
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -94,7 +97,6 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
-import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
@@ -108,7 +110,6 @@ import io.github.zyrouge.symphony.ui.view.home.GenresView
 import io.github.zyrouge.symphony.ui.view.home.PlaylistsView
 import io.github.zyrouge.symphony.ui.view.home.SongsView
 import io.github.zyrouge.symphony.ui.view.home.TreeView
-import io.github.zyrouge.symphony.ui.view.player.BentoPlayerHost
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
@@ -210,12 +211,22 @@ fun HomeView(context: ViewContext) {
             context.symphony.settings.lastHomeTab.setValue(section)
         }
     }
-    var playerOpen by remember { mutableStateOf(false) }
+    val playerHost = LocalBentoPlayerHost.current
     var forYouNowPlayingVisible by remember { mutableStateOf(false) }
-    var capsuleSpaceVisible by remember { mutableStateOf(false) }
     val openPlayer: () -> Unit = {
         if (context.symphony.radio.queue.currentSongId != null) {
-            playerOpen = true
+            playerHost.open = true
+        }
+    }
+    // BaseView hosts the player; Home reports what changes the capsule and resets it on leave.
+    SideEffect {
+        playerHost.capsuleSuppressed = currentTab == HomePage.ForYou && forYouNowPlayingVisible
+        playerHost.hasRail = navigation != HomeNavigation.TABS
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            playerHost.capsuleSuppressed = false
+            playerHost.hasRail = false
         }
     }
 
@@ -278,18 +289,6 @@ fun HomeView(context: ViewContext) {
 
                         HomeNavigation.TABS -> {}
                     }
-                    val capsuleInset by androidx.compose.animation.core.animateDpAsState(
-                        targetValue = if (capsuleSpaceVisible) {
-                            (BentoSizes.CAPSULE_HEIGHT + 12).dp
-                        } else {
-                            0.dp
-                        },
-                        animationSpec = androidx.compose.animation.core.spring(
-                            dampingRatio = 0.8f,
-                            stiffness = 380f,
-                        ),
-                        label = "capsule-space",
-                    )
                     HomeMainColumn(
                         context = context,
                         navigation = navigation,
@@ -300,22 +299,11 @@ fun HomeView(context: ViewContext) {
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxHeight()
-                            .bentoGestureBarPadding()
-                            .padding(bottom = capsuleInset.coerceAtLeast(0.dp))
-,
+                            .fillMaxHeight(),
                     )
             }
         }
 
-        BentoPlayerHost(
-            context = context,
-            windowClass = windowClass,
-            open = playerOpen,
-            capsuleSuppressed = currentTab == HomePage.ForYou && forYouNowPlayingVisible,
-            onCapsuleVisibleChange = { capsuleSpaceVisible = it },
-            onOpenChange = { open -> playerOpen = open },
-        )
     }
 
     if (!readIntroductoryMessage) {

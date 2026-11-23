@@ -326,7 +326,7 @@ fun <T> BentoGroupedTileColumns(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(start = gutter, end = gutter, bottom = 8.dp),
+                .padding(start = gutter, end = gutter, bottom = bentoBottomInset()),
         ) {
             when {
                 evenGrid -> entries.chunked(columns).forEach { rowEntries ->

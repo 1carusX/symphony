@@ -23,7 +23,7 @@ data class AlbumArtistViewRoute(val albumArtistName: String)
 fun AlbumArtistView(context: ViewContext, route: AlbumArtistViewRoute) {
     val allAlbumArtistNames by context.symphony.groove.albumArtist.all.collectAsState()
     val allSongIds by context.symphony.groove.song.all.collectAsState()
-    val allAlbumIds = context.symphony.groove.album.all
+    val allAlbumIds by context.symphony.groove.album.all.collectAsState()
     val albumArtist by remember(allAlbumArtistNames) {
         derivedStateOf { context.symphony.groove.albumArtist.get(route.albumArtistName) }
     }

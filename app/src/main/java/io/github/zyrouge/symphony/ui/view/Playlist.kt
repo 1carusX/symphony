@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import io.github.zyrouge.symphony.ui.components.PlaylistDropdownMenu
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.ThemeColors
 import io.github.zyrouge.symphony.utils.mutate
@@ -28,10 +29,11 @@ data class PlaylistViewRoute(val playlistId: String)
 fun PlaylistView(context: ViewContext, route: PlaylistViewRoute) {
     var updateCounter by remember { mutableStateOf(0) }
     val playlists by context.symphony.groove.playlist.all.collectAsState()
-    val playlist by remember(playlists, updateCounter) {
+    val grooveVersion = LocalGrooveVersion.current
+    val playlist by remember(playlists, updateCounter, grooveVersion) {
         derivedStateOf { context.symphony.groove.playlist.get(route.playlistId) }
     }
-    val songIds by remember(playlist) {
+    val songIds by remember(playlist, grooveVersion) {
         derivedStateOf { playlist?.getSongIds(context.symphony) ?: emptyList() }
     }
     val isViable = playlist != null
@@ -50,6 +52,8 @@ fun PlaylistView(context: ViewContext, route: PlaylistViewRoute) {
         subtitle = context.symphony.t.Playlist,
         songIds = songIds,
         onBack = { context.navController.popBackStack() },
+        sortByEntry = context.symphony.settings.lastUsedPlaylistSongsSortBy,
+        sortReverseEntry = context.symphony.settings.lastUsedPlaylistSongsSortReverse,
         emptyMessage = if (isViable) {
             context.symphony.t.DamnThisIsSoEmpty
         } else {
@@ -75,7 +79,8 @@ fun PlaylistView(context: ViewContext, route: PlaylistViewRoute) {
             }
         },
         rowMenu = when {
-            !isViable || isFavoritesPlaylist -> null
+            // M3U playlists are re-read from their file on every scan, so edits here would be lost.
+            !isViable || isFavoritesPlaylist || playlist?.isLocal == true -> null
             else -> {
                 { song ->
                     var showRowMenu by remember(song.id) { mutableStateOf(false) }

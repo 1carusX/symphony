@@ -21,6 +21,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -66,9 +70,14 @@ fun BentoSeekWave(
         label = "bento-seek-ratio",
     )
     val wavePhase = rememberWavePhase(playing)
+    // The pointer handlers outlive recompositions, so they read the latest values.
+    val latestPosition by rememberUpdatedState(position)
+    val latestHasPlayer by rememberUpdatedState(hasPlayer)
+    // While dragging, the thumb follows the finger and the song is sought once on release.
+    var dragRatio by remember { mutableStateOf<Float?>(null) }
     val onSeekAtRatio: (Float) -> Unit = { ratio ->
-        if (hasPlayer) {
-            context.symphony.radio.seek((position.total * ratio.coerceIn(0f, 1f)).toLong())
+        if (latestHasPlayer) {
+            context.symphony.radio.seek((latestPosition.total * ratio.coerceIn(0f, 1f)).toLong())
         }
     }
     Box(
@@ -79,20 +88,29 @@ fun BentoSeekWave(
                 stateDescription = DurationUtils.formatMs(position.played)
                 progressBarRangeInfo = ProgressBarRangeInfo(position.ratio, 0f..1f)
             }
-            .pointerInput(position.total) {
+            .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     onSeekAtRatio(offset.x / size.width.toFloat())
                 }
             }
-            .pointerInput(position.total) {
-                detectHorizontalDragGestures { change, _ ->
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragStart = { offset ->
+                        dragRatio = (offset.x / size.width.toFloat()).coerceIn(0f, 1f)
+                    },
+                    onDragEnd = {
+                        dragRatio?.let(onSeekAtRatio)
+                        dragRatio = null
+                    },
+                    onDragCancel = { dragRatio = null },
+                ) { change, _ ->
                     change.consume()
-                    onSeekAtRatio(change.position.x / size.width.toFloat())
+                    dragRatio = (change.position.x / size.width.toFloat()).coerceIn(0f, 1f)
                 }
             },
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val ratio = ratioState.value
+            val ratio = dragRatio ?: ratioState.value
             val centerY = size.height / 2f
             val lineHeight = 5.dp.toPx()
             val halfLine = lineHeight / 2f

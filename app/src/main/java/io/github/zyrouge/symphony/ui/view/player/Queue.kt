@@ -104,13 +104,16 @@ internal fun BentoPlayerQueue(context: ViewContext, modifier: Modifier = Modifie
                     onClick = { showSaveDialog = true },
                 )
             }
-            QueueIconButton(
-                icon = { Icon(Icons.Filled.ClearAll, "Clear queue") },
-                onClick = {
-                    context.symphony.radio.stop()
-                    selectedSongIndices.clear()
-                },
-            )
+            if (upcoming.isNotEmpty()) {
+                QueueIconButton(
+                    icon = { Icon(Icons.Filled.ClearAll, "Clear up next") },
+                    onClick = {
+                        // Only the songs after the current one: radio.stop() would end playback too.
+                        context.symphony.radio.queue.remove(upcoming.map { it.first })
+                        selectedSongIndices.clear()
+                    },
+                )
+            }
         }
 
         if (upcoming.isEmpty()) {

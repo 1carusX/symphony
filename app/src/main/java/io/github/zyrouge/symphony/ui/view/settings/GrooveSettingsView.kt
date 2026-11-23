@@ -39,6 +39,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.components.AdaptiveSnackbar
 import io.github.zyrouge.symphony.ui.components.BentoDialog
+import io.github.zyrouge.symphony.ui.components.settings.BentoListAddRow
+import io.github.zyrouge.symphony.ui.components.settings.BentoListEditorDialog
+import io.github.zyrouge.symphony.ui.components.settings.BentoListTextAddRow
 import io.github.zyrouge.symphony.ui.components.settings.BentoSystemFolderPicker
 import io.github.zyrouge.symphony.ui.components.BentoPageHeader
 import io.github.zyrouge.symphony.ui.components.BentoOptionDialog
@@ -152,12 +155,12 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
                     BentoSettingGroup {
                         BentoSettingRow(
                             label = context.symphony.t.ArtistTagValueSeparators,
-                            value = artistTagSeparators.joinToString(", "),
+                            value = artistTagSeparators.joinToString("  "),
                             onClick = { popup = GroovePopup.ARTIST_SEPARATORS },
                         )
                         BentoSettingRow(
                             label = context.symphony.t.GenreTagValueSeparators,
-                            value = genreTagSeparators.joinToString(", "),
+                            value = genreTagSeparators.joinToString("  "),
                             onClick = { popup = GroovePopup.GENRE_SEPARATORS },
                         )
                         BentoSettingRow(
@@ -223,7 +226,13 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
             title = context.symphony.t.SongsFilterPattern,
             value = songsFilterPattern ?: ".*",
             placeholder = ".*",
-            onChange = { context.symphony.settings.songsFilterPattern.setValue(it) },
+            // An invalid pattern would make the next scan throw, so it is never saved.
+            isValid = { runCatching { Regex(it) }.isSuccess },
+            errorText = "Not a valid regular expression",
+            onDone = {
+                context.symphony.settings.songsFilterPattern.setValue(it)
+                refreshMediaLibrary(context.symphony)
+            },
             onDismiss = { popup = null },
         )
 
@@ -237,62 +246,52 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
             onDismiss = { popup = null },
         )
 
-        GroovePopup.BLACKLIST_FOLDERS -> GrooveFolderPickerDialog(
+        GroovePopup.BLACKLIST_FOLDERS -> GrooveFolderListDialog(
             context = context,
-            explorer = context.symphony.groove.song.explorer,
-            onSelect = { path ->
-                if (path != null) {
-                    context.symphony.settings.blacklistFolders.setValue(
-                        blacklistFolders + path.pathString,
-                    )
-                    refreshMediaLibrary(context.symphony)
-                }
-                popup = null
+            title = context.symphony.t.BlacklistFolders,
+            values = blacklistFolders,
+            onDone = { values ->
+                context.symphony.settings.blacklistFolders.setValue(values)
+                refreshMediaLibrary(context.symphony)
             },
+            onDismiss = { popup = null },
         )
 
-        GroovePopup.WHITELIST_FOLDERS -> GrooveFolderPickerDialog(
+        GroovePopup.WHITELIST_FOLDERS -> GrooveFolderListDialog(
             context = context,
-            explorer = context.symphony.groove.song.explorer,
-            onSelect = { path ->
-                if (path != null) {
-                    context.symphony.settings.whitelistFolders.setValue(
-                        whitelistFolders + path.pathString,
-                    )
-                    refreshMediaLibrary(context.symphony)
-                }
-                popup = null
+            title = context.symphony.t.WhitelistFolders,
+            values = whitelistFolders,
+            onDone = { values ->
+                context.symphony.settings.whitelistFolders.setValue(values)
+                refreshMediaLibrary(context.symphony)
             },
+            onDismiss = { popup = null },
         )
 
-        GroovePopup.ARTIST_SEPARATORS -> BentoTextDialog(
+        GroovePopup.ARTIST_SEPARATORS -> BentoListEditorDialog(
+            context = context,
             title = context.symphony.t.ArtistTagValueSeparators,
-            value = artistTagSeparators.joinToString(", "),
-            placeholder = ", ",
-            onChange = { raw ->
-                context.symphony.settings.artistTagSeparators.setValue(
-                    raw.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet(),
-                )
-            },
-            onDismiss = {
+            values = artistTagSeparators,
+            // Edited as a list so any separator, the comma included, can be kept or added.
+            onDone = { values ->
+                context.symphony.settings.artistTagSeparators.setValue(values)
                 refreshMediaLibrary(context.symphony)
-                popup = null
             },
+            onDismiss = { popup = null },
+            addRow = { onAdd -> BentoListTextAddRow(placeholder = ";", onAdd = onAdd) },
         )
 
-        GroovePopup.GENRE_SEPARATORS -> BentoTextDialog(
+        GroovePopup.GENRE_SEPARATORS -> BentoListEditorDialog(
+            context = context,
             title = context.symphony.t.GenreTagValueSeparators,
-            value = genreTagSeparators.joinToString(", "),
-            placeholder = ", ",
-            onChange = { raw ->
-                context.symphony.settings.genreTagSeparators.setValue(
-                    raw.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet(),
-                )
-            },
-            onDismiss = {
+            values = genreTagSeparators,
+            // Edited as a list so any separator, the comma included, can be kept or added.
+            onDone = { values ->
+                context.symphony.settings.genreTagSeparators.setValue(values)
                 refreshMediaLibrary(context.symphony)
-                popup = null
             },
+            onDismiss = { popup = null },
+            addRow = { onAdd -> BentoListTextAddRow(placeholder = ";", onAdd = onAdd) },
         )
 
         GroovePopup.ARTWORK_QUALITY -> BentoOptionDialog(
@@ -328,6 +327,38 @@ fun ImageQuality.label(context: ViewContext) = when (this) {
     ImageQuality.Medium -> context.symphony.t.Medium
     ImageQuality.High -> context.symphony.t.High
     ImageQuality.Loseless -> context.symphony.t.Loseless
+}
+
+/** Blacklist and whitelist folders: a removable list plus a picker for new folders. */
+@Composable
+private fun GrooveFolderListDialog(
+    context: ViewContext,
+    title: String,
+    values: Set<String>,
+    onDone: (Set<String>) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var picking by remember { mutableStateOf(false) }
+    BentoListEditorDialog(
+        context = context,
+        title = title,
+        values = values,
+        onDone = onDone,
+        onDismiss = onDismiss,
+        addRow = { onAdd ->
+            BentoListAddRow(label = context.symphony.t.AddFolder, onClick = { picking = true })
+            if (picking) {
+                GrooveFolderPickerDialog(
+                    context = context,
+                    explorer = context.symphony.groove.song.explorer,
+                    onSelect = { path ->
+                        path?.let { onAdd(it.pathString) }
+                        picking = false
+                    },
+                )
+            }
+        },
+    )
 }
 
 private var refreshMediaLibraryJob: kotlinx.coroutines.Job? = null

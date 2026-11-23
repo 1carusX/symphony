@@ -5,6 +5,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +37,7 @@ import io.github.zyrouge.symphony.ui.components.BentoSearchHitChip
 import io.github.zyrouge.symphony.ui.components.BentoSongRow
 import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.IconTextBody
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
 import io.github.zyrouge.symphony.ui.components.formatBentoDaysAgo
 import io.github.zyrouge.symphony.ui.components.label
@@ -181,7 +183,11 @@ internal fun SearchResultsTile(
                 )
             }
         } else {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                // Clear the floating capsule at the end of the results.
+                contentPadding = PaddingValues(bottom = bentoBottomInset()),
+            ) {
                 itemsIndexed(
                     resultSongs,
                     key = { _, song -> song.id },

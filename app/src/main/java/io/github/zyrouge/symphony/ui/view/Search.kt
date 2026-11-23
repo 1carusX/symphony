@@ -157,8 +157,10 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
     val genreNames by context.symphony.groove.genre.all.collectAsState()
     val favorites by context.symphony.groove.playlist.favorites.collectAsState()
     val playingSong = rememberBentoPlayingSong(context)
-    val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
-    val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
+    // Search keeps its own sort, starting from the Songs tab's, so changing it here
+    // does not re-sort the Songs tab and every detail page.
+    var sortBy by rememberSaveable { mutableStateOf(context.symphony.settings.lastUsedSongsSortBy.value) }
+    var sortReverse by rememberSaveable { mutableStateOf(context.symphony.settings.lastUsedSongsSortReverse.value) }
 
     var terms by rememberSaveable { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf<BentoSearchFilter?>(null) }
@@ -318,14 +320,10 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
                             BentoSortOption(it, it.label(context))
                         },
                         selected = sortBy,
-                        onSelect = {
-                            context.symphony.settings.lastUsedSongsSortBy.setValue(it)
-                        },
+                        onSelect = { sortBy = it },
                         reverse = sortReverse,
                         reverseLabel = "Reverse order",
-                        onReverseChange = {
-                            context.symphony.settings.lastUsedSongsSortReverse.setValue(it)
-                        },
+                        onReverseChange = { sortReverse = it },
                     )
                 }
             }

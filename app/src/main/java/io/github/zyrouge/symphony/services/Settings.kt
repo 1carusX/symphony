@@ -127,7 +127,13 @@ class Settings(private val symphony: Symphony) {
     val bentoThemeMode = EnumEntry(
         "bento_theme_mode",
         enumEntries<BentoThemeMode>(),
-        BentoThemeMode.SYSTEM,
+        // Until a Bento mode is picked, keep the light/dark choice made in the old theme setting.
+        when (themeMode.value) {
+            ThemeMode.SYSTEM, ThemeMode.SYSTEM_BLACK -> BentoThemeMode.SYSTEM
+            ThemeMode.LIGHT -> BentoThemeMode.LIGHT
+            ThemeMode.DARK -> BentoThemeMode.DARK
+            ThemeMode.BLACK -> BentoThemeMode.BLACK
+        },
     )
     val bentoColorScheme = EnumEntry(
         "bento_color_scheme",
@@ -295,7 +301,7 @@ class Settings(private val symphony: Symphony) {
     val nowPlayingAdditionalInfo = BooleanEntry("show_now_playing_additional_info", true)
     val nowPlayingSeekControls = BooleanEntry("enable_seek_controls", false)
     val seekBackDuration = IntEntry("seek_back_duration", 15)
-    val seekForwardDuration = IntEntry("seek_back_duration", 30)
+    val seekForwardDuration = IntEntry("seek_forward_duration", 30)
     val miniPlayerTrackControls = BooleanEntry("mini_player_extended_controls", false)
     val miniPlayerSeekControls = BooleanEntry("mini_player_seek_controls", false)
     val fontFamily = NullableStringEntry("font_family")

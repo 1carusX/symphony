@@ -38,6 +38,7 @@ import io.github.zyrouge.symphony.services.radio.Radio
 import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.ui.components.BentoSongRow
 import io.github.zyrouge.symphony.ui.components.IconTextBody
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.helpers.navigateToFolder
@@ -106,7 +107,7 @@ fun BentoFileExplorer(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(
                     start = 12.dp,
                     end = 12.dp,
-                    bottom = 96.dp,
+                    bottom = bentoBottomInset(),
                 ),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
@@ -179,7 +180,7 @@ fun BentoTreeExplorer(
         contentPadding = androidx.compose.foundation.layout.PaddingValues(
             start = 12.dp,
             end = 12.dp,
-            bottom = 96.dp,
+            bottom = bentoBottomInset(),
         ),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {

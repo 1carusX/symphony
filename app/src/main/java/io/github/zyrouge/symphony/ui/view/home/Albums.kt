@@ -24,6 +24,7 @@ import io.github.zyrouge.symphony.ui.components.LoaderScaffold
 import io.github.zyrouge.symphony.ui.components.bentoAlbumsGroupComparator
 import io.github.zyrouge.symphony.ui.components.bentoGroupTileHeightDp
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
 
@@ -94,7 +95,8 @@ private fun AlbumGroupTile(
     playing: Boolean,
     narrow: Boolean,
 ) {
-    val trackSongIds by remember(album.id) {
+    val grooveVersion = LocalGrooveVersion.current
+    val trackSongIds by remember(album.id, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 album.getSongIds(context.symphony),

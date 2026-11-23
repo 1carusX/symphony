@@ -1,5 +1,8 @@
 package io.github.zyrouge.symphony
 
+import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,11 +11,26 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import io.github.zyrouge.symphony.services.locales.localeTag
 import io.github.zyrouge.symphony.ui.view.BaseView
 import io.github.zyrouge.symphony.utils.Logger
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private var gSymphony: Symphony? = null
+
+    override fun attachBaseContext(newBase: Context) {
+        val language = newBase.getSharedPreferences("settings", Context.MODE_PRIVATE)
+            .getString("language", null)
+        if (Build.VERSION.SDK_INT >= 33 || language == null) {
+            super.attachBaseContext(newBase)
+            return
+        }
+        // Below API 33 the language is not kept by the system, so apply it on every start.
+        val configuration = Configuration(newBase.resources.configuration)
+        configuration.setLocale(Locale.forLanguageTag(localeTag(language)))
+        super.attachBaseContext(newBase.createConfigurationContext(configuration))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

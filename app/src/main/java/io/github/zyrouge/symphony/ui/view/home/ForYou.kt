@@ -80,6 +80,7 @@ import io.github.zyrouge.symphony.ui.components.BentoTilePlacement
 import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.BentoTileSizeClass
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
 import io.github.zyrouge.symphony.ui.components.fitBentoCoverGrid
@@ -426,7 +427,7 @@ fun ForYouView(
                         )
                     }
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(bentoBottomInset(16.dp)))
             }
         }
     }

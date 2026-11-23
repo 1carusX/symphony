@@ -73,12 +73,14 @@ import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
 import io.github.zyrouge.symphony.ui.components.bentoAlbumTracksRowSpan
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
 import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
 import io.github.zyrouge.symphony.ui.components.fitBentoCoverGrid
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoGridClass
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
@@ -243,7 +245,8 @@ private fun AlbumGrid(
     appFontFamily: FontFamily?,
 ) {
     val playingSong = rememberBentoPlayingSong(context)
-    val trackSongIds by remember(album.id) {
+    val grooveVersion = LocalGrooveVersion.current
+    val trackSongIds by remember(album.id, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 album.getSongIds(context.symphony),
@@ -257,7 +260,7 @@ private fun AlbumGrid(
             trackSongIds.mapNotNull { context.symphony.groove.song.get(it) }
         }
     }
-    val moreAlbums by remember(album.id) {
+    val moreAlbums by remember(album.id, grooveVersion) {
         derivedStateOf {
             val artistAlbumIds = album.artists.flatMap { artistName ->
                 context.symphony.groove.artist.getAlbumIds(artistName)
@@ -350,7 +353,7 @@ private fun AlbumGrid(
                     )
                 }
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(bentoBottomInset(16.dp)))
         }
     }
 }
