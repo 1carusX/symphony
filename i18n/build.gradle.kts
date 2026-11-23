@@ -121,6 +121,6 @@ val verifyI18n by tasks.registering {
     }
 }
 
-tasks.matching { it.name == "preBuild" }.configureEach {
+tasks.matching { it.name == "assemble" || it.name == "check" }.configureEach {
     dependsOn(verifyI18n)
 }
