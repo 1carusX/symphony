@@ -289,4 +289,25 @@ Jeszcze raz dziękujemy za wypróbowanie Symphony!
   <string name="SortSongsBy">Sort songs by</string>
   <string name="PlayModeX">Play mode: %1$s</string>
   <string name="More">More</string>
+  <string name="XSongs_one">%1$s piosenka</string>
+  <string name="XSongs_few">%1$s piosenki</string>
+  <string name="XSongs_many">%1$s piosenek</string>
+  <string name="XAlbums_one">%1$s album</string>
+  <string name="XAlbums_few">%1$s albumy</string>
+  <string name="XAlbums_many">%1$s albumów</string>
+  <string name="XArtists_one">%1$s wykonawca</string>
+  <string name="XArtists_few">%1$s wykonawcy</string>
+  <string name="XArtists_many">%1$s wykonawców</string>
+  <string name="XGenres_one">%1$s gatunek</string>
+  <string name="XGenres_few">%1$s gatunki</string>
+  <string name="XGenres_many">%1$s gatunków</string>
+  <string name="XFolders_one">%1$s folder</string>
+  <string name="XFolders_few">%1$s foldery</string>
+  <string name="XFolders_many">%1$s folderów</string>
+  <string name="XPlaylists_one">%1$s playlista</string>
+  <string name="XPlaylists_few">%1$s playlisty</string>
+  <string name="XPlaylists_many">%1$s playlist</string>
+  <string name="XItems_one">%1$s element</string>
+  <string name="XItems_few">%1$s elementy</string>
+  <string name="XItems_many">%1$s elementów</string>
 </resources>

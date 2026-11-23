@@ -289,4 +289,25 @@ Symphony повністю підтримується пожертвування�
   <string name="SortSongsBy">Sort songs by</string>
   <string name="PlayModeX">Play mode: %1$s</string>
   <string name="More">More</string>
+  <string name="XSongs_one">%1$s пісня</string>
+  <string name="XSongs_few">%1$s пісні</string>
+  <string name="XSongs_many">%1$s пісень</string>
+  <string name="XAlbums_one">%1$s альбом</string>
+  <string name="XAlbums_few">%1$s альбоми</string>
+  <string name="XAlbums_many">%1$s альбомів</string>
+  <string name="XArtists_one">%1$s виконавець</string>
+  <string name="XArtists_few">%1$s виконавці</string>
+  <string name="XArtists_many">%1$s виконавців</string>
+  <string name="XGenres_one">%1$s жанр</string>
+  <string name="XGenres_few">%1$s жанри</string>
+  <string name="XGenres_many">%1$s жанрів</string>
+  <string name="XFolders_one">%1$s папка</string>
+  <string name="XFolders_few">%1$s папки</string>
+  <string name="XFolders_many">%1$s папок</string>
+  <string name="XPlaylists_one">%1$s плейлист</string>
+  <string name="XPlaylists_few">%1$s плейлисти</string>
+  <string name="XPlaylists_many">%1$s плейлистів</string>
+  <string name="XItems_one">%1$s елемент</string>
+  <string name="XItems_few">%1$s елементи</string>
+  <string name="XItems_many">%1$s елементів</string>
 </resources>
