@@ -20,7 +20,7 @@
   <string name="AudioChannels">Audio channels</string>
   <string name="Bitrate">Bitrate</string>
   <string name="Black">Black</string>
-  <string name="BlacklistFolders">Blacklist folders</string>
+  <string name="BlacklistFolders">Excluded folders</string>
   <string name="Blue">Blue</string>
   <string name="Browser">Browser</string>
   <string name="Cancel">Cancel</string>
@@ -213,7 +213,7 @@ Once again, thank you for trying out Symphony!
   <string name="ViewGenre">View Genre</string>
   <string name="Violet">Violet</string>
   <string name="VisibleWhenActive">Visible when active</string>
-  <string name="WhitelistFolders">Whitelist folders</string>
+  <string name="WhitelistFolders">Exceptions</string>
   <string name="XAlbums_other">%1$s albums</string>
   <string name="XAlbums_one">%1$s album</string>
   <string name="XArtists_other">%1$s artists</string>

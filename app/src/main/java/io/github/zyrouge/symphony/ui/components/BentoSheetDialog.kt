@@ -1,5 +1,6 @@
 package io.github.zyrouge.symphony.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -31,15 +32,18 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -69,6 +73,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -110,6 +115,8 @@ private const val FLING_DISMISS_DP_PER_SECOND = 450
  * list `Modifier.weight(1f)`. [tall] makes the surface take the available
  * height, so a filtered list does not resize it. [overlay] draws over the
  * whole window above the sheet, for toasts about what the sheet did.
+ * [onBack] puts a back arrow before the title and takes the Back gesture, for
+ * a sheet that has pushed one of its own pages (see [BentoSheetPages]).
  */
 @Composable
 fun BentoSheetDialog(
@@ -120,6 +127,7 @@ fun BentoSheetDialog(
     tall: Boolean = false,
     actions: (@Composable RowScope.() -> Unit)? = null,
     overlay: (@Composable BoxScope.() -> Unit)? = null,
+    onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     BentoSheetDialog(
@@ -130,6 +138,7 @@ fun BentoSheetDialog(
         tall = tall,
         actions = actions,
         overlay = overlay,
+        onBack = onBack,
         content = content,
     )
 }
@@ -144,6 +153,7 @@ fun BentoSheetDialog(
     tall: Boolean = false,
     actions: (@Composable RowScope.() -> Unit)? = null,
     overlay: (@Composable BoxScope.() -> Unit)? = null,
+    onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val compact = rememberBentoWindowClass() == BentoWindowClass.COMPACT
@@ -278,21 +288,39 @@ fun BentoSheetDialog(
                     }
                     Column(
                         modifier = Modifier.padding(
-                            start = 24.dp,
+                            start = if (onBack != null) 12.dp else 24.dp,
                             end = 24.dp,
                             top = if (compact) 14.dp else 22.dp,
                             bottom = 4.dp,
                         ),
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        Box(modifier = Modifier.semantics { heading() }) {
-                            ProvideTextStyle(
-                                BentoTypography.title.copy(
-                                    fontFamily = appFontFamily,
-                                    color = colors.fg,
-                                ),
-                            ) {
-                                title()
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (onBack != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .clickable(role = Role.Button, onClick = onBack),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Rounded.ArrowBack,
+                                        "Back",
+                                        tint = colors.fg,
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(4.dp))
+                            }
+                            Box(modifier = Modifier.semantics { heading() }) {
+                                ProvideTextStyle(
+                                    BentoTypography.title.copy(
+                                        fontFamily = appFontFamily,
+                                        color = colors.fg,
+                                    ),
+                                ) {
+                                    title()
+                                }
                             }
                         }
                         subtitle?.let {
@@ -331,6 +359,8 @@ fun BentoSheetDialog(
             }
             overlay?.invoke(this)
         }
+        // A pushed page goes back first; only the root page lets Back close the sheet.
+        BackHandler(enabled = onBack != null) { onBack?.invoke() }
     }
 }
 
@@ -388,6 +418,7 @@ fun BentoSheetTextField(
     leadingIcon: ImageVector? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    fontFamily: FontFamily? = null,
 ) {
     val colors = LocalBentoColors.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -397,7 +428,7 @@ fun BentoSheetTextField(
     // BasicTextField does not inherit the app font from the theme.
     val textStyle = BentoTypography.rowTitle.copy(
         fontWeight = FontWeight.Normal,
-        fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
+        fontFamily = fontFamily ?: MaterialTheme.typography.titleLarge.fontFamily,
     )
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         label?.let {
@@ -554,6 +585,7 @@ fun BentoSheetChip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    fontFamily: FontFamily? = null,
 ) {
     val colors = LocalBentoColors.current
     Box(
@@ -572,6 +604,7 @@ fun BentoSheetChip(
             style = BentoTypography.body.copy(
                 fontWeight = FontWeight.SemiBold,
                 fontFeatureSettings = "tnum",
+                fontFamily = fontFamily,
             ),
             color = if (selected) colors.onTonal else colors.fg,
             maxLines = 1,
@@ -579,13 +612,13 @@ fun BentoSheetChip(
     }
 }
 
-private fun Modifier.bentoSheetRowShape() = this
+internal fun Modifier.bentoSheetRowShape() = this
     .fillMaxWidth()
     .heightIn(min = 56.dp)
     .clip(RoundedCornerShape(BentoRadii.ROW.dp))
 
 @Composable
-private fun BentoSheetRowLayout(
+internal fun BentoSheetRowLayout(
     title: String,
     subtitle: String?,
     leading: (@Composable () -> Unit)?,

@@ -20,7 +20,7 @@
   <string name="AudioChannels">声道数</string>
   <string name="Bitrate">比特率</string>
   <string name="Black">纯黑</string>
-  <string name="BlacklistFolders">文件夹黑名单</string>
+  <string name="BlacklistFolders">排除的文件夹</string>
   <string name="Blue">蓝色</string>
   <string name="Browser">浏览</string>
   <string name="Cancel">取消</string>
@@ -213,7 +213,7 @@ Symphony由来自Github Sponsors，Ko-fi和Patreon的捐赠支持开发。
   <string name="ViewGenre">查看流派</string>
   <string name="Violet">紫罗兰色</string>
   <string name="VisibleWhenActive">选中时可见</string>
-  <string name="WhitelistFolders">文件夹白名单</string>
+  <string name="WhitelistFolders">例外文件夹</string>
   <string name="XAlbums_other">%1$s 张专辑</string>
   <string name="XArtists_other">%1$s 位艺术家</string>
   <string name="XBit_other">%1$s 位</string>

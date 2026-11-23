@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -52,8 +50,9 @@ fun BentoSystemFolderPicker(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            itemsIndexed(folders) { index, uri ->
+        // A plain column: the picker sits in a scrolling sheet page, and the list is short.
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            folders.toList().forEachIndexed { index, uri ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -64,7 +63,7 @@ fun BentoSystemFolderPicker(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
-                        Uri.decode(uri.path ?: uri.toString()),
+                        bentoReadableTreeUri(uri),
                         style = BentoTypography.secondary,
                         color = colors.fg,
                         maxLines = 1,
