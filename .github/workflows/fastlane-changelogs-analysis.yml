@@ -22,13 +22,8 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 20.x
                   cache: npm
 
-            - name: 🚧 Do prerequisites
-              run: npm ci
 
             - name: 🚨 Analyze changelogs
-              run: npm run changelogs:fastlane-character-limit
+              run: ./gradlew -q changelogLimit

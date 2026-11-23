@@ -19,9 +19,6 @@ jobs:
               with:
                   submodules: recursive
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 20.x
                   cache: npm
 
             - uses: actions/setup-java@v4
@@ -38,15 +35,17 @@ jobs:
                   restore-keys: |
                       gradle-jdks-${{ runner.os }}-
 
-            - name: 🚧 Do prerequisites
-              run: npm ci
 
             - name: 🔢 Get version
               id: app_version
-              run: echo "version=$(npm run --silent version:print)" >> $GITHUB_OUTPUT
+              run: |
+                  chmod +x ./gradlew
+                  echo "version=$(./gradlew -q versionPrint)" >> $GITHUB_OUTPUT
 
             - name: 🔎 Check for release
-              run: npm run --silent git:tag-exists -- $TAG_NAME
+              run: |
+                  chmod +x ./gradlew
+                  ./gradlew -q tagExists -Ptag=$TAG_NAME
               env:
                   TAG_NAME: v${{ steps.app_version.outputs.version }}
 
@@ -62,7 +61,7 @@ jobs:
                   chmod +x ./gradlew
                   ./gradlew assembleRelease
                   ./gradlew bundleRelease
-                  npm run postbuild
+                  ./gradlew moveOutputs
               env:
                   APP_VERSION_NAME: ${{ steps.app_version.outputs.version }}
                   SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}

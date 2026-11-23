@@ -8,3 +8,14 @@ plugins {
     alias(libs.plugins.android.kmp.library) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
 }
+
+tasks.register<VersionPrintTask>("versionPrint")
+tasks.register<VersionBumpTask>("versionBump")
+tasks.register<VersionPrereleaseTask>("versionPrintNightly")
+tasks.register<VersionPrereleaseTask>("versionPrintCanary")
+tasks.register<TagExistsTask>("tagExists")
+tasks.register<TagExistsYesNoTask>("tagExistsYn")
+tasks.register<LatestTagTask>("latestTag")
+tasks.register<DiffFilesYesNoTask>("diffFilesYn")
+tasks.register<MoveOutputsTask>("moveOutputs")
+tasks.register<ChangelogLimitTask>("changelogLimit")
