@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 
 @Composable
 fun InformationDialog(
@@ -43,10 +45,10 @@ fun InformationKeyValue(key: String, value: @Composable () -> Unit) {
     Column {
         Text(
             key,
-            style = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.secondary,
-            color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub
+            style = BentoTypography.secondary,
+            color = LocalBentoColors.current.sub
         )
-        ProvideTextStyle(value = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.rowTitle) {
+        ProvideTextStyle(value = BentoTypography.rowTitle) {
             value()
         }
     }

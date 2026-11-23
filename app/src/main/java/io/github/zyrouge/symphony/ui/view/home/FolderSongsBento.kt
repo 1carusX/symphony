@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.services.radio.Radio
 import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.components.BentoActionTile
 import io.github.zyrouge.symphony.ui.components.BentoSongRow
@@ -40,6 +41,7 @@ import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.utils.SimpleFileSystem
@@ -134,7 +136,7 @@ internal fun FolderSongsView(
                             tone = BentoTileTone.ACCENT,
                             main = true,
                             narrow = windowClass ==
-                                io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass.COMPACT,
+                                BentoWindowClass.COMPACT,
                             onClick = {
                                 context.symphony.radio.shorty.playQueue(sortedSongIds)
                             },
@@ -147,7 +149,7 @@ internal fun FolderSongsView(
                             sub = "Random order",
                             tone = BentoTileTone.TONAL,
                             narrow = windowClass ==
-                                io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass.COMPACT,
+                                BentoWindowClass.COMPACT,
                             onClick = {
                                 context.symphony.radio.shorty.playQueue(
                                     sortedSongIds,
@@ -176,7 +178,7 @@ internal fun FolderSongsView(
                                 onClick = {
                                     context.symphony.radio.shorty.playQueue(
                                         sortedSongIds,
-                                        options = io.github.zyrouge.symphony.services.radio.Radio.PlayOptions(
+                                        options = Radio.PlayOptions(
                                             index = index,
                                         ),
                                     )

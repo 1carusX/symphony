@@ -25,6 +25,7 @@ import io.github.zyrouge.symphony.ui.helpers.ScaleTransition
 import io.github.zyrouge.symphony.ui.helpers.SlideTransition
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.SymphonyTheme
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsView
 import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsViewRoute
 import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsView
@@ -57,7 +58,7 @@ fun BaseView(symphony: Symphony, activity: MainActivity) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.bg),
+                    .background(LocalBentoColors.current.bg),
             ) {
                 NavHost(
                     navController = navController,

@@ -29,6 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
+import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 
 @Composable
 fun IntroductoryDialog(
@@ -91,8 +94,8 @@ private fun OptInTile(
                 }
                 .border(
                     1.dp,
-                    io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.line,
-                    RoundedCornerShape(io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE_SMALL.dp),
+                    LocalBentoColors.current.line,
+                    RoundedCornerShape(BentoRadii.TILE_SMALL.dp),
                 )
                 .padding(16.dp, 8.dp),
             horizontalArrangement = Arrangement.Center,
@@ -103,8 +106,8 @@ private fun OptInTile(
                     Icons.Filled.Check,
                     null,
                     tint = when {
-                        enabled -> io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.accent
-                        else -> io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.muted
+                        enabled -> LocalBentoColors.current.accent
+                        else -> LocalBentoColors.current.muted
                     },
                     modifier = Modifier.size(20.dp),
                 )
@@ -112,12 +115,12 @@ private fun OptInTile(
                 else -> Icon(
                     Icons.Filled.Close,
                     null,
-                    tint = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.muted,
+                    tint = LocalBentoColors.current.muted,
                     modifier = Modifier.size(20.dp),
                 )
             }
             Box(modifier = Modifier.width(8.dp))
-            ProvideTextStyle(io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.secondary) {
+            ProvideTextStyle(BentoTypography.secondary) {
                 content()
             }
         }

@@ -40,6 +40,7 @@ import io.github.zyrouge.symphony.ui.components.BentoSwitch
 import io.github.zyrouge.symphony.ui.components.BentoTextField
 import io.github.zyrouge.symphony.ui.components.ScaffoldDialog
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.DurationUtils
 import java.time.Duration
 import java.util.Timer
@@ -172,7 +173,7 @@ fun NowPlayingSleepTimerSetDialog(
                             style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier
                                 .background(
-                                    io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.raised,
+                                    LocalBentoColors.current.raised,
                                     shape,
                                 )
                                 .clip(shape)

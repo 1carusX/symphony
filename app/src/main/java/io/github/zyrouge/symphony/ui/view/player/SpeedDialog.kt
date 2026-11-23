@@ -26,6 +26,8 @@ import io.github.zyrouge.symphony.ui.components.ScaffoldDialog
 import io.github.zyrouge.symphony.ui.components.BentoSwitch
 import io.github.zyrouge.symphony.ui.components.Slider
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import kotlin.math.roundToInt
 
 @Composable
@@ -61,15 +63,15 @@ fun NowPlayingSpeedDialog(
                         val onClick = {
                             context.symphony.radio.setSpeed(speed, persistent)
                         }
-                        val shape = RoundedCornerShape(io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE_SMALL.dp)
+                        val shape = RoundedCornerShape(BentoRadii.TILE_SMALL.dp)
 
                         Text(
                             "x$speed",
                             style = MaterialTheme.typography.labelMedium,
-                            color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.fg,
+                            color = LocalBentoColors.current.fg,
                             modifier = Modifier
                                 .background(
-                                    io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.raised,
+                                    LocalBentoColors.current.raised,
                                     shape,
                                 )
                                 .clip(shape)

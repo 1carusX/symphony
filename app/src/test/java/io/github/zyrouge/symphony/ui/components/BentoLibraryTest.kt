@@ -272,4 +272,31 @@ class BentoLibraryTest {
         assertEquals("Today", formatBentoDaysAgo(now, now))
         assertEquals("3 d ago", formatBentoDaysAgo(now - 3 * day, now))
     }
+
+    @Test
+    fun `durations under a minute stay in seconds instead of rounding to zero minutes`() {
+        assertEquals("0 s", formatBentoDurationMinutes(0))
+        assertEquals("9 s", formatBentoDurationMinutes(9_000))
+        assertEquals("59 s", formatBentoDurationMinutes(59_400))
+    }
+
+    @Test
+    fun `durations under an hour stay in whole minutes`() {
+        assertEquals("1 min", formatBentoDurationMinutes(60_000))
+        assertEquals("4 min", formatBentoDurationMinutes(4 * 60_000L + 20_000))
+        assertEquals("59 min", formatBentoDurationMinutes(59 * 60_000L + 29_000))
+    }
+
+    @Test
+    fun `durations of an hour or more carry hours and the remaining minutes`() {
+        assertEquals("1 h 0 min", formatBentoDurationMinutes(60 * 60_000L))
+        assertEquals("2 h 25 min", formatBentoDurationMinutes(145 * 60_000L))
+        assertEquals("10 h 59 min", formatBentoDurationMinutes(659 * 60_000L))
+    }
+
+    @Test
+    fun `tabular style keeps the source typeface and turns on tabular figures`() {
+        val style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = null)
+        assertEquals("tnum", bentoTabularStyle(style).fontFeatureSettings)
+    }
 }
