@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +39,7 @@ import io.github.zyrouge.symphony.ui.components.BentoSearchHitChip
 import io.github.zyrouge.symphony.ui.components.BentoSongRow
 import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.IconTextBody
+import io.github.zyrouge.symphony.ui.components.SongDropdownMenu
 import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
 import io.github.zyrouge.symphony.ui.components.formatBentoDaysAgo
@@ -66,6 +69,7 @@ internal fun SearchResultsTile(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalBentoColors.current
+    val favoriteSongIds by context.symphony.groove.playlist.favorites.collectAsState()
 
     if (results == null) {
         Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -220,6 +224,15 @@ internal fun SearchResultsTile(
                                     )
                                 }
                             }
+                        },
+                        menu = { expanded, onDismissRequest ->
+                            SongDropdownMenu(
+                                context = context,
+                                song = song,
+                                isFavorite = favoriteSongIds.contains(song.id),
+                                expanded = expanded,
+                                onDismissRequest = onDismissRequest,
+                            )
                         },
                         onClick = {
                             context.symphony.radio.shorty.playQueue(

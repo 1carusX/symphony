@@ -120,11 +120,13 @@ fun resolveBentoGroupColumnCount(groupCount: Int, maxColumns: Int): Int {
 fun bentoGroupVisibleRowCount(songCount: Int): Int = minOf(songCount, BENTO_GROUP_MAX_ROWS)
 
 /**
- * A grouped tile's height in dp (prototype gt-tile): 16 of top padding, the
- * 64 dp header, an 8 dp gap, 44 dp rows and 8 dp of bottom padding.
+ * A grouped tile's estimated height in dp at the default font scale, used to
+ * balance the masonry columns (the tile itself sizes to its content): 16 of
+ * top padding, the 76 dp header (64 dp cover plus 6 dp above and below), an
+ * 8 dp gap, 44 dp rows and 8 dp of bottom padding.
  */
 fun bentoGroupTileHeightDp(songCount: Int): Float =
-    96f + bentoGroupVisibleRowCount(songCount) * 44f
+    108f + bentoGroupVisibleRowCount(songCount) * 44f
 
 /**
  * The Tracks tile's grid row span (DESIGN.md Appendix A, "album"):

@@ -3,14 +3,17 @@ package io.github.zyrouge.symphony.ui.components
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.font.FontWeight
 import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.view.AlbumArtistViewRoute
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
 import io.github.zyrouge.symphony.ui.view.ArtistViewRoute
@@ -25,12 +28,30 @@ import kotlin.math.round
 fun SongInformationDialog(context: ViewContext, song: Song, onDismissRequest: () -> Unit) {
     InformationDialog(
         context,
+        header = {
+            InformationHeader(
+                image = song.createArtworkImageRequest(context.symphony).build(),
+                title = { LongPressCopyableText(context, song.title) },
+                subtitle = song.artists.takeIf { it.isNotEmpty() }?.joinToString(),
+            )
+        },
+        actions = {
+            BentoSheetButton(
+                label = context.symphony.t.Path,
+                icon = Icons.Rounded.ContentCopy,
+                onClick = {
+                    ActivityUtils.copyToClipboardAndNotify(context.symphony, song.path)
+                },
+            )
+        },
         content = {
-            InformationKeyValue(context.symphony.t.Id) {
-                LongPressCopyableText(context, song.id)
-            }
-            InformationKeyValue(context.symphony.t.TrackName) {
-                LongPressCopyableText(context, song.title)
+            context.symphony.groove.album.getIdFromSong(song)?.let { albumId ->
+                InformationKeyValue(context.symphony.t.Album) {
+                    LongPressCopyableAndTappableText(context, setOf(song.album!!)) {
+                        onDismissRequest()
+                        context.navController.navigate(AlbumViewRoute(albumId))
+                    }
+                }
             }
             if (song.artists.isNotEmpty()) {
                 InformationKeyValue(context.symphony.t.Artist) {
@@ -54,14 +75,6 @@ fun SongInformationDialog(context: ViewContext, song: Song, onDismissRequest: ()
                     LongPressCopyableAndTappableText(context, song.composers) {
                         onDismissRequest()
                         context.navController.navigate(ArtistViewRoute(it))
-                    }
-                }
-            }
-            context.symphony.groove.album.getIdFromSong(song)?.let { albumId ->
-                InformationKeyValue(context.symphony.t.Album) {
-                    LongPressCopyableAndTappableText(context, setOf(song.album!!)) {
-                        onDismissRequest()
-                        context.navController.navigate(AlbumViewRoute(albumId))
                     }
                 }
             }
@@ -129,12 +142,6 @@ fun SongInformationDialog(context: ViewContext, song: Song, onDismissRequest: ()
                     LongPressCopyableText(context, context.symphony.t.XKHz(it.toString()))
                 }
             }
-            InformationKeyValue(context.symphony.t.Filename) {
-                LongPressCopyableText(context, song.filename)
-            }
-            InformationKeyValue(context.symphony.t.Path) {
-                LongPressCopyableText(context, song.path)
-            }
             InformationKeyValue(context.symphony.t.Size) {
                 LongPressCopyableText(context, "${round((song.size / 1024 / 1024).toDouble())} MB")
             }
@@ -143,6 +150,15 @@ fun SongInformationDialog(context: ViewContext, song: Song, onDismissRequest: ()
                     context,
                     SimpleDateFormat.getInstance().format(Date(song.dateModified * 1000)),
                 )
+            }
+            InformationKeyValue(context.symphony.t.Filename) {
+                LongPressCopyableText(context, song.filename)
+            }
+            InformationKeyValue(context.symphony.t.Path, mono = true) {
+                LongPressCopyableText(context, song.path)
+            }
+            InformationKeyValue(context.symphony.t.Id, mono = true) {
+                LongPressCopyableText(context, song.id)
             }
         },
         onDismissRequest = onDismissRequest,
@@ -157,7 +173,8 @@ private fun LongPressCopyableAndTappableText(
     onTap: (String) -> Unit,
 ) {
     val textStyle = LocalTextStyle.current.copy(
-        textDecoration = TextDecoration.Underline,
+        color = LocalBentoColors.current.accent,
+        fontWeight = FontWeight.SemiBold,
     )
 
     FlowRow {

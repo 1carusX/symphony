@@ -1,6 +1,8 @@
 package io.github.zyrouge.symphony.ui.view
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,8 +23,10 @@ import androidx.compose.material.icons.filled.Album
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +44,7 @@ import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.services.radio.Radio
 import io.github.zyrouge.symphony.ui.components.BentoCoverGrid
 import io.github.zyrouge.symphony.ui.components.BentoEqualizerGlyph
+import io.github.zyrouge.symphony.ui.components.BentoMoreButton
 import io.github.zyrouge.symphony.ui.components.BentoStatContent
 import io.github.zyrouge.symphony.ui.components.BentoTile
 import io.github.zyrouge.symphony.ui.components.BentoTileGeometry
@@ -48,6 +53,7 @@ import io.github.zyrouge.symphony.ui.components.BentoTileSizeClass
 import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
+import io.github.zyrouge.symphony.ui.components.SongDropdownMenu
 import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
 import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
@@ -199,8 +205,10 @@ internal fun AlbumLengthStatTile(
 
 /**
  * The Tracks tile (DESIGN.md 5.4): 48 dp rows with track numbers, as tall
- * as all tracks need.
+ * as all tracks need. Each row ends with a More button that opens the song
+ * menu; a long press opens it too.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun AlbumTracksTile(
     context: ViewContext,
@@ -212,6 +220,8 @@ internal fun AlbumTracksTile(
 ) {
     val colors = LocalBentoColors.current
     val tileColors = LocalBentoTileContentColors.current
+    val favoriteSongIds by context.symphony.groove.playlist.favorites.collectAsState()
+    var menuSongId by remember { mutableStateOf<String?>(null) }
 
     BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -228,13 +238,16 @@ internal fun AlbumTracksTile(
                         .fillMaxWidth()
                         .height(BentoSizes.TILE_LIST_ROW.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .clickable {
-                            context.symphony.radio.shorty.playQueue(
-                                trackSongIds,
-                                Radio.PlayOptions(index = index),
-                            )
-                        }
-                        .padding(horizontal = 6.dp),
+                        .combinedClickable(
+                            onClick = {
+                                context.symphony.radio.shorty.playQueue(
+                                    trackSongIds,
+                                    Radio.PlayOptions(index = index),
+                                )
+                            },
+                            onLongClick = { menuSongId = song.id },
+                        )
+                        .padding(start = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
@@ -281,6 +294,20 @@ internal fun AlbumTracksTile(
                         color = tileColors.sub,
                         maxLines = 1,
                     )
+                    Box {
+                        BentoMoreButton(
+                            contentDescription = context.symphony.t.More,
+                            onClick = { menuSongId = song.id },
+                            size = 36.dp,
+                        )
+                        SongDropdownMenu(
+                            context = context,
+                            song = song,
+                            isFavorite = favoriteSongIds.contains(song.id),
+                            expanded = menuSongId == song.id,
+                            onDismissRequest = { menuSongId = null },
+                        )
+                    }
                 }
             }
         }

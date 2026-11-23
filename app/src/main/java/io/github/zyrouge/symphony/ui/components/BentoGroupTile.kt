@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,6 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -81,8 +89,13 @@ internal fun Color.darkened(): Color = Color(red * 0.55f, green * 0.55f, blue * 
 
 /**
  * A grouped tile (DESIGN.md 5.3): a 64 dp cover, the group title and
- * subtitle, a 44 dp accent play button, and up to six song rows; longer
- * groups show five rows and a "Show all" row that opens the group's page.
+ * subtitle, a 44 dp accent play button, a More button, and up to six song
+ * rows; longer groups show five rows and a "Show all" row that opens the
+ * group's page. The tile is as tall as its content.
+ *
+ * The More button, a long press on the cover or title, and a right click on
+ * the header open [menu]. Without one, the menu offers Shuffle play, Play
+ * next, Add to queue and Add to playlist for [songs].
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -102,12 +115,14 @@ fun BentoGroupTile(
     narrow: Boolean,
     showAllLabel: String?,
     onShowAll: (() -> Unit)?,
+    menu: (@Composable (expanded: Boolean, onDismissRequest: () -> Unit) -> Unit)? = null,
 ) {
     val colors = LocalBentoColors.current
     val colorScheme = LocalBentoColorScheme.current
     val tileShape = RoundedCornerShape(BentoRadii.TILE.dp)
     val openInteraction = remember { MutableInteractionSource() }
     val openHovered by openInteraction.collectIsHoveredAsState()
+    var menuExpanded by remember { mutableStateOf(false) }
     val visibleRows = songs.take(
         when {
             songs.size > BENTO_GROUP_MAX_ROWS -> BENTO_GROUP_MAX_ROWS - 1
@@ -118,7 +133,6 @@ fun BentoGroupTile(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(bentoGroupTileHeightDp(songs.size).dp)
             .clip(tileShape)
             .then(
                 when (colorScheme) {
@@ -132,6 +146,7 @@ fun BentoGroupTile(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .onBentoSecondaryClick { menuExpanded = true }
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -144,6 +159,7 @@ fun BentoGroupTile(
                         interactionSource = openInteraction,
                         indication = null,
                         onClick = onOpen,
+                        onLongClick = { menuExpanded = true },
                     )
                     .padding(vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -185,6 +201,30 @@ fun BentoGroupTile(
                     modifier = Modifier.size(20.dp),
                 )
             }
+            Box {
+                BentoMoreButton(
+                    contentDescription = context.symphony.t.More,
+                    onClick = { menuExpanded = true },
+                )
+                val onDismissMenu = { menuExpanded = false }
+                when (menu) {
+                    null -> GenericSongListDropdown(
+                        context = context,
+                        songIds = remember(songs) { songs.map { it.id } },
+                        expanded = menuExpanded,
+                        onDismissRequest = onDismissMenu,
+                        header = {
+                            BentoMenuHeader(
+                                title = title,
+                                subtitle = subtitle,
+                                art = { BentoGroupMenuArt(cover) },
+                            )
+                        },
+                    )
+
+                    else -> menu(menuExpanded, onDismissMenu)
+                }
+            }
         }
         Spacer(Modifier.height(8.dp))
         visibleRows.forEachIndexed { index, song ->
@@ -207,6 +247,40 @@ fun BentoGroupTile(
         }
     }
 }
+
+/** The tile's 64 dp cover drawn at 44 dp for the menu header. */
+@Composable
+private fun BentoGroupMenuArt(cover: @Composable () -> Unit) {
+    val scale = 44f / 64f
+    Box(modifier = Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .requiredSize(64.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
+        ) {
+            cover()
+        }
+    }
+}
+
+/**
+ * Calls [onClick] on a secondary (right) mouse press and consumes it, so the
+ * children's click handlers do not see it. [onClick] is captured once, so it
+ * should only flip remembered state.
+ */
+private fun Modifier.onBentoSecondaryClick(onClick: () -> Unit): Modifier =
+    pointerInput(Unit) {
+        awaitEachGesture {
+            val event = awaitPointerEvent(PointerEventPass.Initial)
+            if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed) {
+                event.changes.forEach { it.consume() }
+                onClick()
+            }
+        }
+    }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

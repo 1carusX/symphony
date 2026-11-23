@@ -83,8 +83,7 @@ internal fun BentoPlayerPanel(
     onClose: () -> Unit,
     onScrimAlphaChange: (Float) -> Unit,
 ) {
-    var showSpeedDialog by remember { mutableStateOf(false) }
-    var showPitchDialog by remember { mutableStateOf(false) }
+    var showSpeedPitchDialog by remember { mutableStateOf(false) }
     var showSleepTimerDialog by remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -119,8 +118,8 @@ internal fun BentoPlayerPanel(
                 onStageChange = onStageChange,
                 onClose = onClose,
                 onScrimAlphaChange = onScrimAlphaChange,
-                onShowSpeed = { showSpeedDialog = true },
-                onShowPitch = { showPitchDialog = true },
+                onShowSpeed = { showSpeedPitchDialog = true },
+                onShowPitch = { showSpeedPitchDialog = true },
                 onShowSleepTimer = { showSleepTimerDialog = true },
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
@@ -135,27 +134,21 @@ internal fun BentoPlayerPanel(
                 onLevelChange = onLevelChange,
                 onStageChange = onStageChange,
                 onClose = onClose,
-                onShowSpeed = { showSpeedDialog = true },
-                onShowPitch = { showPitchDialog = true },
+                onShowSpeed = { showSpeedPitchDialog = true },
+                onShowPitch = { showSpeedPitchDialog = true },
                 onShowSleepTimer = { showSleepTimerDialog = true },
             )
         }
     }
 
-    if (showSpeedDialog) {
-        NowPlayingSpeedDialog(
+    if (showSpeedPitchDialog) {
+        NowPlayingSpeedPitchDialog(
             context = context,
             currentSpeed = data.currentSpeed,
-            persistedSpeed = data.persistedSpeed,
-            onDismissRequest = { showSpeedDialog = false },
-        )
-    }
-    if (showPitchDialog) {
-        NowPlayingPitchDialog(
-            context = context,
             currentPitch = data.currentPitch,
+            persistedSpeed = data.persistedSpeed,
             persistedPitch = data.persistedPitch,
-            onDismissRequest = { showPitchDialog = false },
+            onDismissRequest = { showSpeedPitchDialog = false },
         )
     }
     if (showSleepTimerDialog) {

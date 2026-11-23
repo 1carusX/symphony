@@ -4,15 +4,12 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
-import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
-import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.rounded.Title
+import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,7 +19,6 @@ import androidx.compose.runtime.setValue
 import io.github.zyrouge.symphony.services.groove.MediaExposer
 import io.github.zyrouge.symphony.services.groove.Playlist
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
-import io.github.zyrouge.symphony.ui.theme.ThemeColors
 import io.github.zyrouge.symphony.utils.Logger
 
 @Composable
@@ -67,96 +63,46 @@ fun PlaylistDropdownMenu(
 
     BentoMenu(
         expanded = expanded,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        header = {
+            BentoMenuHeader(
+                title = playlist.title,
+                subtitle = context.symphony.t.Playlist + " · " +
+                    context.symphony.t.XSongs(playlist.numberOfTracks.toString()),
+                art = {
+                    BentoMenuArt(playlist.createArtworkImageRequest(context.symphony).build())
+                },
+            )
+        },
     ) {
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-            },
-            text = {
-                Text(context.symphony.t.ShufflePlay)
-            },
-            onClick = {
-                onDismissRequest()
-                context.symphony.radio.shorty.playQueue(
-                    playlist.getSortedSongIds(context.symphony),
-                    shuffle = true,
-                )
-            }
+        BentoQueueMenuItems(
+            context = context,
+            orderedSongIds = { playlist.getSortedSongIds(context.symphony) },
+            queueSongIds = { playlist.getSongIds(context.symphony) },
+            onDismissRequest = onDismissRequest,
+            onAddToPlaylist = { showAddToPlaylistDialog = true },
         )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-            },
-            text = {
-                Text(context.symphony.t.PlayNext)
-            },
-            onClick = {
-                onDismissRequest()
-                context.symphony.radio.queue.add(
-                    playlist.getSortedSongIds(context.symphony),
-                    context.symphony.radio.queue.currentSongIndex + 1
-                )
-            }
-        )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-            },
-            text = {
-                Text(context.symphony.t.AddToQueue)
-            },
-            onClick = {
-                onDismissRequest()
-                context.symphony.radio.queue.add(playlist.getSongIds(context.symphony))
-            }
-        )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistAdd, null)
-            },
-            text = {
-                Text(context.symphony.t.AddToPlaylist)
-            },
-            onClick = {
-                onDismissRequest()
-                showAddToPlaylistDialog = true
-            }
-        )
+        BentoMenuDivider()
         if (playlist.isNotLocal) {
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(Icons.AutoMirrored.Filled.PlaylistAdd, null)
-                },
-                text = {
-                    Text(context.symphony.t.ManageSongs)
-                },
+            BentoMenuItem(
+                label = context.symphony.t.ManageSongs,
+                icon = Icons.Outlined.Edit,
                 onClick = {
                     onDismissRequest()
                     showSongsPicker = true
                 }
             )
-        }
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.Filled.Info, null)
-            },
-            text = {
-                Text(context.symphony.t.Details)
-            },
-            onClick = {
-                onDismissRequest()
-                showInfoDialog = true
-            }
-        )
-        if (playlist.isNotLocal) {
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(Icons.Filled.Save, null)
-                },
-                text = {
-                    Text(context.symphony.t.Export)
-                },
+            BentoMenuItem(
+                label = context.symphony.t.Rename,
+                icon = Icons.Rounded.Title,
+                onClick = {
+                    onDismissRequest()
+                    showRenameDialog = true
+                }
+            )
+            BentoMenuItem(
+                label = context.symphony.t.Export,
+                icon = Icons.Rounded.Upload,
                 onClick = {
                     onDismissRequest()
                     try {
@@ -173,31 +119,21 @@ fun PlaylistDropdownMenu(
                     }
                 }
             )
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(Icons.Filled.Edit, null)
-                },
-                text = {
-                    Text(context.symphony.t.Rename)
-                },
-                onClick = {
-                    onDismissRequest()
-                    showRenameDialog = true
-                }
-            )
         }
+        BentoMenuItem(
+            label = context.symphony.t.Details,
+            icon = Icons.Outlined.Info,
+            onClick = {
+                onDismissRequest()
+                showInfoDialog = true
+            }
+        )
         if (!context.symphony.groove.playlist.isBuiltInPlaylist(playlist)) {
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(
-                        Icons.Filled.DeleteForever,
-                        null,
-                        tint = ThemeColors.Red,
-                    )
-                },
-                text = {
-                    Text(context.symphony.t.Delete)
-                },
+            BentoMenuDivider()
+            BentoMenuItem(
+                label = context.symphony.t.DeletePlaylist,
+                icon = Icons.Outlined.Delete,
+                destructive = true,
                 onClick = {
                     onDismissRequest()
                     showDeleteDialog = true

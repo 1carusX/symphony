@@ -1,28 +1,28 @@
 package io.github.zyrouge.symphony.ui.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.groove.Playlist
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 
+/**
+ * Names a new playlist. It starts with [initialSongIds]; the subtitle says
+ * how many.
+ */
 @Composable
 fun NewPlaylistDialog(
     context: ViewContext,
@@ -30,69 +30,55 @@ fun NewPlaylistDialog(
     onDone: (Playlist) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    var input by remember { mutableStateOf("") }
-    var showSongsPicker by remember { mutableStateOf(false) }
-    val songIds = remember { mutableStateListOf(*initialSongIds.toTypedArray()) }
-    val songIdsImmutable = songIds.toList()
+    var input by remember { mutableStateOf(TextFieldValue("")) }
     val focusRequester = remember { FocusRequester() }
+    val title = input.text.trim()
 
-    LaunchedEffect(LocalContext.current) {
-        focusRequester.requestFocus()
+    fun create() {
+        if (title.isEmpty()) return
+        val playlist = context.symphony.groove.playlist.create(
+            title = title,
+            songIds = initialSongIds,
+        )
+        onDone(playlist)
     }
 
-    ScaffoldDialog(
+    BentoSheetDialog(
+        title = context.symphony.t.NewPlaylist,
+        subtitle = initialSongIds
+            .takeIf { it.isNotEmpty() }
+            ?.let { context.symphony.t.XSongs(it.size.toString()) },
         onDismissRequest = onDismissRequest,
-        title = {
-            Text(context.symphony.t.NewPlaylist)
-        },
-        content = {
-            Box(
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, top = 12.dp)
-            ) {
-                BentoTextField(
-                    value = input,
-                    onValueChange = { input = it },
-                    label = context.symphony.t.NewPlaylist,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester),
-                )
-            }
-        },
         actions = {
-            BentoTextButton(
-                onClick = {
-                    showSongsPicker = true
-                }
-            ) {
-                Text(context.symphony.t.AddSongs + " (${songIds.size})")
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            BentoTextButton(
-                enabled = input.isNotBlank(),
-                onClick = {
-                    val playlist = context.symphony.groove.playlist.create(
-                        title = input,
-                        songIds = songIds.toList(),
-                    )
-                    onDone(playlist)
-                }
-            ) {
-                Text(context.symphony.t.Done)
-            }
+            BentoSheetButton(
+                label = context.symphony.t.Cancel,
+                onClick = onDismissRequest,
+            )
+            BentoSheetButton(
+                label = context.symphony.t.Done,
+                primary = true,
+                enabled = title.isNotEmpty(),
+                onClick = ::create,
+            )
         },
-    )
-
-    if (showSongsPicker) {
-        PlaylistManageSongsDialog(
-            context,
-            selectedSongIds = songIdsImmutable,
-            onDone = {
-                showSongsPicker = false
-                songIds.clear()
-                songIds.addAll(it)
-            }
+    ) {
+        // Inside the dialog's composition, so the field is attached when it runs.
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
+        BentoSheetTextField(
+            value = input,
+            onValueChange = { input = it },
+            label = context.symphony.t.Name,
+            placeholder = context.symphony.t.Playlist,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(onDone = { create() }),
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .focusRequester(focusRequester),
         )
     }
 }

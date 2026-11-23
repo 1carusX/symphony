@@ -12,13 +12,14 @@ fun PlaylistInformationDialog(
 ) {
     InformationDialog(
         context,
+        header = {
+            InformationHeader(
+                image = playlist.createArtworkImageRequest(context.symphony).build(),
+                title = { LongPressCopyableText(context, playlist.title) },
+                subtitle = context.symphony.t.XSongs(playlist.numberOfTracks.toString()),
+            )
+        },
         content = {
-            InformationKeyValue(context.symphony.t.Id) {
-                LongPressCopyableText(context, playlist.id)
-            }
-            InformationKeyValue(context.symphony.t.Title) {
-                LongPressCopyableText(context, playlist.title)
-            }
             InformationKeyValue(context.symphony.t.TrackCount) {
                 LongPressCopyableText(context, playlist.numberOfTracks.toString())
             }
@@ -32,9 +33,12 @@ fun PlaylistInformationDialog(
                 )
             }
             playlist.path?.let {
-                InformationKeyValue(context.symphony.t.Path) {
+                InformationKeyValue(context.symphony.t.Path, mono = true) {
                     LongPressCopyableText(context, it)
                 }
+            }
+            InformationKeyValue(context.symphony.t.Id, mono = true) {
+                LongPressCopyableText(context, playlist.id)
             }
         },
         onDismissRequest = onDismissRequest,

@@ -109,11 +109,12 @@ class BentoLibraryTest {
 
     @Test
     fun `group tile heights count the visible rows`() {
-        // 96 of chrome plus 44 dp per row; six rows when longer than six
-        // songs (five songs plus the "Show all" row).
-        assertEquals(96f + 3 * 44f, bentoGroupTileHeightDp(3))
-        assertEquals(96f + 6 * 44f, bentoGroupTileHeightDp(6))
-        assertEquals(96f + 6 * 44f, bentoGroupTileHeightDp(10))
+        // 108 of chrome (the header counts its 6 dp padding) plus 44 dp per
+        // row; six rows when longer than six songs (five songs plus the
+        // "Show all" row).
+        assertEquals(108f + 3 * 44f, bentoGroupTileHeightDp(3))
+        assertEquals(108f + 6 * 44f, bentoGroupTileHeightDp(6))
+        assertEquals(108f + 6 * 44f, bentoGroupTileHeightDp(10))
         assertEquals(6, bentoGroupVisibleRowCount(7))
         assertEquals(2, bentoGroupVisibleRowCount(2))
     }

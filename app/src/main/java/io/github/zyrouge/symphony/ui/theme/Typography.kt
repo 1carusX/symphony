@@ -24,6 +24,9 @@ object SymphonyBuiltinFonts {
         fontName = "Inter",
         fontFamily = FontFamily(
             Font(R.font.inter_regular, FontWeight.Normal),
+            // The Bento type scale uses 500 and 600; without these files they fell back to 400 and 700.
+            Font(R.font.inter_medium, FontWeight.Medium),
+            Font(R.font.inter_semibold, FontWeight.SemiBold),
             Font(R.font.inter_bold, FontWeight.Bold),
         ),
     )

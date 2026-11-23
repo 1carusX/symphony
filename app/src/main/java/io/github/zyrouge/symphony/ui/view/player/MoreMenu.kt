@@ -70,7 +70,8 @@ internal fun BentoPlayerMoreMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onShowSpeed: () -> Unit,
-    onShowPitch: () -> Unit,
+    // Speed and pitch share one sheet, opened through onShowSpeed.
+    @Suppress("UNUSED_PARAMETER") onShowPitch: () -> Unit,
     onShowSleepTimer: () -> Unit,
     onClosePlayer: () -> Unit,
 ) {
@@ -124,7 +125,6 @@ internal fun BentoPlayerMoreMenu(
                         data = data,
                         onDismissRequest = onDismissRequest,
                         onShowSpeed = onShowSpeed,
-                        onShowPitch = onShowPitch,
                         onShowSleepTimer = onShowSleepTimer,
                         onClosePlayer = onClosePlayer,
                         onAddToPlaylist = { showAddToPlaylistDialog = true },
@@ -151,7 +151,6 @@ internal fun BentoPlayerMoreMenu(
                 data = data,
                 onDismissRequest = onDismissRequest,
                 onShowSpeed = onShowSpeed,
-                onShowPitch = onShowPitch,
                 onShowSleepTimer = onShowSleepTimer,
                 onClosePlayer = onClosePlayer,
                 onAddToPlaylist = { showAddToPlaylistDialog = true },
@@ -175,7 +174,6 @@ private fun BentoPlayerMoreMenuContent(
     data: BentoPlayerData,
     onDismissRequest: () -> Unit,
     onShowSpeed: () -> Unit,
-    onShowPitch: () -> Unit,
     onShowSleepTimer: () -> Unit,
     onClosePlayer: () -> Unit,
     onAddToPlaylist: () -> Unit,
@@ -224,20 +222,15 @@ private fun BentoPlayerMoreMenuContent(
         Spacer(Modifier.height(6.dp))
         PlayerMenuItem(
             icon = { Icon(Icons.Outlined.Speed, null) },
-            label = context.symphony.t.Speed,
-            value = "x${data.currentSpeed}",
+            label = speedAndPitchLabel(context),
+            value = when (data.currentPitch) {
+                1f -> formatPlaybackRate(data.currentSpeed)
+                else -> formatPlaybackRate(data.currentSpeed) + " · " +
+                    formatPlaybackRate(data.currentPitch)
+            },
             onClick = {
                 onDismissRequest()
                 onShowSpeed()
-            },
-        )
-        PlayerMenuItem(
-            icon = { Icon(Icons.Outlined.Speed, null) },
-            label = context.symphony.t.Pitch,
-            value = "x${data.currentPitch}",
-            onClick = {
-                onDismissRequest()
-                onShowPitch()
             },
         )
         PlayerMenuItem(

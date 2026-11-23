@@ -1,12 +1,6 @@
 package io.github.zyrouge.symphony.ui.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
-import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +13,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
-import io.github.zyrouge.symphony.ui.view.ArtistViewRoute
 
 @Composable
 fun AlbumTile(context: ViewContext, album: Album) {
@@ -71,74 +64,34 @@ fun AlbumDropdownMenu(
 
     BentoMenu(
         expanded = expanded,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        header = {
+            BentoMenuHeader(
+                title = album.name,
+                subtitle = listOfNotNull(
+                    album.artists.joinToString().takeIf { it.isNotEmpty() },
+                    (album.startYear ?: album.endYear)?.toString(),
+                ).joinToString(" · "),
+                art = {
+                    BentoMenuArt(album.createArtworkImageRequest(context.symphony).build())
+                },
+            )
+        },
     ) {
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-            },
-            text = {
-                Text(context.symphony.t.ShufflePlay)
-            },
-            onClick = {
-                onDismissRequest()
-                context.symphony.radio.shorty.playQueue(
-                    album.getSortedSongIds(context.symphony),
-                    shuffle = true,
-                )
-            }
+        BentoQueueMenuItems(
+            context = context,
+            orderedSongIds = { album.getSortedSongIds(context.symphony) },
+            onDismissRequest = onDismissRequest,
+            onAddToPlaylist = { showAddToPlaylistDialog = true },
         )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-            },
-            text = {
-                Text(context.symphony.t.PlayNext)
-            },
-            onClick = {
-                onDismissRequest()
-                context.symphony.radio.queue.add(
-                    album.getSortedSongIds(context.symphony),
-                    context.symphony.radio.queue.currentSongIndex + 1
-                )
-            }
-        )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-            },
-            text = {
-                Text(context.symphony.t.AddToQueue)
-            },
-            onClick = {
-                onDismissRequest()
-                context.symphony.radio.queue.add(album.getSortedSongIds(context.symphony))
-            }
-        )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistAdd, null)
-            },
-            text = {
-                Text(context.symphony.t.AddToPlaylist)
-            },
-            onClick = {
-                onDismissRequest()
-                showAddToPlaylistDialog = true
-            }
-        )
-        album.artists.forEach { artistName ->
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(Icons.Filled.Person, null)
+        if (album.artists.isNotEmpty()) {
+            BentoMenuDivider()
+            BentoGoToArtistItem(
+                context = context,
+                links = remember(album.artists) {
+                    album.artists.map { BentoArtistLink(it, albumArtist = false) }
                 },
-                text = {
-                    Text("${context.symphony.t.ViewArtist}: $artistName")
-                },
-                onClick = {
-                    onDismissRequest()
-                    context.navController.navigate(ArtistViewRoute(artistName))
-                }
+                onDismissRequest = onDismissRequest,
             )
         }
     }
