@@ -14,6 +14,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -107,7 +108,8 @@ private const val FLING_DISMISS_DP_PER_SECOND = 450
  * The content scrolls when it is taller than the window. Content that
  * scrolls by itself (a lazy list) passes [scrollable] = false and gives the
  * list `Modifier.weight(1f)`. [tall] makes the surface take the available
- * height, so a filtered list does not resize it.
+ * height, so a filtered list does not resize it. [overlay] draws over the
+ * whole window above the sheet, for toasts about what the sheet did.
  */
 @Composable
 fun BentoSheetDialog(
@@ -117,6 +119,7 @@ fun BentoSheetDialog(
     scrollable: Boolean = true,
     tall: Boolean = false,
     actions: (@Composable RowScope.() -> Unit)? = null,
+    overlay: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     BentoSheetDialog(
@@ -126,6 +129,7 @@ fun BentoSheetDialog(
         scrollable = scrollable,
         tall = tall,
         actions = actions,
+        overlay = overlay,
         content = content,
     )
 }
@@ -139,6 +143,7 @@ fun BentoSheetDialog(
     scrollable: Boolean = true,
     tall: Boolean = false,
     actions: (@Composable RowScope.() -> Unit)? = null,
+    overlay: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val compact = rememberBentoWindowClass() == BentoWindowClass.COMPACT
@@ -324,6 +329,7 @@ fun BentoSheetDialog(
                     else -> Spacer(modifier = Modifier.height(12.dp))
                 }
             }
+            overlay?.invoke(this)
         }
     }
 }

@@ -1,13 +1,6 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,39 +24,29 @@ import io.github.zyrouge.symphony.services.groove.Groove
 import io.github.zyrouge.symphony.ui.helpers.TransitionDurations
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.components.BentoDialog
+import io.github.zyrouge.symphony.ui.components.BentoSheetActionRow
+import io.github.zyrouge.symphony.ui.components.BentoSheetButton
+import io.github.zyrouge.symphony.ui.components.BentoSheetDialog
+import io.github.zyrouge.symphony.ui.components.BentoSheetSwitchRow
 import io.github.zyrouge.symphony.ui.components.BentoSnackbarHost
 import io.github.zyrouge.symphony.ui.components.settings.BentoListAddRow
 import io.github.zyrouge.symphony.ui.components.settings.BentoListEditorDialog
 import io.github.zyrouge.symphony.ui.components.settings.BentoListTextAddRow
 import io.github.zyrouge.symphony.ui.components.settings.BentoSystemFolderPicker
-import io.github.zyrouge.symphony.ui.components.BentoPageHeader
 import io.github.zyrouge.symphony.ui.components.BentoOptionDialog
-import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
-import io.github.zyrouge.symphony.ui.components.BentoSettingsColumns
-import io.github.zyrouge.symphony.ui.components.BentoSettingRow
 import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
 import io.github.zyrouge.symphony.ui.components.BentoTextDialog
-import io.github.zyrouge.symphony.ui.components.BentoToggleDialog
 import io.github.zyrouge.symphony.ui.components.settings.GrooveFolderPickerDialog
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
-import io.github.zyrouge.symphony.ui.view.SettingsViewRoute
 import kotlin.math.roundToInt
 import io.github.zyrouge.symphony.utils.ImageQuality
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-
-@Serializable
-data class GrooveSettingsViewRoute(
-    val initialElement: String? = null,
-)
 
 private enum class GroovePopup {
     MEDIA_FOLDERS,
@@ -74,14 +57,15 @@ private enum class GroovePopup {
     ARTIST_SEPARATORS,
     GENRE_SEPARATORS,
     ARTWORK_QUALITY,
-    CASE_SENSITIVE,
-    METAPHONY,
 }
 
+/**
+ * The Library settings (folders, filters, tags, cache) in a sheet over the
+ * settings page rather than a page of their own, so wide windows do not
+ * stretch the rows. Values open their editors; switches toggle in place.
+ */
 @Composable
-fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
-    val colors = LocalBentoColors.current
-    val scrollState = rememberScrollState()
+fun GrooveSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var popup by remember { mutableStateOf<GroovePopup?>(null) }
@@ -97,99 +81,85 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
     val caseSensitiveSorting by context.symphony.settings.caseSensitiveSorting.flow.collectAsState()
     val useMetaphony by context.symphony.settings.useMetaphony.flow.collectAsState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.bg),
+    BentoSheetDialog(
+        title = context.symphony.t.LibraryFolders,
+        onDismissRequest = onDismissRequest,
+        actions = {
+            BentoSheetButton(
+                label = context.symphony.t.Done,
+                primary = true,
+                onClick = onDismissRequest,
+            )
+        },
+        overlay = { BentoSnackbarHost(snackbarHostState) },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .verticalScroll(scrollState),
-        ) {
-                BentoPageHeader(
-                    title = context.symphony.t.Groove,
-                    windowClass = rememberBentoWindowClass(),
-                    onBack = { context.navController.popBackStack() },
-                )
-                BentoSettingsColumns {
-                    BentoSettingGroup {
-                        BentoSettingRow(
-                            label = context.symphony.t.MediaFolders,
-                            value = context.symphony.t.XFolders(mediaFolders.size.toString()),
-                            onClick = { popup = GroovePopup.MEDIA_FOLDERS },
-                        )
-                        BentoSettingRow(
-                            label = context.symphony.t.BlacklistFolders,
-                            value = context.symphony.t.XFolders(blacklistFolders.size.toString()),
-                            onClick = { popup = GroovePopup.BLACKLIST_FOLDERS },
-                        )
-                        BentoSettingRow(
-                            label = context.symphony.t.WhitelistFolders,
-                            value = context.symphony.t.XFolders(whitelistFolders.size.toString()),
-                            onClick = { popup = GroovePopup.WHITELIST_FOLDERS },
-                        )
-                    }
-                    BentoSettingGroup {
-                        BentoSettingRow(
-                            label = context.symphony.t.SongsFilterPattern,
-                            value = songsFilterPattern ?: ".*",
-                            onClick = { popup = GroovePopup.MEDIA_FILTER },
-                        )
-                        BentoSettingRow(
-                            label = context.symphony.t.MinSongDurationFilter,
-                            value = context.symphony.t.XSecs(minSongDuration.toString()),
-                            onClick = { popup = GroovePopup.MIN_SONG_DURATION },
-                        )
-                    }
-                    BentoSettingGroup {
-                        BentoSettingRow(
-                            label = context.symphony.t.ArtistTagValueSeparators,
-                            value = artistTagSeparators.joinToString("  "),
-                            onClick = { popup = GroovePopup.ARTIST_SEPARATORS },
-                        )
-                        BentoSettingRow(
-                            label = context.symphony.t.GenreTagValueSeparators,
-                            value = genreTagSeparators.joinToString("  "),
-                            onClick = { popup = GroovePopup.GENRE_SEPARATORS },
-                        )
-                        BentoSettingRow(
-                            label = context.symphony.t.ArtworkQuality,
-                            value = artworkQuality.label(context),
-                            onClick = { popup = GroovePopup.ARTWORK_QUALITY },
-                        )
-                        BentoSettingRow(
-                            label = context.symphony.t.CaseSensitiveSorting,
-                            value = if (caseSensitiveSorting) "On" else "Off",
-                            onClick = { popup = GroovePopup.CASE_SENSITIVE },
-                        )
-                        BentoSettingRow(
-                            label = context.symphony.t.UseMetaphonyMetadataDecoder,
-                            value = if (useMetaphony) "On" else "Off",
-                            onClick = { popup = GroovePopup.METAPHONY },
-                        )
-                    }
-                    BentoSettingGroup {
-                        BentoSettingRow(
-                            label = context.symphony.t.ClearSongCache,
-                            value = null,
-                            onClick = {
-                                refreshMediaLibrary(context.symphony, true)
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        context.symphony.t.SongCacheCleared,
-                                        withDismissAction = true,
-                                    )
-                                }
-                            },
-                        )
-                    }
+        SettingsSheetSectionLabel("Folders")
+        BentoSheetActionRow(
+            title = context.symphony.t.MediaFolders,
+            subtitle = context.symphony.t.XFolders(mediaFolders.size.toString()),
+            onClick = { popup = GroovePopup.MEDIA_FOLDERS },
+        )
+        BentoSheetActionRow(
+            title = context.symphony.t.BlacklistFolders,
+            subtitle = context.symphony.t.XFolders(blacklistFolders.size.toString()),
+            onClick = { popup = GroovePopup.BLACKLIST_FOLDERS },
+        )
+        BentoSheetActionRow(
+            title = context.symphony.t.WhitelistFolders,
+            subtitle = context.symphony.t.XFolders(whitelistFolders.size.toString()),
+            onClick = { popup = GroovePopup.WHITELIST_FOLDERS },
+        )
+        SettingsSheetSectionLabel("Filters")
+        BentoSheetActionRow(
+            title = context.symphony.t.SongsFilterPattern,
+            subtitle = songsFilterPattern ?: ".*",
+            onClick = { popup = GroovePopup.MEDIA_FILTER },
+        )
+        BentoSheetActionRow(
+            title = context.symphony.t.MinSongDurationFilter,
+            subtitle = context.symphony.t.XSecs(minSongDuration.toString()),
+            onClick = { popup = GroovePopup.MIN_SONG_DURATION },
+        )
+        SettingsSheetSectionLabel("Tags and sorting")
+        BentoSheetActionRow(
+            title = context.symphony.t.ArtistTagValueSeparators,
+            subtitle = artistTagSeparators.joinToString("  "),
+            onClick = { popup = GroovePopup.ARTIST_SEPARATORS },
+        )
+        BentoSheetActionRow(
+            title = context.symphony.t.GenreTagValueSeparators,
+            subtitle = genreTagSeparators.joinToString("  "),
+            onClick = { popup = GroovePopup.GENRE_SEPARATORS },
+        )
+        BentoSheetActionRow(
+            title = context.symphony.t.ArtworkQuality,
+            subtitle = artworkQuality.label(context),
+            onClick = { popup = GroovePopup.ARTWORK_QUALITY },
+        )
+        BentoSheetSwitchRow(
+            title = context.symphony.t.CaseSensitiveSorting,
+            checked = caseSensitiveSorting,
+            onCheckedChange = { context.symphony.settings.caseSensitiveSorting.setValue(it) },
+        )
+        BentoSheetSwitchRow(
+            title = context.symphony.t.UseMetaphonyMetadataDecoder,
+            checked = useMetaphony,
+            onCheckedChange = { context.symphony.settings.useMetaphony.setValue(it) },
+        )
+        SettingsSheetSectionLabel("Cache")
+        BentoSheetActionRow(
+            title = context.symphony.t.ClearSongCache,
+            onClick = {
+                refreshMediaLibrary(context.symphony, true)
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        context.symphony.t.SongCacheCleared,
+                        withDismissAction = true,
+                    )
                 }
-                Box(Modifier.padding(8.dp))
-            }
-            BentoSnackbarHost(snackbarHostState)
-        }
+            },
+        )
+    }
 
     when (popup) {
         GroovePopup.MEDIA_FOLDERS -> BentoDialog(
@@ -285,20 +255,6 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
                 context.symphony.settings.artworkQuality.setValue(ImageQuality.entries[index])
                 popup = null
             },
-            onDismiss = { popup = null },
-        )
-
-        GroovePopup.CASE_SENSITIVE -> BentoToggleDialog(
-            title = context.symphony.t.CaseSensitiveSorting,
-            checked = caseSensitiveSorting,
-            onChange = { context.symphony.settings.caseSensitiveSorting.setValue(it) },
-            onDismiss = { popup = null },
-        )
-
-        GroovePopup.METAPHONY -> BentoToggleDialog(
-            title = context.symphony.t.UseMetaphonyMetadataDecoder,
-            checked = useMetaphony,
-            onChange = { context.symphony.settings.useMetaphony.setValue(it) },
             onDismiss = { popup = null },
         )
 

@@ -2,10 +2,8 @@ package io.github.zyrouge.symphony.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,10 +15,8 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SwitchDefaults
@@ -39,156 +35,6 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import kotlin.math.roundToInt
-
-/**
- * A settings group inside one bento tile: a title, then tappable rows whose
- * values open their own popup.
- */
-@Composable
-fun BentoSettingGroup(
-    modifier: Modifier = Modifier,
-    title: String? = null,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    val strings = LocalStrings.current
-    BentoTile(
-        tone = BentoTileTone.PLAIN,
-        sizeClass = BentoTileSizeClass.L,
-        modifier = modifier,
-    ) {
-        val tileColors = LocalBentoTileContentColors.current
-        val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
-        if (title != null) {
-            Text(
-                title,
-                style = BentoTypography.title.copy(fontFamily = appFontFamily),
-                color = tileColors.fg,
-            )
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            content()
-        }
-    }
-}
-
-@Composable
-fun BentoSettingRow(
-    label: String,
-    value: String?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    sub: String? = null,
-    trailing: (@Composable () -> Unit)? = null,
-) {
-    val colors = LocalBentoColors.current
-    val scheme = LocalBentoColorScheme.current
-    val shape = RoundedCornerShape(BentoRadii.TILE_SMALL.dp)
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 52.dp)
-            .clip(shape)
-            .then(
-                when {
-                    scheme == BentoColorScheme.CONTRAST ->
-                        Modifier.border(1.dp, colors.line, shape)
-
-                    else -> Modifier
-                },
-            )
-            .background(colors.raised)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                label,
-                style = BentoTypography.rowTitle,
-                color = colors.fg,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (sub != null) {
-                Text(
-                    sub,
-                    style = BentoTypography.secondary,
-                    color = colors.sub,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-        if (value != null) {
-            Text(
-                value,
-                style = BentoTypography.secondary,
-                color = colors.sub,
-                maxLines = 1,
-            )
-        }
-        if (trailing != null) {
-            trailing()
-        } else {
-            Icon(
-                Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                null,
-                tint = colors.muted,
-            )
-        }
-    }
-}
-
-/** A settings row whose whole surface toggles [checked], with a trailing switch. */
-@Composable
-fun BentoSettingSwitchRow(
-    label: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    sub: String? = null,
-) {
-    BentoSettingRow(
-        label = label,
-        value = null,
-        sub = sub,
-        modifier = modifier,
-        onClick = { onCheckedChange(!checked) },
-        trailing = {
-            BentoSwitch(checked = checked, onCheckedChange = onCheckedChange)
-        },
-    )
-}
-
-@Composable
-fun BentoToggleDialog(
-    title: String,
-    checked: Boolean,
-    onChange: (Boolean) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val colors = LocalBentoColors.current
-    BentoDialog(title = title, onDismiss = onDismiss) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 56.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                title,
-                style = BentoTypography.rowTitle,
-                color = colors.fg,
-                modifier = Modifier.weight(1f),
-            )
-            BentoSwitch(
-                checked = checked,
-                onCheckedChange = onChange,
-            )
-        }
-    }
-}
 
 @Composable
 fun BentoSliderDialog(

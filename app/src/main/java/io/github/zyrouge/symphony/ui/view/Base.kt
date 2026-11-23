@@ -41,16 +41,6 @@ import io.github.zyrouge.symphony.ui.helpers.SlideTransition
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.SymphonyTheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsView
-import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsView
-import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.MiniPlayerSettingsView
-import io.github.zyrouge.symphony.ui.view.settings.MiniPlayerSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.NowPlayingSettingsView
-import io.github.zyrouge.symphony.ui.view.settings.NowPlayingSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsView
-import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsViewRoute
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.serializer
 
@@ -133,21 +123,6 @@ fun BaseView(symphony: Symphony, activity: MainActivity) {
                     }
                     baseComposable<SettingsViewRoute> {
                         SettingsView(context, it.toRoute())
-                    }
-                    baseComposable<AppearanceSettingsViewRoute> {
-                        AppearanceSettingsView(context)
-                    }
-                    baseComposable<GrooveSettingsViewRoute> {
-                        GrooveSettingsView(context, it.toRoute())
-                    }
-                    baseComposable<PlayerSettingsViewRoute> {
-                        PlayerSettingsView(context)
-                    }
-                    baseComposable<NowPlayingSettingsViewRoute> {
-                        NowPlayingSettingsView(context)
-                    }
-                    baseComposable<MiniPlayerSettingsViewRoute> {
-                        MiniPlayerSettingsView(context)
                     }
                 }
 

@@ -174,6 +174,7 @@ fun BentoCollectionPage(
             )
 
             DetailTileIds.PLAY -> BentoActionTile(
+                fillHeight = true,
                 icon = Icons.Filled.PlayArrow,
                 label = context.symphony.t.Play,
                 sub = formatBentoDurationMinutes(totalMs),
@@ -186,6 +187,7 @@ fun BentoCollectionPage(
             )
 
             DetailTileIds.SHUFFLE -> BentoActionTile(
+                fillHeight = true,
                 icon = Icons.Filled.Shuffle,
                 label = context.symphony.t.ShufflePlay,
                 sub = null,
@@ -199,6 +201,7 @@ fun BentoCollectionPage(
             )
 
             DetailTileIds.QUEUE -> BentoActionTile(
+                fillHeight = true,
                 icon = Icons.Filled.Queue,
                 label = context.symphony.t.Queue,
                 sub = "Add $songCountLabel",
@@ -207,6 +210,7 @@ fun BentoCollectionPage(
             )
 
             DetailTileIds.EDIT -> BentoActionTile(
+                fillHeight = true,
                 icon = Icons.Filled.Edit,
                 label = context.symphony.t.ManageSongs,
                 sub = null,
@@ -349,6 +353,7 @@ private fun DetailGridLayout(
             gridClass = gridClass,
             placements = placements,
             modifier = Modifier.fillMaxWidth(),
+            squareTileId = DetailTileIds.COVER,
         ) { tileId, _, geometry ->
             tile(tileId, geometry)
         }
@@ -409,6 +414,7 @@ private fun DetailStackedLayout(
                 gridClass = gridClass,
                 placements = hero,
                 modifier = Modifier.fillMaxWidth(),
+                squareTileId = DetailTileIds.COVER,
             ) { tileId, _, geometry ->
                 tile(tileId, geometry)
             }

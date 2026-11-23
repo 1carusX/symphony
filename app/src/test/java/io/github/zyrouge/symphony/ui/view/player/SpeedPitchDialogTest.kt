@@ -17,4 +17,18 @@ class SpeedPitchDialogTest {
         assertEquals("1.05×", formatPlaybackRate(1.0500001f))
         assertEquals("0.95×", formatPlaybackRate(0.94999998f))
     }
+
+    @Test
+    fun `stop values map to their own stop`() {
+        playbackRateStops.forEachIndexed { index, stop ->
+            assertEquals(index, nearestPlaybackRateStop(stop))
+        }
+    }
+
+    @Test
+    fun `rates set before snapping land on the nearest stop`() {
+        assertEquals(2, nearestPlaybackRateStop(1.05f))
+        assertEquals(5, nearestPlaybackRateStop(3f))
+        assertEquals(0, nearestPlaybackRateStop(0.25f))
+    }
 }

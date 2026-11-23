@@ -199,6 +199,7 @@ fun BentoActionTile(
     tone: BentoTileTone = BentoTileTone.PLAIN,
     main: Boolean = false,
     narrow: Boolean = false,
+    fillHeight: Boolean = false,
     onClick: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
@@ -212,7 +213,13 @@ fun BentoActionTile(
     BentoToneSurface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(BentoSizes.ACTION_TILE.dp),
+            .then(
+                // In a grid cell the tile fills the row, so it lines up with its neighbours.
+                when {
+                    fillHeight -> Modifier.fillMaxHeight()
+                    else -> Modifier.height(BentoSizes.ACTION_TILE.dp)
+                },
+            ),
         tone = tone,
         onClick = onClick,
     ) {

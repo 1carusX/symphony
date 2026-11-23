@@ -1,11 +1,10 @@
 package io.github.zyrouge.symphony.ui.view.player
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,11 +23,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.components.BentoSheetButton
-import io.github.zyrouge.symphony.ui.components.BentoSheetChip
 import io.github.zyrouge.symphony.ui.components.BentoSheetDialog
 import io.github.zyrouge.symphony.ui.components.BentoSheetSwitchRow
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
@@ -39,11 +40,15 @@ import java.math.RoundingMode
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private val playbackRatePresets = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
-private val playbackRateRange = 0.5f..3f
+/** The slider's stops; it snaps to these and nothing in between. */
+internal val playbackRateStops = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
 
-/** Slider positions are 0.05 apart. */
-private const val PLAYBACK_RATE_STEPS_PER_UNIT = 20
+/** Index of the stop closest to [value], for rates set before the slider snapped. */
+internal fun nearestPlaybackRateStop(value: Float): Int =
+    playbackRateStops.indices.minBy { abs(playbackRateStops[it] - value) }
+
+/** Width of the custom thumb; the Material slider insets its track by half of it. */
+private val PlaybackRateThumbWidth = 14.dp
 
 /** "Speed & Pitch", the title of the sheet and of its player menu item. */
 internal fun speedAndPitchLabel(context: ViewContext) =
@@ -57,9 +62,9 @@ internal fun formatPlaybackRate(value: Float): String =
         .toPlainString() + "×"
 
 /**
- * Speed and pitch in one sheet: a slider and presets for each, the
- * persist-until-queue-end switch, Reset and Done. Changes apply while
- * dragging.
+ * Speed and pitch in one sheet: a slider for each that snaps to the preset
+ * stops (0.5x to 2x), the persist-until-queue-end switch, Reset and Done.
+ * Changes apply while dragging.
  */
 @Composable
 fun NowPlayingSpeedPitchDialog(
@@ -114,7 +119,7 @@ fun NowPlayingSpeedPitchDialog(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlaybackRateControl(
     label: String,
@@ -122,8 +127,7 @@ private fun PlaybackRateControl(
     onChange: (Float) -> Unit,
 ) {
     val colors = LocalBentoColors.current
-    val steps = ((playbackRateRange.endInclusive - playbackRateRange.start) *
-        PLAYBACK_RATE_STEPS_PER_UNIT).roundToInt() - 1
+    val lastStop = playbackRateStops.lastIndex
     Column(
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -143,22 +147,24 @@ private fun PlaybackRateControl(
                 color = colors.accent,
             )
         }
+        // The stops sit evenly along the track whatever their values, so the
+        // slider works on stop indexes and snaps with Material's steps.
         Slider(
-            value = value.coerceIn(playbackRateRange),
-            onValueChange = {
-                onChange((it * PLAYBACK_RATE_STEPS_PER_UNIT).roundToInt() /
-                    PLAYBACK_RATE_STEPS_PER_UNIT.toFloat())
-            },
-            valueRange = playbackRateRange,
-            steps = steps,
+            value = nearestPlaybackRateStop(value).toFloat(),
+            onValueChange = { onChange(playbackRateStops[it.roundToInt().coerceIn(0, lastStop)]) },
+            valueRange = 0f..lastStop.toFloat(),
+            steps = lastStop - 1,
             modifier = Modifier
                 .fillMaxWidth()
-                .semantics { contentDescription = label },
+                .semantics {
+                    contentDescription = label
+                    stateDescription = formatPlaybackRate(value)
+                },
             thumb = {
                 // A 6 x 28 handle with a ring of the sheet color, as the prototype.
                 Box(
                     modifier = Modifier
-                        .size(width = 14.dp, height = 36.dp)
+                        .size(width = PlaybackRateThumbWidth, height = 36.dp)
                         .clip(RoundedCornerShape(7.dp))
                         .background(colors.`float`),
                     contentAlignment = Alignment.Center,
@@ -172,9 +178,7 @@ private fun PlaybackRateControl(
                 }
             },
             track = { state ->
-                val fraction = ((state.value - playbackRateRange.start) /
-                    (playbackRateRange.endInclusive - playbackRateRange.start))
-                    .coerceIn(0f, 1f)
+                val fraction = (state.value / lastStop).coerceIn(0f, 1f)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -188,18 +192,58 @@ private fun PlaybackRateControl(
                             .fillMaxHeight()
                             .background(colors.accent),
                     )
+                    // One dot per stop, so the slider reads as notched rather than smooth.
+                    Canvas(modifier = Modifier.matchParentSize()) {
+                        val radius = 2.dp.toPx()
+                        val inset = size.height / 2f
+                        for (stop in 0..lastStop) {
+                            val x = inset + (size.width - inset * 2f) * stop / lastStop
+                            drawCircle(
+                                color = if (stop <= state.value) colors.onAccent else colors.sub,
+                                radius = radius,
+                                center = Offset(x, size.height / 2f),
+                            )
+                        }
+                    }
                 }
             },
         )
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            playbackRatePresets.forEach { preset ->
-                BentoSheetChip(
-                    label = formatPlaybackRate(preset),
-                    selected = abs(preset - value) < 0.001f,
-                    onClick = { onChange(preset) },
+        PlaybackRateStopLabels(value = value)
+    }
+}
+
+/**
+ * The stop values under the track, each centred on its stop: the Material
+ * slider insets the track by half the thumb width on both sides.
+ */
+@Composable
+private fun PlaybackRateStopLabels(value: Float) {
+    val colors = LocalBentoColors.current
+    val current = nearestPlaybackRateStop(value)
+    val lastStop = playbackRateStops.lastIndex
+    Layout(
+        modifier = Modifier.fillMaxWidth(),
+        content = {
+            playbackRateStops.forEachIndexed { index, stop ->
+                Text(
+                    formatPlaybackRate(stop),
+                    style = BentoTypography.label.copy(fontFeatureSettings = "tnum"),
+                    color = if (index == current) colors.accent else colors.sub,
+                    maxLines = 1,
+                )
+            }
+        },
+    ) { measurables, constraints ->
+        val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0)) }
+        val width = constraints.maxWidth
+        val inset = (PlaybackRateThumbWidth / 2).roundToPx()
+        val height = placeables.maxOf { it.height }
+        layout(width, height) {
+            placeables.forEachIndexed { index, placeable ->
+                val center = inset + (width - inset * 2) * index / lastStop
+                placeable.place(
+                    (center - placeable.width / 2).coerceIn(0, width - placeable.width),
+                    0,
                 )
             }
         }

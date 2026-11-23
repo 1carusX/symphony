@@ -114,6 +114,7 @@ fun BentoGrid(
     gridClass: BentoGridClass,
     placements: List<BentoTilePlacement>,
     modifier: Modifier = Modifier,
+    squareTileId: String? = null,
     tile: @Composable (tileId: String, placement: BentoTilePlacement, geometry: BentoTileGeometry) -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier) {
@@ -123,8 +124,8 @@ fun BentoGrid(
             else -> BentoSpacing.GUTTER_OTHER.dp
         }
         val innerWidth = maxWidth - gutter * 2
-        val measure = remember(placements, gridClass, innerWidth) {
-            measureBentoGrid(placements, gridClass, innerWidth.value)
+        val measure = remember(placements, gridClass, innerWidth, squareTileId) {
+            measureBentoGrid(placements, gridClass, innerWidth.value, squareTileId)
         }
         Box(
             modifier = Modifier

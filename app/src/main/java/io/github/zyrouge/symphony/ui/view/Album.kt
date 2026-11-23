@@ -285,6 +285,7 @@ private fun AlbumGrid(
                 gridClass = gridClass,
                 placements = albumPlacements(gridClass, tracksRowSpan),
                 modifier = Modifier.fillMaxWidth(),
+                squareTileId = "acover",
             ) { tileId, _, geometry ->
                 when (tileId) {
                     "acover" -> AlbumCoverTile(context = context, album = album, geometry = geometry)
@@ -297,6 +298,7 @@ private fun AlbumGrid(
                     )
 
                     "aplay" -> BentoActionTile(
+                        fillHeight = true,
                         icon = Icons.Filled.PlayArrow,
                         label = context.symphony.t.Play,
                         sub = formatBentoDurationMinutes(songs.sumOf { it.duration }),
@@ -307,6 +309,7 @@ private fun AlbumGrid(
                     )
 
                     "ashuf" -> BentoActionTile(
+                        fillHeight = true,
                         icon = Icons.Filled.Shuffle,
                         label = context.symphony.t.ShufflePlay,
                         sub = null,
@@ -322,6 +325,7 @@ private fun AlbumGrid(
                     )
 
                     "aqueue" -> BentoActionTile(
+                        fillHeight = true,
                         icon = Icons.Filled.Queue,
                         label = context.symphony.t.Queue,
                         sub = "Add " + context.symphony.t.XSongs(songs.size.toString()),

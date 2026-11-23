@@ -1,39 +1,23 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import io.github.zyrouge.symphony.services.locales.localeNativeName
 import io.github.zyrouge.symphony.services.locales.localeTag
 import io.github.zyrouge.symphony.services.locales.symphonyLocales
-import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.components.BentoOptionDialog
-import io.github.zyrouge.symphony.ui.components.BentoPageHeader
-import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
-import io.github.zyrouge.symphony.ui.components.BentoSettingsColumns
-import io.github.zyrouge.symphony.ui.components.BentoSettingRow
+import io.github.zyrouge.symphony.ui.components.BentoSheetActionRow
+import io.github.zyrouge.symphony.ui.components.BentoSheetButton
+import io.github.zyrouge.symphony.ui.components.BentoSheetDialog
 import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.SymphonyTypography
-import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
-import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
-
-@Serializable
-object AppearanceSettingsViewRoute
 
 private enum class AppearancePopup {
     LANGUAGE,
@@ -44,11 +28,13 @@ private enum class AppearancePopup {
 
 private val SCALE_RANGE = 0.5f..2f
 
+/**
+ * The Appearance settings (language, font and scaling) in a sheet over the
+ * settings page rather than a page of their own, so wide windows do not
+ * stretch the rows. Each value opens its picker or slider dialog.
+ */
 @Composable
-fun AppearanceSettingsView(context: ViewContext) {
-    val scrollState = rememberScrollState()
-    val windowClass = rememberBentoWindowClass()
-    val colors = LocalBentoColors.current
+fun AppearanceSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
     val language by context.symphony.settings.language.flow.collectAsState()
     val fontFamily by context.symphony.settings.fontFamily.flow.collectAsState()
     val fontScale by context.symphony.settings.fontScale.flow.collectAsState()
@@ -62,51 +48,37 @@ fun AppearanceSettingsView(context: ViewContext) {
     }
     val languageValue = language ?: ""
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.bg),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .verticalScroll(scrollState),
-        ) {
-            BentoPageHeader(
-                title = context.symphony.t.Appearance,
-                windowClass = windowClass,
-                onBack = { context.navController.popBackStack() },
+    BentoSheetDialog(
+        title = context.symphony.t.Appearance,
+        onDismissRequest = onDismissRequest,
+        actions = {
+            BentoSheetButton(
+                label = context.symphony.t.Done,
+                primary = true,
+                onClick = onDismissRequest,
             )
-            BentoSettingsColumns {
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.Language_,
-                        value = languages.firstOrNull { it.first == languageValue }?.second
-                            ?: languageValue,
-                        onClick = { popup = AppearancePopup.LANGUAGE },
-                    )
-                }
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.Font,
-                        value = SymphonyTypography.resolveFont(fontFamily).fontName,
-                        onClick = { popup = AppearancePopup.FONT },
-                    )
-                    BentoSettingRow(
-                        label = context.symphony.t.FontScale,
-                        value = "x$fontScale",
-                        onClick = { popup = AppearancePopup.FONT_SCALE },
-                    )
-                    BentoSettingRow(
-                        label = context.symphony.t.ContentScale,
-                        value = "x$contentScale",
-                        onClick = { popup = AppearancePopup.CONTENT_SCALE },
-                    )
-                }
-            }
-            Box(Modifier.bentoGestureBarPadding())
-        }
+        },
+    ) {
+        BentoSheetActionRow(
+            title = context.symphony.t.Language_,
+            subtitle = languages.firstOrNull { it.first == languageValue }?.second ?: languageValue,
+            onClick = { popup = AppearancePopup.LANGUAGE },
+        )
+        BentoSheetActionRow(
+            title = context.symphony.t.Font,
+            subtitle = SymphonyTypography.resolveFont(fontFamily).fontName,
+            onClick = { popup = AppearancePopup.FONT },
+        )
+        BentoSheetActionRow(
+            title = context.symphony.t.FontScale,
+            subtitle = "x$fontScale",
+            onClick = { popup = AppearancePopup.FONT_SCALE },
+        )
+        BentoSheetActionRow(
+            title = context.symphony.t.ContentScale,
+            subtitle = "x$contentScale",
+            onClick = { popup = AppearancePopup.CONTENT_SCALE },
+        )
     }
 
     when (popup) {

@@ -98,15 +98,15 @@ import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoGridClass
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
-import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsViewRoute
+import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsDialog
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.zyrouge.symphony.ui.view.settings.HomeTabsDialog
-import io.github.zyrouge.symphony.ui.view.settings.MiniPlayerSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.NowPlayingSettingsViewRoute
+import io.github.zyrouge.symphony.ui.view.settings.MiniPlayerSettingsDialog
+import io.github.zyrouge.symphony.ui.view.settings.NowPlayingSettingsDialog
 import io.github.zyrouge.symphony.ui.view.settings.UpdatesDialog
-import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsViewRoute
+import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsDialog
+import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsDialog
 import io.github.zyrouge.symphony.utils.ActivityUtils
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -178,6 +178,15 @@ private fun settingsPlacements(gridClass: BentoGridClass) = when (gridClass) {
     )
 }
 
+/** Settings that open in a sheet over the settings page instead of a page of their own. */
+private enum class SettingsDialog {
+    APPEARANCE,
+    LIBRARY,
+    PLAYER,
+    NOW_PLAYING,
+    MINI_PLAYER,
+}
+
 @Composable
 fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
     val colors = LocalBentoColors.current
@@ -188,6 +197,15 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
     val homeTabs by context.symphony.settings.homeTabs.flow.collectAsState()
     val checkForUpdates by context.symphony.settings.checkForUpdates.flow.collectAsState()
     var showHomeTabsDialog by remember { mutableStateOf(false) }
+    // "Add media folders" links arrive with the media folders element and open the Library sheet.
+    var openDialog by remember {
+        mutableStateOf(
+            when (route.initialElement) {
+                SettingsViewRoute.ELEMENT_MEDIA_FOLDERS -> SettingsDialog.LIBRARY
+                else -> null
+            },
+        )
+    }
     var showUpdatesDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -239,9 +257,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 icon = Icons.Rounded.Headphones,
                                 label = context.symphony.t.Player,
                                 sub = "Fades, seek buttons, headphones",
-                                onClick = {
-                                    context.navController.navigate(PlayerSettingsViewRoute)
-                                },
+                                onClick = { openDialog = SettingsDialog.PLAYER },
                             )
 
                             "nowp" -> BentoShortcutTile(
@@ -249,9 +265,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 icon = Icons.Rounded.Lyrics,
                                 label = context.symphony.t.NowPlaying,
                                 sub = "Buttons, audio format, lyrics",
-                                onClick = {
-                                    context.navController.navigate(NowPlayingSettingsViewRoute)
-                                },
+                                onClick = { openDialog = SettingsDialog.NOW_PLAYING },
                             )
 
                             "mini" -> BentoShortcutTile(
@@ -259,9 +273,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 icon = Icons.Rounded.PlayCircle,
                                 label = "Mini player",
                                 sub = "Capsule buttons",
-                                onClick = {
-                                    context.navController.navigate(MiniPlayerSettingsViewRoute)
-                                },
+                                onClick = { openDialog = SettingsDialog.MINI_PLAYER },
                             )
 
                             "folders" -> BentoShortcutTile(
@@ -269,14 +281,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 icon = Icons.Rounded.Folder,
                                 label = context.symphony.t.LibraryFolders,
                                 sub = context.symphony.t.XFolders(folderCount.toString()),
-                                onClick = {
-                                    context.navController.navigate(
-                                        GrooveSettingsViewRoute(
-                                            route.initialElement
-                                                ?: SettingsViewRoute.ELEMENT_MEDIA_FOLDERS,
-                                        ),
-                                    )
-                                },
+                                onClick = { openDialog = SettingsDialog.LIBRARY },
                             )
 
                             "updates" -> BentoShortcutTile(
@@ -292,9 +297,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 icon = Icons.Rounded.Palette,
                                 label = context.symphony.t.Appearance,
                                 sub = "Language, font, text size",
-                                onClick = {
-                                    context.navController.navigate(AppearanceSettingsViewRoute)
-                                },
+                                onClick = { openDialog = SettingsDialog.APPEARANCE },
                             )
 
                             "about" -> BentoTile(
@@ -317,6 +320,34 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                         context = context,
                         onDismiss = { showHomeTabsDialog = false },
                     )
+                }
+                when (openDialog) {
+                    SettingsDialog.APPEARANCE -> AppearanceSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    SettingsDialog.LIBRARY -> GrooveSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    SettingsDialog.PLAYER -> PlayerSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    SettingsDialog.NOW_PLAYING -> NowPlayingSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    SettingsDialog.MINI_PLAYER -> MiniPlayerSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    null -> Unit
                 }
                 Spacer(Modifier.height(16.dp))
                 SettingsLegacyLinksRow(context)

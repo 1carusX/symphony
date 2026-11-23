@@ -73,7 +73,6 @@ import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
 import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop
 import io.github.zyrouge.symphony.ui.view.SettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsViewRoute
 import kotlinx.coroutines.launch
 
 /**
@@ -133,9 +132,7 @@ fun SongsView(context: ViewContext) {
                         modifier = Modifier
                             .clickable {
                                 context.navController.navigate(
-                                    GrooveSettingsViewRoute(
-                                        SettingsViewRoute.ELEMENT_MEDIA_FOLDERS,
-                                    ),
+                                    SettingsViewRoute(SettingsViewRoute.ELEMENT_MEDIA_FOLDERS),
                                 )
                             }
                             .padding(2.dp),
