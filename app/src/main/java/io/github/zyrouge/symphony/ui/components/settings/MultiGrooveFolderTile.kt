@@ -40,6 +40,9 @@ import io.github.zyrouge.symphony.ui.components.SubtleCaptionText
 import io.github.zyrouge.symphony.ui.components.drawScrollBar
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.helpers.navigateToFolder
+import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
+import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.SimpleFileSystem
 import io.github.zyrouge.symphony.utils.SimplePath
 
@@ -143,7 +146,7 @@ fun GrooveFolderPickerDialog(
                                     .fillMaxWidth()
                                     .clip(
                                         RoundedCornerShape(
-                                            io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.ROW.dp,
+                                            BentoRadii.ROW.dp,
                                         ),
                                     )
                                     .clickable { currentFolder = folder }
@@ -153,22 +156,22 @@ fun GrooveFolderPickerDialog(
                                 Icon(
                                     Icons.Filled.Folder,
                                     null,
-                                    tint = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub,
+                                    tint = LocalBentoColors.current.sub,
                                     modifier = Modifier.size(28.dp),
                                 )
                                 Spacer(modifier = Modifier.width(14.dp))
                                 Column {
                                     Text(
                                         folder.name,
-                                        style = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.rowTitle,
-                                        color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.fg,
+                                        style = BentoTypography.rowTitle,
+                                        color = LocalBentoColors.current.fg,
                                     )
                                     Text(
                                         context.symphony.t.XFolders(
                                             folder.childFoldersCount.toString()
                                         ),
-                                        style = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.secondary,
-                                        color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub,
+                                        style = BentoTypography.secondary,
+                                        color = LocalBentoColors.current.sub,
                                     )
                                 }
                             }

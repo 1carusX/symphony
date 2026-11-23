@@ -65,6 +65,8 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop
 import io.github.zyrouge.symphony.ui.view.SettingsViewRoute
 import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsViewRoute
 import kotlinx.coroutines.launch
@@ -214,7 +216,7 @@ fun SongsView(context: ViewContext) {
                             BentoSortMenu(
                                 expanded = showSortMenu,
                                 onDismissRequest = { showSortMenu = false },
-                                title = "Sort songs by",
+                                title = context.symphony.t.SortSongsBy,
                                 options = SongRepository.SortBy.entries.map {
                                     BentoSortOption(it, it.label(context))
                                 },
@@ -276,7 +278,7 @@ private fun SongsListTile(
 ) {
     val colors = LocalBentoColors.current
     val listState = rememberLazyListState()
-    val contentAtEnd = io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd.current
+    val contentAtEnd = LocalHomeContentAtEnd.current
     androidx.compose.runtime.LaunchedEffect(listState) {
         androidx.compose.runtime.snapshotFlow {
             val info = listState.layoutInfo
@@ -286,7 +288,7 @@ private fun SongsListTile(
                 last.offset + last.size <= info.viewportEndOffset + 4
         }.collect { contentAtEnd.value = it }
     }
-    val contentAtTop = io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop.current
+    val contentAtTop = LocalHomeContentAtTop.current
     androidx.compose.runtime.LaunchedEffect(listState) {
         androidx.compose.runtime.snapshotFlow {
             listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset <= 4

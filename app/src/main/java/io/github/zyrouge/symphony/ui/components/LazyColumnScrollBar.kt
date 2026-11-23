@@ -13,10 +13,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.toSafeFinite
 
 fun Modifier.drawScrollBar(state: LazyListState): Modifier = composed {
-    val scrollPointerColor = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.sub
+    val scrollPointerColor = LocalBentoColors.current.sub
     val isLastItemVisible by remember {
         derivedStateOf {
             state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == state.layoutInfo.totalItemsCount - 1

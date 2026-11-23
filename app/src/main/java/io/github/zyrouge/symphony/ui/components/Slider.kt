@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.RangeUtils
 
 @Composable
@@ -32,7 +33,7 @@ fun Slider(
     onChange: (Float) -> Unit,
 ) {
     Column(modifier = modifier) {
-        val colors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
+        val colors = LocalBentoColors.current
         val ratio = RangeUtils.calculateRatioFromValue(value, range)
         var pointerOffsetX = 0f
 

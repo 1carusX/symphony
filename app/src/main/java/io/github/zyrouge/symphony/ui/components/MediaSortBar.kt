@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 
 @Composable
 fun <T : Enum<T>> MediaSortBar(
@@ -52,10 +53,10 @@ fun <T : Enum<T>> MediaSortBar(
     onShufflePlay: (() -> Unit)? = null,
     onShowModifyLayout: (() -> Unit)? = null,
 ) {
-    val bentoColors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
+    val bentoColors = LocalBentoColors.current
     var showDropdown by remember { mutableStateOf(false) }
     val currentTextStyle = MaterialTheme.typography.bodySmall.run {
-        copy(color = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current.fg)
+        copy(color = LocalBentoColors.current.fg)
     }
 
     val iconButtonStyle = IconButtonDefaults.iconButtonColors(

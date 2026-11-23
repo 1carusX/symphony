@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.services.radio.Radio
 import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.components.BentoActionTile
@@ -44,6 +45,7 @@ import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.components.BentoPageHeader
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 
@@ -63,7 +65,7 @@ fun BentoCollectionPage(
     modifier: Modifier = Modifier,
     trailingMenu: (@Composable () -> Unit)? = null,
     leading: (@Composable () -> Unit)? = null,
-    rowMenu: (@Composable androidx.compose.foundation.layout.RowScope.(io.github.zyrouge.symphony.services.groove.Song) -> Unit)? = null,
+    rowMenu: (@Composable androidx.compose.foundation.layout.RowScope.(Song) -> Unit)? = null,
 ) {
     val colors = LocalBentoColors.current
     val windowClass = rememberBentoWindowClass()
@@ -79,7 +81,7 @@ fun BentoCollectionPage(
         derivedStateOf { context.symphony.groove.song.get(sortedSongIds) }
     }
     val playingSong = rememberBentoPlayingSong(context)
-    val compact = windowClass == io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass.COMPACT
+    val compact = windowClass == BentoWindowClass.COMPACT
 
     Box(
         modifier = modifier

@@ -33,6 +33,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,12 +45,12 @@ fun SquareGrooveTile(
     onPlay: () -> Unit,
     onClick: () -> Unit,
 ) {
-    val bentoColors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
+    val bentoColors = LocalBentoColors.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(RoundedCornerShape(io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE_SMALL.dp))
+            .clip(RoundedCornerShape(BentoRadii.TILE_SMALL.dp))
             .clickable(onClick = onClick),
     ) {
         Box(modifier = Modifier.padding(12.dp)) {

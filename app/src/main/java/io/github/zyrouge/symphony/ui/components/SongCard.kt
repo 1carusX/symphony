@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.view.AlbumArtistViewRoute
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
 import io.github.zyrouge.symphony.ui.view.ArtistViewRoute
@@ -77,12 +79,12 @@ fun SongCard(
         derivedStateOf { favoriteSongIds.contains(song.id) }
     }
 
-    val bentoColors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
+    val bentoColors = LocalBentoColors.current
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE_SMALL.dp))
+            .clip(RoundedCornerShape(BentoRadii.TILE_SMALL.dp))
             .clickable(onClick = onClick)
     ) {
         Box(modifier = Modifier.padding(12.dp, 12.dp, 4.dp, 12.dp)) {

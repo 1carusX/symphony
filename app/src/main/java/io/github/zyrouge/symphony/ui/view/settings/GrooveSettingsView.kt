@@ -29,6 +29,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import io.github.zyrouge.symphony.Symphony
+import io.github.zyrouge.symphony.services.groove.Groove
 import io.github.zyrouge.symphony.ui.helpers.TransitionDurations
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
@@ -330,11 +332,11 @@ fun ImageQuality.label(context: ViewContext) = when (this) {
 
 private var refreshMediaLibraryJob: kotlinx.coroutines.Job? = null
 
-private fun refreshMediaLibrary(symphony: io.github.zyrouge.symphony.Symphony, clearCache: Boolean = false) {
+private fun refreshMediaLibrary(symphony: Symphony, clearCache: Boolean = false) {
     symphony.radio.stop()
     refreshMediaLibraryJob?.cancel()
     refreshMediaLibraryJob = symphony.groove.coroutineScope.launch {
-        val options = io.github.zyrouge.symphony.services.groove.Groove.FetchOptions(
+        val options = Groove.FetchOptions(
             resetInMemoryCache = true,
             resetPersistentCache = clearCache,
         )

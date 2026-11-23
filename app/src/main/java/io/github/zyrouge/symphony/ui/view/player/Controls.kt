@@ -176,7 +176,7 @@ internal fun BentoPlayerTransport(
                 PlayerMode.REPEAT_ONE -> Icons.Filled.RepeatOne
                 PlayerMode.SHUFFLE -> Icons.Filled.Shuffle
             },
-            label = "Play mode: ${playMode.label}",
+            label = context.symphony.t.PlayModeX(playMode.label),
             size = BentoSizes.ICON_BUTTON.dp,
             iconSize = BentoSizes.ICON.dp,
             tint = if (playMode == PlayerMode.REPEAT_OFF) colors.muted else colors.sub,
@@ -209,7 +209,7 @@ internal fun BentoPlayerTransport(
         )
         PlayerIconButton(
             icon = Icons.Filled.SkipPrevious,
-            label = "Previous",
+            label = context.symphony.t.Previous,
             size = BentoSizes.PREV_NEXT_BUTTON.dp,
             iconSize = BentoSizes.PREV_NEXT_ICON.dp,
             tint = colors.fg,
@@ -224,7 +224,7 @@ internal fun BentoPlayerTransport(
         )
         PlayerIconButton(
             icon = Icons.Filled.SkipNext,
-            label = "Next",
+            label = context.symphony.t.Next,
             size = BentoSizes.PREV_NEXT_BUTTON.dp,
             iconSize = BentoSizes.PREV_NEXT_ICON.dp,
             tint = colors.fg,
@@ -312,7 +312,7 @@ internal fun BentoPlayerExtras(
         Box {
             PlayerExtraButton(
                 icon = { Icon(Icons.Outlined.MoreHoriz, null) },
-                label = "More",
+                label = context.symphony.t.More,
                 selected = null,
                 onClick = { showMore = true },
             )

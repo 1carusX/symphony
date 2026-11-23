@@ -29,6 +29,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
+import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 
 @Composable
 fun LoaderScaffold(
@@ -60,15 +63,15 @@ fun LoaderScaffold(
                     height = it.size.height
                 },
         ) {
-            val colors = io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors.current
+            val colors = LocalBentoColors.current
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
                         colors.float,
                         RoundedCornerShape(
-                            topStart = io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE.dp,
-                            topEnd = io.github.zyrouge.symphony.ui.theme.bento.BentoRadii.TILE.dp,
+                            topStart = BentoRadii.TILE.dp,
+                            topEnd = BentoRadii.TILE.dp,
                         ),
                     )
                     .padding(16.dp, 12.dp)
@@ -85,7 +88,7 @@ fun LoaderScaffold(
                     )
                     Text(
                         context.symphony.t.Loading,
-                        style = io.github.zyrouge.symphony.ui.theme.bento.BentoTypography.secondary,
+                        style = BentoTypography.secondary,
                         color = colors.sub,
                     )
                 }

@@ -30,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.i18n.Strings
+import io.github.zyrouge.symphony.i18n.rememberStrings
 import io.github.zyrouge.symphony.desktop.library.DesktopLibrary
 import io.github.zyrouge.symphony.desktop.library.DesktopTrack
 import io.github.zyrouge.symphony.desktop.player.PlaybackFailure
@@ -75,10 +77,12 @@ fun DesktopApp(window: Window, initialDirectory: Path? = null) {
         }.apply { isDaemon = true }.start()
     }
 
+    val strings = rememberStrings(java.util.Locale.getDefault().language)
+
     fun chooseFolder() {
         val chooser = JFileChooser().apply {
             fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-            dialogTitle = "Choose music folder"
+            dialogTitle = strings.ChooseMusicFolder
         }
         if (chooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
             load(chooser.selectedFile.toPath())
@@ -106,9 +110,9 @@ fun DesktopApp(window: Window, initialDirectory: Path? = null) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Symphony Desktop") },
+                    title = { Text(strings.SymphonyDesktop) },
                     actions = {
-                        TextButton(onClick = { chooseFolder() }) { Text("Open folder") }
+                        TextButton(onClick = { chooseFolder() }) { Text(strings.OpenFolder) }
                     },
                 )
             },
@@ -136,6 +140,7 @@ fun DesktopApp(window: Window, initialDirectory: Path? = null) {
                 }
                 HorizontalDivider()
                 NowPlayingBar(
+                    strings = strings,
                     state = playerState.value,
                     positionMs = positionMs.value,
                     durationMs = durationMs.value,
@@ -201,6 +206,7 @@ private fun TrackRow(track: DesktopTrack, selected: Boolean, onClick: () -> Unit
 
 @Composable
 private fun NowPlayingBar(
+    strings: Strings,
     state: PlaybackState,
     positionMs: Long,
     durationMs: Long,
@@ -211,7 +217,7 @@ private fun NowPlayingBar(
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(
-            text = describe(state),
+            text = describe(state, strings),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
         )
@@ -220,9 +226,9 @@ private fun NowPlayingBar(
             Button(onClick = onTogglePlay) {
                 Text(
                     when (state) {
-                        is PlaybackState.Playing -> "Pause"
-                        is PlaybackState.Paused -> "Resume"
-                        else -> "Play"
+                        is PlaybackState.Playing -> strings.Pause
+                        is PlaybackState.Paused -> strings.Resume
+                        else -> strings.Play
                     },
                 )
             }
@@ -241,7 +247,7 @@ private fun NowPlayingBar(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Volume", style = MaterialTheme.typography.bodySmall)
+            Text(strings.Volume, style = MaterialTheme.typography.bodySmall)
             Slider(
                 value = volume.toFloat(),
                 onValueChange = { onVolume(it.toInt()) },
@@ -261,18 +267,18 @@ private fun currentPath(state: PlaybackState): Path? = when (state) {
     is PlaybackState.Failed -> state.path
 }
 
-private fun describe(state: PlaybackState): String = when (state) {
-    PlaybackState.Idle -> "Nothing playing"
+private fun describe(state: PlaybackState, strings: Strings): String = when (state) {
+    PlaybackState.Idle -> strings.NothingPlaying
     is PlaybackState.Loading -> "Loading ${state.path.fileName}"
     is PlaybackState.Playing -> "Playing ${state.path.fileName}"
     is PlaybackState.Paused -> "Paused ${state.path.fileName}"
     is PlaybackState.Ended -> "Ended ${state.path.fileName}"
     is PlaybackState.Failed -> when (state.reason) {
-        PlaybackFailure.BackendUnavailable -> "LibVLC is not installed"
-        PlaybackFailure.FileNotFound -> "File not found"
-        PlaybackFailure.Unreadable -> "File is not readable"
-        PlaybackFailure.UnsupportedFormat -> "Unsupported format"
-        PlaybackFailure.PlaybackError -> "Playback failed"
+        PlaybackFailure.BackendUnavailable -> strings.LibVLCIsNotInstalled
+        PlaybackFailure.FileNotFound -> strings.FileNotFound
+        PlaybackFailure.Unreadable -> strings.FileIsNotReadable
+        PlaybackFailure.UnsupportedFormat -> strings.UnsupportedFormat
+        PlaybackFailure.PlaybackError -> strings.PlaybackFailed
     }
 }
 

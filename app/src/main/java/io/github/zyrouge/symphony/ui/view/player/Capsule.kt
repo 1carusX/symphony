@@ -150,7 +150,7 @@ private fun ExpandedCapsule(
         if (showPrevious) {
             BentoCapsuleIconButton(
                 icon = { Icon(Icons.Filled.SkipPrevious, "Previous", tint = colors.sub) },
-                label = "Previous",
+                label = context.symphony.t.Previous,
                 onClick = { context.symphony.radio.shorty.previous() },
             )
         }
@@ -198,7 +198,7 @@ private fun ExpandedCapsule(
         }
         BentoCapsuleIconButton(
             icon = { Icon(Icons.Filled.SkipNext, "Next", tint = colors.sub) },
-            label = "Next",
+            label = context.symphony.t.Next,
             onClick = { context.symphony.radio.shorty.skip() },
         )
     }
