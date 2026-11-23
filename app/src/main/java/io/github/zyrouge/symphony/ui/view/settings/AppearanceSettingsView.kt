@@ -28,6 +28,7 @@ import io.github.zyrouge.symphony.ui.components.BentoSheetSliderRow
 import io.github.zyrouge.symphony.ui.components.BentoSheetTextField
 import io.github.zyrouge.symphony.ui.components.BentoSheetValueRow
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.SymphonyTypography
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -60,7 +61,7 @@ fun AppearanceSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit)
 
     val languages = remember {
         val defaultName = localeNativeName(java.util.Locale.getDefault().language)
-        listOf("" to "System ($defaultName)") +
+        listOf("" to context.symphony.t.SystemX(defaultName)) +
             symphonyLocales.map { it.code to it.nativeName }
     }
     val languageValue = language ?: ""
@@ -184,7 +185,7 @@ private fun LanguagePage(
     BentoSheetTextField(
         value = query,
         onValueChange = { query = it },
-        placeholder = "Search languages",
+        placeholder = LocalStrings.current.SearchLanguages,
         leadingIcon = Icons.Rounded.Search,
         modifier = Modifier.padding(horizontal = 4.dp),
     )

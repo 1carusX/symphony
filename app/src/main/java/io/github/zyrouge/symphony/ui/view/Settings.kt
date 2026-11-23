@@ -248,7 +248,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 geometry = geometry,
                                 icon = Icons.Rounded.AutoAwesome,
                                 label = context.symphony.t.Home,
-                                sub = "${homeTabs.size} sections shown",
+                                sub = context.symphony.t.XSectionsShown(homeTabs.size.toString()),
                                 onClick = { showHomeTabsDialog = true },
                             )
 
@@ -256,7 +256,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 geometry = geometry,
                                 icon = Icons.Rounded.Headphones,
                                 label = context.symphony.t.Player,
-                                sub = "Fades, seek buttons, headphones",
+                                sub = context.symphony.t.PlayerSettingsSummary,
                                 onClick = { openDialog = SettingsDialog.PLAYER },
                             )
 
@@ -264,15 +264,15 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 geometry = geometry,
                                 icon = Icons.Rounded.Lyrics,
                                 label = context.symphony.t.NowPlaying,
-                                sub = "Buttons, audio format, lyrics",
+                                sub = context.symphony.t.NowPlayingSettingsSummary,
                                 onClick = { openDialog = SettingsDialog.NOW_PLAYING },
                             )
 
                             "mini" -> BentoShortcutTile(
                                 geometry = geometry,
                                 icon = Icons.Rounded.PlayCircle,
-                                label = "Mini player",
-                                sub = "Capsule buttons",
+                                label = context.symphony.t.MiniPlayer,
+                                sub = context.symphony.t.MiniPlayerSettingsSummary,
                                 onClick = { openDialog = SettingsDialog.MINI_PLAYER },
                             )
 
@@ -288,7 +288,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 geometry = geometry,
                                 icon = Icons.Rounded.Refresh,
                                 label = context.symphony.t.Updates,
-                                sub = if (checkForUpdates) "Checks at launch" else "Off",
+                                sub = if (checkForUpdates) context.symphony.t.ChecksAtLaunch else context.symphony.t.Off,
                                 onClick = { showUpdatesDialog = true },
                             )
 
@@ -296,7 +296,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 geometry = geometry,
                                 icon = Icons.Rounded.Palette,
                                 label = context.symphony.t.Appearance,
-                                sub = "Language, font, text size",
+                                sub = context.symphony.t.AppearanceSettingsSummary,
                                 onClick = { openDialog = SettingsDialog.APPEARANCE },
                             )
 

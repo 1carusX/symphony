@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.components.BentoTextField
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
@@ -75,7 +76,7 @@ fun BentoListTextAddRow(placeholder: String, onAdd: (String) -> Unit) {
                 },
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Filled.Add, "Add", tint = colors.onAccent)
+            Icon(Icons.Filled.Add, LocalStrings.current.Add, tint = colors.onAccent)
         }
     }
 }

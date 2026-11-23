@@ -301,7 +301,7 @@ private fun AlbumGrid(
                         fillHeight = true,
                         icon = Icons.Filled.PlayArrow,
                         label = context.symphony.t.Play,
-                        sub = formatBentoDurationMinutes(songs.sumOf { it.duration }),
+                        sub = formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
                         tone = BentoTileTone.ACCENT,
                         onClick = {
                             context.symphony.radio.shorty.playQueue(trackSongIds, source = album.name)
@@ -328,7 +328,7 @@ private fun AlbumGrid(
                         fillHeight = true,
                         icon = Icons.Filled.Queue,
                         label = context.symphony.t.Queue,
-                        sub = "Add " + context.symphony.t.XSongs(songs.size.toString()),
+                        sub = context.symphony.t.AddX(context.symphony.t.XSongs(songs.size.toString())),
                         onClick = {
                             context.symphony.radio.queue.add(trackSongIds)
                         },

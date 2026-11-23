@@ -65,7 +65,7 @@ fun MiniPlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit)
         windowClass != BentoWindowClass.SHORT_HEIGHT
 
     BentoSheetDialog(
-        title = "Mini player",
+        title = context.symphony.t.MiniPlayer,
         onDismissRequest = onDismissRequest,
         actions = {
             BentoSheetButton(
@@ -82,19 +82,19 @@ fun MiniPlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit)
             showSeek = seekControls,
         )
         BentoSheetSwitchRow(
-            title = "Previous and next",
-            subtitle = "Previous shows on wider windows only",
+            title = context.symphony.t.PreviousAndNext,
+            subtitle = context.symphony.t.PreviousOnWideOnly,
             checked = trackControls,
             onCheckedChange = { settings.miniPlayerTrackControls.setValue(it) },
         )
         BentoSheetSwitchRow(
-            title = "Back and forward",
-            subtitle = "Jump $seekBack s back or $seekForward s ahead",
+            title = context.symphony.t.BackAndForward,
+            subtitle = context.symphony.t.JumpXBackYAhead(seekBack.toString(), seekForward.toString()),
             checked = seekControls,
             onCheckedChange = { settings.miniPlayerSeekControls.setValue(it) },
         )
         BentoSheetSwitchRow(
-            title = "Scroll long titles",
+            title = context.symphony.t.ScrollLongTitles,
             checked = marquee,
             onCheckedChange = { settings.miniPlayerTextMarquee.setValue(it) },
         )
@@ -155,14 +155,14 @@ private fun MiniPlayerPreview(
                     .padding(horizontal = 8.dp),
             ) {
                 Text(
-                    song?.title ?: "Song title",
+                    song?.title ?: context.symphony.t.SongTitle,
                     style = BentoTypography.rowTitle.copy(fontFamily = appFontFamily),
                     color = colors.fg,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    song?.artists?.joinToString()?.takeIf { it.isNotEmpty() } ?: "Artist",
+                    song?.artists?.joinToString()?.takeIf { it.isNotEmpty() } ?: context.symphony.t.Artist,
                     style = BentoTypography.secondary.copy(fontFamily = appFontFamily),
                     color = colors.sub,
                     maxLines = 1,

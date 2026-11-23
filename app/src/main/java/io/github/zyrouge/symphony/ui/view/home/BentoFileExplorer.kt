@@ -46,6 +46,7 @@ import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.helpers.navigateToFolder
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
@@ -241,8 +242,8 @@ private fun ActionRow(
             modifier = Modifier.weight(1f),
         )
         if (canPlay) {
-            PillAction(icon = { Icon(Icons.Filled.PlayArrow, "Play all", tint = colors.fg) }, onClick = onPlay)
-            PillAction(icon = { Icon(Icons.Filled.Shuffle, "Shuffle", tint = colors.fg) }, onClick = onShuffle)
+            PillAction(icon = { Icon(Icons.Filled.PlayArrow, LocalStrings.current.PlayAll, tint = colors.fg) }, onClick = onPlay)
+            PillAction(icon = { Icon(Icons.Filled.Shuffle, LocalStrings.current.Shuffle, tint = colors.fg) }, onClick = onShuffle)
         }
     }
 }

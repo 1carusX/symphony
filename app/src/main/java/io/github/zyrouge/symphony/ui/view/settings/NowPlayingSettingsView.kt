@@ -34,20 +34,20 @@ fun NowPlayingSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit)
         },
     ) {
         BentoSheetSwitchRow(
-            title = "Back and forward buttons",
-            subtitle = "Beside play: $seekBack s back, $seekForward s ahead",
+            title = context.symphony.t.BackAndForwardButtons,
+            subtitle = context.symphony.t.BesidePlayXBackYAhead(seekBack.toString(), seekForward.toString()),
             checked = seekControls,
             onCheckedChange = { settings.nowPlayingSeekControls.setValue(it) },
         )
         BentoSheetSwitchRow(
-            title = "Audio format",
-            subtitle = "Shows the format, sample rate and bitrate under the title",
+            title = context.symphony.t.AudioFormat,
+            subtitle = context.symphony.t.AudioFormatSummary,
             checked = additionalInfo,
             onCheckedChange = { settings.nowPlayingAdditionalInfo.setValue(it) },
         )
         BentoSheetSwitchRow(
-            title = "Keep the screen on for lyrics",
-            subtitle = "While lyrics are showing",
+            title = context.symphony.t.KeepScreenOnForLyrics,
+            subtitle = context.symphony.t.WhileLyricsShowing,
             checked = keepScreenAwake,
             onCheckedChange = { settings.lyricsKeepScreenAwake.setValue(it) },
         )

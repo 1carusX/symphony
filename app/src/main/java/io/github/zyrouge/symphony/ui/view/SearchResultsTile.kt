@@ -47,6 +47,7 @@ import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
 import io.github.zyrouge.symphony.ui.components.formatBentoDaysAgo
 import io.github.zyrouge.symphony.ui.components.label
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
@@ -290,7 +291,7 @@ private fun SearchResultsHeader(
         Text(
             when {
                 narrowed -> context.symphony.t.XSongs(resultSongs.size.toString())
-                else -> "All songs"
+                else -> context.symphony.t.AllSongs
             },
             style = BentoTypography.rowTitle,
             color = colors.fg,
@@ -306,7 +307,7 @@ private fun SearchResultsHeader(
                 onClick = {
                     context.symphony.radio.shorty.playQueue(
                         resultSongs.map { it.id },
-                        source = "Search results",
+                        source = context.symphony.t.SearchResults,
                     )
                 },
             )
@@ -318,7 +319,7 @@ private fun SearchResultsHeader(
                     context.symphony.radio.shorty.playQueue(
                         resultSongs.map { it.id },
                         shuffle = true,
-                        source = "Search results",
+                        source = context.symphony.t.SearchResults,
                     )
                 },
             )
@@ -337,7 +338,7 @@ private fun SearchResultsEmpty() {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            "No songs match. Try another word or filter.",
+            LocalStrings.current.NoSongsMatchSearch,
             style = BentoTypography.rowTitle.copy(fontWeight = FontWeight.Normal),
             color = colors.muted,
             textAlign = TextAlign.Center,
@@ -362,7 +363,7 @@ private fun SearchResultRow(
     val playing = song.id == playingSongId
     val badge = when (selectedFilter) {
         BentoSearchFilter.RECENTLY_ADDED ->
-            formatBentoDaysAgo(song.dateModified, nowMs)
+            formatBentoDaysAgo(song.dateModified, nowMs, context.symphony.t)
 
         else -> null
     }
@@ -401,7 +402,7 @@ private fun SearchResultRow(
             context.symphony.radio.shorty.playQueue(
                 resultSongs.map { it.id },
                 Radio.PlayOptions(index = index),
-                source = "Search results",
+                source = context.symphony.t.SearchResults,
             )
         },
     )

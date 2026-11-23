@@ -46,6 +46,7 @@ import io.github.zyrouge.symphony.ui.components.BentoTileGeometry
 import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorMode
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorRoles
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
@@ -155,7 +156,7 @@ private fun SettingsWallpaperColorsSwitch(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            "Wallpaper colors",
+            LocalStrings.current.WallpaperColors,
             style = BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
             color = LocalBentoTileContentColors.current.sub,
             maxLines = 1,
@@ -484,8 +485,8 @@ private fun BentoThemeMode.label(context: ViewContext) = when (this) {
 }
 
 private fun BentoColorScheme.label(context: ViewContext) = when (this) {
-    BentoColorScheme.TINTED -> "Tinted"
-    BentoColorScheme.NEUTRAL -> "Neutral"
-    BentoColorScheme.VIVID -> "Vivid"
-    BentoColorScheme.CONTRAST -> "Contrast"
+    BentoColorScheme.TINTED -> context.symphony.t.Tinted
+    BentoColorScheme.NEUTRAL -> context.symphony.t.Neutral
+    BentoColorScheme.VIVID -> context.symphony.t.Vivid
+    BentoColorScheme.CONTRAST -> context.symphony.t.Contrast
 }

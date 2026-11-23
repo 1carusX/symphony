@@ -131,7 +131,7 @@ fun BentoCollectionPage(
     val favorites by context.symphony.groove.playlist.favorites.collectAsState()
     val favoriteIds = remember(favorites) { favorites.toSet() }
     val songCountLabel = context.symphony.t.XSongs(songs.size.toString())
-    val meta = listOfNotNull(metaPrefix, songCountLabel, formatBentoDurationMinutes(totalMs))
+    val meta = listOfNotNull(metaPrefix, songCountLabel, formatBentoDurationMinutes(totalMs, context.symphony.t))
         .joinToString(" · ")
     val actionA = when (onEditSongs) {
         null -> DetailTileIds.QUEUE
@@ -177,7 +177,7 @@ fun BentoCollectionPage(
                 fillHeight = true,
                 icon = Icons.Filled.PlayArrow,
                 label = context.symphony.t.Play,
-                sub = formatBentoDurationMinutes(totalMs),
+                sub = formatBentoDurationMinutes(totalMs, context.symphony.t),
                 tone = BentoTileTone.ACCENT,
                 onClick = {
                     if (queueIds.isNotEmpty()) {
@@ -204,7 +204,7 @@ fun BentoCollectionPage(
                 fillHeight = true,
                 icon = Icons.Filled.Queue,
                 label = context.symphony.t.Queue,
-                sub = "Add $songCountLabel",
+                sub = context.symphony.t.AddX(songCountLabel),
                 narrow = geometry.width < 200f,
                 onClick = { context.symphony.radio.queue.add(queueIds) },
             )

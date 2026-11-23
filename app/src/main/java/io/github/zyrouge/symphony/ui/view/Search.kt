@@ -73,6 +73,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.zyrouge.symphony.i18n.Strings
 import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.services.radio.Radio
@@ -116,12 +117,18 @@ import kotlinx.serialization.Serializable
  * stays untouched), so it is omitted.
  */
 enum class BentoSearchFilter(
-    val label: String,
     val icon: ImageVector,
 ) {
-    FAVORITES("Favorites", Icons.Filled.Favorite),
-    RECENTLY_ADDED("Recently added", Icons.Filled.Schedule),
-    LOSSLESS("Lossless", Icons.Filled.GraphicEq),
+    FAVORITES(Icons.Filled.Favorite),
+    RECENTLY_ADDED(Icons.Filled.Schedule),
+    LOSSLESS(Icons.Filled.GraphicEq),
+}
+
+/** The filter's name in the app language. */
+internal fun BentoSearchFilter.label(t: Strings) = when (this) {
+    BentoSearchFilter.FAVORITES -> t.Favorites
+    BentoSearchFilter.RECENTLY_ADDED -> t.RecentlyAdded
+    BentoSearchFilter.LOSSLESS -> t.Lossless
 }
 
 /** The query-dependent half of the results; filters apply on top of it. */
@@ -310,7 +317,7 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
                             content = {
                                 Icon(
                                     Icons.AutoMirrored.Rounded.Sort,
-                                    "Sort songs by",
+                                    context.symphony.t.SortSongsBy,
                                     tint = colors.sub,
                                 )
                             },
@@ -326,7 +333,7 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
                             selected = sortBy,
                             onSelect = { sortBy = it },
                             reverse = sortReverse,
-                            reverseLabel = "Reverse order",
+                            reverseLabel = context.symphony.t.ReverseOrder,
                             onReverseChange = { sortReverse = it },
                         )
                     }

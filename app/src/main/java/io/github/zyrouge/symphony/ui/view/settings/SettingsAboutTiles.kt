@@ -118,7 +118,7 @@ internal fun SettingsLibraryStatTile(
                 label = context.symphony.t.Library,
                 value = context.symphony.t.XSongs(songCount.toString()),
                 valueStyle = bentoStatValueStyle(geometry.sizeClass, appFontFamily),
-                sub = "in " + context.symphony.t.XFolders(folderCount.toString()),
+                sub = context.symphony.t.InX(context.symphony.t.XFolders(folderCount.toString())),
                 geometry = geometry,
             )
             BentoCallToActionPill(

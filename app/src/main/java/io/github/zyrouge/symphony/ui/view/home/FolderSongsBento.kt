@@ -68,7 +68,7 @@ internal fun FolderSongsView(
 
     BentoCollectionPage(
         context = context,
-        label = "Folder",
+        label = context.symphony.t.Folder,
         title = folder.name,
         songIds = songIds,
         onBack = onBack,

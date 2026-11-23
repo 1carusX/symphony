@@ -140,8 +140,7 @@ private fun ArtistGroupTile(
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " +
-            context.symphony.t.XSongs(artist.numberOfTracks.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(artist.numberOfTracks.toString())),
         onShowAll = { context.navController.navigate(ArtistViewRoute(artist.name)) },
         menu = { expanded, onDismissRequest ->
             ArtistDropdownMenu(context, artist, expanded, onDismissRequest)

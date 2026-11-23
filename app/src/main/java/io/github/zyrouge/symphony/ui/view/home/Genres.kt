@@ -115,7 +115,7 @@ private fun GenreGroupTile(
         title = genre.name,
         subtitle = context.symphony.t.XSongs(genre.numberOfTracks.toString()) +
             " · " +
-            formatBentoDurationMinutes(songs.sumOf { it.duration }),
+            formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
         songs = songs,
         cover = { BentoGroupGenreCover(genre.name.hashCode()) },
         onOpen = { context.navController.navigate(GenreViewRoute(genre.name)) },
@@ -133,8 +133,7 @@ private fun GenreGroupTile(
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " +
-            context.symphony.t.XSongs(genre.numberOfTracks.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(genre.numberOfTracks.toString())),
         onShowAll = { context.navController.navigate(GenreViewRoute(genre.name)) },
     )
 }

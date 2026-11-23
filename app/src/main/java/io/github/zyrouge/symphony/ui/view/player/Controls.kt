@@ -207,7 +207,14 @@ internal fun BentoPlayerTransport(
                     PlayerMode.REPEAT_ONE -> Icons.Filled.RepeatOne
                     PlayerMode.SHUFFLE -> Icons.Filled.Shuffle
                 },
-                label = context.symphony.t.PlayModeX(playMode.label),
+                label = context.symphony.t.PlayModeX(
+                    when (playMode) {
+                        PlayerMode.REPEAT_OFF -> context.symphony.t.RepeatOff
+                        PlayerMode.REPEAT_ALL -> context.symphony.t.RepeatAll
+                        PlayerMode.REPEAT_ONE -> context.symphony.t.RepeatOne
+                        PlayerMode.SHUFFLE -> context.symphony.t.Shuffle
+                    },
+                ),
                 size = BentoSizes.ICON_BUTTON.dp * scale,
                 iconSize = BentoSizes.ICON.dp,
                 tint = if (playMode == PlayerMode.REPEAT_OFF) colors.muted else colors.sub,
@@ -231,7 +238,7 @@ internal fun BentoPlayerTransport(
             if (seekControls) {
                 PlayerIconButton(
                     icon = Icons.Filled.FastRewind,
-                    label = "Back $seekBack seconds",
+                    label = context.symphony.t.BackXSeconds(seekBack.toString()),
                     size = BentoSizes.ICON_BUTTON.dp * scale,
                     iconSize = BentoSizes.ICON.dp,
                     tint = colors.sub,
@@ -242,13 +249,13 @@ internal fun BentoPlayerTransport(
                 playing = data.isPlaying,
                 size = playSize.dp * scale,
                 iconSize = (if (short) 24.dp else 34.dp) * scale,
-                label = if (data.isPlaying) "Pause" else "Play",
+                label = if (data.isPlaying) context.symphony.t.Pause else context.symphony.t.Play,
                 onClick = { context.symphony.radio.shorty.playPause() },
             )
             if (seekControls) {
                 PlayerIconButton(
                     icon = Icons.Filled.FastForward,
-                    label = "Forward $seekForward seconds",
+                    label = context.symphony.t.ForwardXSeconds(seekForward.toString()),
                     size = BentoSizes.ICON_BUTTON.dp * scale,
                     iconSize = BentoSizes.ICON.dp,
                     tint = colors.sub,
@@ -265,13 +272,13 @@ internal fun BentoPlayerTransport(
             )
             PlayerIconButton(
                 icon = Icons.Outlined.Timer,
-                label = timerMinutes?.let { "Sleep timer: $it minutes left" } ?: "Sleep timer: off",
+                label = timerMinutes?.let { context.symphony.t.SleepTimerXMinutesLeft(it.toString()) } ?: context.symphony.t.SleepTimerOff,
                 size = BentoSizes.ICON_BUTTON.dp * scale,
                 iconSize = BentoSizes.ICON.dp,
                 tint = if (data.sleepTimer != null) colors.onTonal else colors.sub,
                 background = if (data.sleepTimer != null) colors.tonal else Color.Transparent,
                 selected = data.sleepTimer != null,
-                badge = timerMinutes?.let { "${it}m" },
+                badge = timerMinutes?.let { context.symphony.t.XMinutesShort(it.toString()) },
                 onClick = {
                     val next = nextBentoSleepTimerMinutes(data.sleepTimer?.duration)
                     if (next == null) {
@@ -331,16 +338,15 @@ internal fun bentoTransportScale(availableWidthDp: Float, playSizeDp: Int, seekC
 }
 
 internal enum class PlayerMode(
-    val label: String,
     val loopMode: RadioQueue.LoopMode,
     val shuffle: Boolean,
 ) {
-    REPEAT_OFF("Repeat off", RadioQueue.LoopMode.None, false),
-    REPEAT_ALL("Repeat all", RadioQueue.LoopMode.Queue, false),
-    REPEAT_ONE("Repeat one", RadioQueue.LoopMode.Song, false),
+    REPEAT_OFF(RadioQueue.LoopMode.None, false),
+    REPEAT_ALL(RadioQueue.LoopMode.Queue, false),
+    REPEAT_ONE(RadioQueue.LoopMode.Song, false),
 
     // Shuffle keeps repeating the queue, so playback does not stop after the last shuffled song.
-    SHUFFLE("Shuffle", RadioQueue.LoopMode.Queue, true),
+    SHUFFLE(RadioQueue.LoopMode.Queue, true),
 }
 
 /** The play mode button cycles repeat all -> repeat one -> shuffle -> repeat all. */

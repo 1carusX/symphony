@@ -9,6 +9,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextDirection
@@ -60,7 +61,8 @@ fun SymphonyTheme(
     }
 
     val strings = rememberStrings(
-        language = context.symphony.settings.language.value ?: java.util.Locale.getDefault().language,
+        language = context.symphony.settings.language.value
+            ?: LocalConfiguration.current.locales[0].language,
     )
     context.symphony.t = strings
 

@@ -164,7 +164,7 @@ internal fun AlbumInfoTile(
                         year?.toString(),
                         genre,
                         context.symphony.t.XSongs(album.numberOfTracks.toString()),
-                        formatBentoDurationMinutes(album.duration.inWholeMilliseconds),
+                        formatBentoDurationMinutes(album.duration.inWholeMilliseconds, context.symphony.t),
                     ).joinToString(" · "),
                     style = BentoTypography.secondary,
                     color = tileColors.sub,
@@ -195,7 +195,7 @@ internal fun AlbumLengthStatTile(
     BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
         BentoStatContent(
             label = context.symphony.t.Length,
-            value = formatBentoDurationMinutes(songs.sumOf { it.duration }),
+            value = formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
             valueStyle = bentoStatValueStyle(geometry.sizeClass, appFontFamily),
             sub = context.symphony.t.XSongs(songs.size.toString()),
             geometry = geometry,
@@ -228,7 +228,7 @@ internal fun AlbumTracksTile(
         Column(modifier = Modifier.fillMaxSize()) {
             BentoTileHeader(
                 label = context.symphony.t.Tracks,
-                actionLabel = formatBentoDurationMinutes(songs.sumOf { it.duration }),
+                actionLabel = formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
                 showAction = true,
                 onAction = null,
             )

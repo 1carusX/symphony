@@ -138,7 +138,7 @@ fun GrooveSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
         BentoSheetPages(page) { current ->
             when (current) {
                 null -> {
-                    SettingsSheetSectionLabel("Folders")
+                    SettingsSheetSectionLabel(context.symphony.t.Folders)
                     BentoSheetValueRow(
                         title = context.symphony.t.MediaFolders,
                         value = context.symphony.t.XFolders(mediaFolders.size.toString()),
@@ -146,17 +146,17 @@ fun GrooveSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
                     )
                     BentoSheetValueRow(
                         title = context.symphony.t.BlacklistFolders,
-                        subtitle = EXCLUDED_FOLDERS_NOTE,
+                        subtitle = context.symphony.t.NotScanned,
                         value = context.symphony.t.XFolders(blacklistFolders.size.toString()),
                         onClick = { page = GroovePage.BLACKLIST_FOLDERS },
                     )
                     BentoSheetValueRow(
                         title = context.symphony.t.WhitelistFolders,
-                        subtitle = EXCEPTION_FOLDERS_NOTE,
+                        subtitle = context.symphony.t.ScannedInsideExcluded,
                         value = context.symphony.t.XFolders(whitelistFolders.size.toString()),
                         onClick = { page = GroovePage.WHITELIST_FOLDERS },
                     )
-                    SettingsSheetSectionLabel("Filters")
+                    SettingsSheetSectionLabel(context.symphony.t.Filters)
                     GrooveFilterPatternField(
                         context = context,
                         songPaths = songPaths,
@@ -175,7 +175,7 @@ fun GrooveSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
                         label = { context.symphony.t.XSecs(it.roundToInt().toString()) },
                         onChange = { settings.minSongDuration.setValue(it.roundToInt()) },
                     )
-                    SettingsSheetSectionLabel("Tags and sorting")
+                    SettingsSheetSectionLabel(context.symphony.t.TagsAndSorting)
                     // Edited as a list so any separator, the comma included, can be kept or added.
                     GrooveSeparatorEditor(
                         context = context,
@@ -211,7 +211,7 @@ fun GrooveSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
                         checked = useMetaphony,
                         onCheckedChange = { settings.useMetaphony.setValue(it) },
                     )
-                    SettingsSheetSectionLabel("Cache")
+                    SettingsSheetSectionLabel(context.symphony.t.Cache)
                     GrooveClearCacheRow(
                         context = context,
                         onConfirm = {
@@ -227,10 +227,7 @@ fun GrooveSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
                 }
 
                 GroovePage.MEDIA_FOLDERS -> {
-                    GroovePageNote(
-                        "The folders that hold your music. Every song inside them, " +
-                            "subfolders included, is added to the library.",
-                    )
+                    GroovePageNote(context.symphony.t.MediaFoldersNote)
                     BentoSystemFolderPicker(
                         context = context,
                         values = mediaFolders,
@@ -243,7 +240,7 @@ fun GrooveSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
 
                 GroovePage.BLACKLIST_FOLDERS -> GrooveFolderListPage(
                     context = context,
-                    note = "$EXCLUDED_FOLDERS_NOTE, subfolders included.",
+                    note = context.symphony.t.ExcludedFoldersNote,
                     values = blacklistFolders,
                     onSave = { values ->
                         settings.blacklistFolders.setValue(values)
@@ -253,8 +250,7 @@ fun GrooveSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
 
                 GroovePage.WHITELIST_FOLDERS -> GrooveFolderListPage(
                     context = context,
-                    note = "Pick folders inside an excluded folder that should still be scanned. " +
-                        "They do nothing outside excluded folders.",
+                    note = context.symphony.t.ExceptionsNote,
                     values = whitelistFolders,
                     onSave = { values ->
                         settings.whitelistFolders.setValue(values)
@@ -273,14 +269,11 @@ fun ImageQuality.label(context: ViewContext) = when (this) {
     ImageQuality.Loseless -> context.symphony.t.Loseless
 }
 
-private const val EXCLUDED_FOLDERS_NOTE = "Not scanned"
-private const val EXCEPTION_FOLDERS_NOTE = "Scanned even inside an excluded folder"
-
 /** Ready-made patterns; each keeps every folder that passes, so none can empty the library. */
-private val FILTER_EXAMPLES = listOf(
-    "Everything" to ".*",
-    "Skip Recordings" to "^(?!.*Recordings)",
-    "Skip chat apps" to "^(?!.*(WhatsApp|Telegram))",
+private fun filterExamples(context: ViewContext) = listOf(
+    context.symphony.t.FilterEverything to ".*",
+    context.symphony.t.FilterSkipRecordings to "^(?!.*Recordings)",
+    context.symphony.t.FilterSkipChatApps to "^(?!.*(WhatsApp|Telegram))",
 )
 
 /**
@@ -346,9 +339,8 @@ private fun GrooveFilterPatternField(
         )
         Text(
             when (kept) {
-                null -> "Not a valid regular expression"
-                else -> "Keeps $kept of the ${songPaths.size} songs now in the library. " +
-                    "Checked against each folder's path, not file names."
+                null -> context.symphony.t.InvalidRegex
+                else -> context.symphony.t.FilterKeepsXOfY(kept.toString(), songPaths.size.toString())
             },
             style = BentoTypography.secondary,
             color = if (kept == null) ThemeColors.Red else colors.sub,
@@ -358,7 +350,7 @@ private fun GrooveFilterPatternField(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FILTER_EXAMPLES.forEach { (label, pattern) ->
+            filterExamples(context).forEach { (label, pattern) ->
                 BentoSheetChip(
                     label = label,
                     selected = text.text == pattern,
@@ -415,8 +407,7 @@ private fun GrooveClearCacheRow(context: ViewContext, onConfirm: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                "Forgets the saved song details and scans every folder again. " +
-                    "Playback stops, and a large library can take a few minutes.",
+                context.symphony.t.ClearCacheNote,
                 style = BentoTypography.secondary,
                 color = colors.sub,
             )
@@ -426,7 +417,7 @@ private fun GrooveClearCacheRow(context: ViewContext, onConfirm: () -> Unit) {
             ) {
                 BentoSheetButton(label = context.symphony.t.Cancel, onClick = { asking = false })
                 BentoSheetButton(
-                    label = "Clear and rescan",
+                    label = context.symphony.t.ClearAndRescan,
                     primary = true,
                     onClick = {
                         asking = false
@@ -545,7 +536,7 @@ private fun GrooveFolderListPage(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                bentoReadableFolderPath(entry),
+                bentoReadableFolderPath(entry, context.symphony.t.InternalStorage, context.symphony.t::StorageX),
                 style = BentoTypography.secondary,
                 color = colors.fg,
                 maxLines = 1,

@@ -180,7 +180,7 @@ fun BentoPlayerHost(
             ) {
                 Toast.makeText(
                     context.activity,
-                    "${context.symphony.t.SleepTimer} ended",
+                    context.symphony.t.SleepTimerEnded,
                     Toast.LENGTH_SHORT,
                 ).show()
             }

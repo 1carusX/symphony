@@ -69,24 +69,24 @@ internal fun BentoPlayerQueue(context: ViewContext, modifier: Modifier = Modifie
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Up next",
+                    context.symphony.t.UpNext,
                     style = BentoTypography.rowTitle,
                     color = colors.fg,
                 )
                 Text(
-                    if (upcoming.isEmpty()) "End of queue"
+                    if (upcoming.isEmpty()) context.symphony.t.EndOfQueue
                     else context.symphony.t.XSongs(upcoming.size.toString()),
                     style = BentoTypography.secondary,
                     color = colors.muted,
                 )
             }
             QueueIconButton(
-                icon = { Icon(Icons.Filled.Save, "Save queue") },
+                icon = { Icon(Icons.Filled.Save, context.symphony.t.SaveQueue) },
                 onClick = { showSaveDialog = true },
             )
             if (upcoming.isNotEmpty()) {
                 QueueIconButton(
-                    icon = { Icon(Icons.Filled.ClearAll, "Clear up next") },
+                    icon = { Icon(Icons.Filled.ClearAll, context.symphony.t.ClearUpNext) },
                     onClick = {
                         // Only the songs after the current one: radio.stop() would end playback too.
                         context.symphony.radio.queue.remove(upcoming.map { it.first })
@@ -103,7 +103,7 @@ internal fun BentoPlayerQueue(context: ViewContext, modifier: Modifier = Modifie
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    "End of queue",
+                    context.symphony.t.EndOfQueue,
                     style = BentoTypography.body,
                     color = colors.muted,
                 )
@@ -198,7 +198,7 @@ private fun BentoPlayerQueueRow(
         ) {
             Icon(
                 Icons.Filled.Close,
-                "Remove ${song.title}",
+                context.symphony.t.RemoveX(song.title),
                 tint = colors.muted,
                 modifier = Modifier.size(BentoSizes.ICON.dp),
             )

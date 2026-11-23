@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.i18n.Strings
 import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.ui.theme.bento.BentoGridClass
 import io.github.zyrouge.symphony.utils.withCase
@@ -180,12 +181,15 @@ fun isBentoLosslessSong(path: String, encoder: String?): Boolean {
     return BENTO_LOSSLESS_EXTENSIONS.any { filename.endsWith(it) }
 }
 
-/** "N d ago" for the Recently added filter rows; "Today" within the first day. */
-fun formatBentoDaysAgo(dateModifiedMs: Long, nowMs: Long): String {
+/**
+ * "N d ago" for the Recently added filter rows; "Today" within the first day.
+ * With [t], in the app language; without it (tests), in English.
+ */
+fun formatBentoDaysAgo(dateModifiedMs: Long, nowMs: Long, t: Strings? = null): String {
     val days = ((nowMs - dateModifiedMs) / 86_400_000L).toInt()
     return when {
-        days <= 0 -> "Today"
-        else -> "$days d ago"
+        days <= 0 -> t?.Today ?: "Today"
+        else -> t?.XDaysAgo(days.toString()) ?: "$days d ago"
     }
 }
 
@@ -223,16 +227,19 @@ fun bentoAlbumMatchesQuery(album: Album, query: String): Boolean {
         album.artists.any { it.lowercase().contains(q) }
 }
 
-/** Long durations in the tiles (prototype fmtLong): "1 h 23 min", "45 min". */
-fun formatBentoDurationMinutes(totalMs: Long): String {
+/**
+ * Long durations in the tiles (prototype fmtLong): "1 h 23 min", "45 min".
+ * With [t], in the app language; without it (tests), in English.
+ */
+fun formatBentoDurationMinutes(totalMs: Long, t: Strings? = null): String {
     val totalSeconds = totalMs / 1000
     val minutes = (totalMs / 60_000.0).roundToInt()
     val hours = minutes / 60
     val rest = minutes % 60
     return when {
-        totalSeconds < 60 -> "$totalSeconds s"
-        hours >= 1 -> "$hours h $rest min"
-        else -> "$minutes min"
+        totalSeconds < 60 -> t?.DurationXSeconds(totalSeconds.toString()) ?: "$totalSeconds s"
+        hours >= 1 -> t?.DurationXHoursYMinutes(hours.toString(), rest.toString()) ?: "$hours h $rest min"
+        else -> t?.DurationXMinutes(minutes.toString()) ?: "$minutes min"
     }
 }
 

@@ -57,6 +57,7 @@ import io.github.zyrouge.symphony.ui.helpers.FadeTransition
 import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.SlideTransition
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
@@ -225,13 +226,13 @@ private fun FoldersModeBar(mode: FoldersMode, onModeChange: (FoldersMode) -> Uni
     ) {
         FoldersModeSegment(
             icon = Icons.Rounded.Folder,
-            label = "Groups",
+            label = LocalStrings.current.Groups,
             selected = mode == FoldersMode.Groups,
             onClick = { onModeChange(FoldersMode.Groups) },
         )
         FoldersModeSegment(
             icon = Icons.Rounded.AccountTree,
-            label = "Browse",
+            label = LocalStrings.current.Browse,
             selected = mode == FoldersMode.Browse,
             onClick = { onModeChange(FoldersMode.Browse) },
         )
@@ -309,7 +310,7 @@ private fun FolderGroupTile(
         title = folder.name,
         subtitle = context.symphony.t.XSongs(songs.size.toString()) +
             " · " +
-            formatBentoDurationMinutes(songs.sumOf { it.duration }),
+            formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
         songs = songs,
         cover = { BentoGroupFolderCover() },
         onOpen = onOpen,
@@ -327,7 +328,7 @@ private fun FolderGroupTile(
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " + context.symphony.t.XSongs(songs.size.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(songs.size.toString())),
         onShowAll = onOpen,
     )
 }

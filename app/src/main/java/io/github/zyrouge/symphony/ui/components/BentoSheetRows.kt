@@ -51,6 +51,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import kotlin.math.roundToInt
@@ -268,7 +269,7 @@ fun BentoSheetSliderRow(
                 ) {
                     Icon(
                         Icons.Rounded.Restore,
-                        "Reset $title",
+                        "${LocalStrings.current.Reset} $title",
                         tint = colors.sub,
                         modifier = Modifier.size(20.dp),
                     )

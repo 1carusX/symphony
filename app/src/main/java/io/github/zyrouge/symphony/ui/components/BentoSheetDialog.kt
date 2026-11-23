@@ -83,6 +83,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoMotion
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
@@ -306,7 +307,7 @@ fun BentoSheetDialog(
                                 ) {
                                     Icon(
                                         Icons.AutoMirrored.Rounded.ArrowBack,
-                                        "Back",
+                                        LocalStrings.current.Back,
                                         tint = colors.fg,
                                     )
                                 }

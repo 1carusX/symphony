@@ -154,15 +154,15 @@ private fun ExpandedCapsule(
         }
         if (showPrevious && trackControls) {
             BentoCapsuleIconButton(
-                icon = { Icon(Icons.Filled.SkipPrevious, "Previous", tint = colors.sub) },
+                icon = { Icon(Icons.Filled.SkipPrevious, context.symphony.t.Previous, tint = colors.sub) },
                 label = context.symphony.t.Previous,
                 onClick = { context.symphony.radio.shorty.previous() },
             )
         }
         if (seekControls) {
             BentoCapsuleIconButton(
-                icon = { Icon(Icons.Filled.FastRewind, "Back $seekBack seconds", tint = colors.sub) },
-                label = "Back $seekBack seconds",
+                icon = { Icon(Icons.Filled.FastRewind, context.symphony.t.BackXSeconds(seekBack.toString()), tint = colors.sub) },
+                label = context.symphony.t.BackXSeconds(seekBack.toString()),
                 onClick = { context.symphony.radio.shorty.seekFromCurrent(-seekBack) },
             )
         }
@@ -204,20 +204,20 @@ private fun ExpandedCapsule(
                 playing = data.isPlaying,
                 size = 36.dp,
                 iconSize = 20.dp,
-                label = if (data.isPlaying) "Pause" else "Play",
+                label = if (data.isPlaying) context.symphony.t.Pause else context.symphony.t.Play,
                 onClick = { context.symphony.radio.shorty.playPause() },
             )
         }
         if (seekControls) {
             BentoCapsuleIconButton(
-                icon = { Icon(Icons.Filled.FastForward, "Forward $seekForward seconds", tint = colors.sub) },
-                label = "Forward $seekForward seconds",
+                icon = { Icon(Icons.Filled.FastForward, context.symphony.t.ForwardXSeconds(seekForward.toString()), tint = colors.sub) },
+                label = context.symphony.t.ForwardXSeconds(seekForward.toString()),
                 onClick = { context.symphony.radio.shorty.seekFromCurrent(seekForward) },
             )
         }
         if (trackControls) {
             BentoCapsuleIconButton(
-                icon = { Icon(Icons.Filled.SkipNext, "Next", tint = colors.sub) },
+                icon = { Icon(Icons.Filled.SkipNext, context.symphony.t.Next, tint = colors.sub) },
                 label = context.symphony.t.Next,
                 onClick = { context.symphony.radio.shorty.skip() },
             )

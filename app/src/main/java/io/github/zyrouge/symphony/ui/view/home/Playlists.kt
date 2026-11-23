@@ -180,7 +180,7 @@ private fun PlaylistGroupTile(
         title = playlist.title,
         subtitle = context.symphony.t.XSongs(playlist.numberOfTracks.toString()) +
             " · " +
-            formatBentoDurationMinutes(songs.sumOf { it.duration }),
+            formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
         songs = songs,
         cover = {
             BentoGroupPlaylistCover(
@@ -203,8 +203,7 @@ private fun PlaylistGroupTile(
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " +
-            context.symphony.t.XSongs(playlist.numberOfTracks.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(playlist.numberOfTracks.toString())),
         onShowAll = { context.navController.navigate(PlaylistViewRoute(playlist.id)) },
         menu = { expanded, onDismissRequest ->
             PlaylistDropdownMenu(

@@ -177,14 +177,13 @@ fun SongsView(context: ViewContext) {
                                         narrowActions -> ""
                                         else -> " · " +
                                             formatBentoDurationMinutes(
-                                                songs.sumOf { it.duration },
-                                            )
+                                                songs.sumOf { it.duration }, context.symphony.t)
                                     },
                                 tone = BentoTileTone.ACCENT,
                                 main = true,
                                 narrow = narrowActions,
                                 onClick = {
-                                    context.symphony.radio.shorty.playQueue(sortedSongIds, source = "All songs")
+                                    context.symphony.radio.shorty.playQueue(sortedSongIds, source = context.symphony.t.AllSongs)
                                 },
                             )
                         }
@@ -192,14 +191,14 @@ fun SongsView(context: ViewContext) {
                             BentoActionTile(
                                 icon = Icons.Filled.Shuffle,
                                 label = context.symphony.t.ShufflePlay,
-                                sub = "Random order",
+                                sub = context.symphony.t.RandomOrder,
                                 tone = BentoTileTone.TONAL,
                                 narrow = narrowActions,
                                 onClick = {
                                     context.symphony.radio.shorty.playQueue(
                                         sortedSongIds,
                                         shuffle = true,
-                                        source = "All songs",
+                                        source = context.symphony.t.AllSongs,
                                     )
                                 },
                             )
@@ -209,8 +208,8 @@ fun SongsView(context: ViewContext) {
                                 icon = Icons.AutoMirrored.Rounded.Sort,
                                 label = sortBy.label(context),
                                 sub = when {
-                                    sortReverse -> "Descending"
-                                    else -> "Ascending"
+                                    sortReverse -> context.symphony.t.Descending
+                                    else -> context.symphony.t.Ascending
                                 },
                                 narrow = narrowActions,
                                 onClick = { showSortMenu = true },
@@ -227,7 +226,7 @@ fun SongsView(context: ViewContext) {
                                     context.symphony.settings.lastUsedSongsSortBy.setValue(it)
                                 },
                                 reverse = sortReverse,
-                                reverseLabel = "Reverse order",
+                                reverseLabel = context.symphony.t.ReverseOrder,
                                 onReverseChange = {
                                     context.symphony.settings.lastUsedSongsSortReverse.setValue(it)
                                 },
@@ -391,7 +390,7 @@ private fun SongsListTile(
                                     Radio.PlayOptions(
                                         index = songIndexById[song.id] ?: 0,
                                     ),
-                                    source = "All songs",
+                                    source = context.symphony.t.AllSongs,
                                 )
                             },
                         )

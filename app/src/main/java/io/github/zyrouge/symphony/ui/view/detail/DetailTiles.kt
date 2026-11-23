@@ -545,7 +545,7 @@ fun DetailAlbumsTile(
                             listOfNotNull(
                                 (album.startYear ?: album.endYear)?.toString(),
                                 context.symphony.t.XSongs(album.numberOfTracks.toString()),
-                                formatBentoDurationMinutes(album.duration.inWholeMilliseconds),
+                                formatBentoDurationMinutes(album.duration.inWholeMilliseconds, context.symphony.t),
                             ).joinToString(" · "),
                             style = BentoTypography.label,
                             color = tileColors.sub,

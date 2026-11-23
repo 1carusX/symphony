@@ -63,7 +63,7 @@ fun BentoSystemFolderPicker(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
-                        bentoReadableTreeUri(uri),
+                        bentoReadableTreeUri(uri, context.symphony.t.InternalStorage, context.symphony.t::StorageX),
                         style = BentoTypography.secondary,
                         color = colors.fg,
                         maxLines = 1,

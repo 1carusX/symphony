@@ -233,6 +233,99 @@ class Strings(
     val More: String get() = values.getValue("More")
 
     fun CopiedXToClipboard(x: String): String = values.getValue("CopiedXToClipboard").format(x)
+    val Favorites: String get() = values.getValue("Favorites")
+    val RecentlyAdded: String get() = values.getValue("RecentlyAdded")
+    val Lossless: String get() = values.getValue("Lossless")
+    val ReverseOrder: String get() = values.getValue("ReverseOrder")
+    val AllSongs: String get() = values.getValue("AllSongs")
+    val SearchResults: String get() = values.getValue("SearchResults")
+    val NoSongsMatchSearch: String get() = values.getValue("NoSongsMatchSearch")
+    fun ShowAllX(x: String): String = values.getValue("ShowAllX").format(x)
+    fun AddX(x: String): String = values.getValue("AddX").format(x)
+    val Shuffle: String get() = values.getValue("Shuffle")
+    val RandomOrder: String get() = values.getValue("RandomOrder")
+    val Ascending: String get() = values.getValue("Ascending")
+    val Descending: String get() = values.getValue("Descending")
+    val Folder: String get() = values.getValue("Folder")
+    val Groups: String get() = values.getValue("Groups")
+    val Browse: String get() = values.getValue("Browse")
+    val ThemeAndColors: String get() = values.getValue("ThemeAndColors")
+    val EndOfQueue: String get() = values.getValue("EndOfQueue")
+    fun XSectionsShown(x: String): String = values.getValue("XSectionsShown").format(x)
+    val PlayerSettingsSummary: String get() = values.getValue("PlayerSettingsSummary")
+    val NowPlayingSettingsSummary: String get() = values.getValue("NowPlayingSettingsSummary")
+    val MiniPlayerSettingsSummary: String get() = values.getValue("MiniPlayerSettingsSummary")
+    val ChecksAtLaunch: String get() = values.getValue("ChecksAtLaunch")
+    val Off: String get() = values.getValue("Off")
+    val On: String get() = values.getValue("On")
+    val AppearanceSettingsSummary: String get() = values.getValue("AppearanceSettingsSummary")
+    fun InX(x: String): String = values.getValue("InX").format(x)
+    val WallpaperColors: String get() = values.getValue("WallpaperColors")
+    val Tinted: String get() = values.getValue("Tinted")
+    val Neutral: String get() = values.getValue("Neutral")
+    val Vivid: String get() = values.getValue("Vivid")
+    val Contrast: String get() = values.getValue("Contrast")
+    fun SystemX(x: String): String = values.getValue("SystemX").format(x)
+    val SearchLanguages: String get() = values.getValue("SearchLanguages")
+    val Filters: String get() = values.getValue("Filters")
+    val TagsAndSorting: String get() = values.getValue("TagsAndSorting")
+    val Cache: String get() = values.getValue("Cache")
+    val MediaFoldersNote: String get() = values.getValue("MediaFoldersNote")
+    val NotScanned: String get() = values.getValue("NotScanned")
+    val ExcludedFoldersNote: String get() = values.getValue("ExcludedFoldersNote")
+    val ScannedInsideExcluded: String get() = values.getValue("ScannedInsideExcluded")
+    val ExceptionsNote: String get() = values.getValue("ExceptionsNote")
+    val FilterEverything: String get() = values.getValue("FilterEverything")
+    val FilterSkipRecordings: String get() = values.getValue("FilterSkipRecordings")
+    val FilterSkipChatApps: String get() = values.getValue("FilterSkipChatApps")
+    val InvalidRegex: String get() = values.getValue("InvalidRegex")
+    fun FilterKeepsXOfY(x: String, y: String): String = values.getValue("FilterKeepsXOfY").format(x, y)
+    val ClearCacheNote: String get() = values.getValue("ClearCacheNote")
+    val ClearAndRescan: String get() = values.getValue("ClearAndRescan")
+    val InternalStorage: String get() = values.getValue("InternalStorage")
+    fun StorageX(x: String): String = values.getValue("StorageX").format(x)
+    val SelectAtLeast2Tabs: String get() = values.getValue("SelectAtLeast2Tabs")
+    val PreviousAndNext: String get() = values.getValue("PreviousAndNext")
+    val PreviousOnWideOnly: String get() = values.getValue("PreviousOnWideOnly")
+    val BackAndForward: String get() = values.getValue("BackAndForward")
+    fun JumpXBackYAhead(x: String, y: String): String = values.getValue("JumpXBackYAhead").format(x, y)
+    val ScrollLongTitles: String get() = values.getValue("ScrollLongTitles")
+    val SongTitle: String get() = values.getValue("SongTitle")
+    val BackAndForwardButtons: String get() = values.getValue("BackAndForwardButtons")
+    fun BesidePlayXBackYAhead(x: String, y: String): String = values.getValue("BesidePlayXBackYAhead").format(x, y)
+    val AudioFormat: String get() = values.getValue("AudioFormat")
+    val AudioFormatSummary: String get() = values.getValue("AudioFormatSummary")
+    val KeepScreenOnForLyrics: String get() = values.getValue("KeepScreenOnForLyrics")
+    val WhileLyricsShowing: String get() = values.getValue("WhileLyricsShowing")
+    val Playback: String get() = values.getValue("Playback")
+    val AudioFocus: String get() = values.getValue("AudioFocus")
+    val Headphones: String get() = values.getValue("Headphones")
+    val SeekButtons: String get() = values.getValue("SeekButtons")
+    fun BackXSeconds(x: String): String = values.getValue("BackXSeconds").format(x)
+    fun ForwardXSeconds(x: String): String = values.getValue("ForwardXSeconds").format(x)
+    fun SleepTimerXMinutesLeft(x: String): String = values.getValue("SleepTimerXMinutesLeft").format(x)
+    val SleepTimerOff: String get() = values.getValue("SleepTimerOff")
+    fun XMinutesShort(x: String): String = values.getValue("XMinutesShort").format(x)
+    val RepeatOff: String get() = values.getValue("RepeatOff")
+    val RepeatAll: String get() = values.getValue("RepeatAll")
+    val RepeatOne: String get() = values.getValue("RepeatOne")
+    val PlayingFrom: String get() = values.getValue("PlayingFrom")
+    val ClosePlayer: String get() = values.getValue("ClosePlayer")
+    val SleepTimerEnded: String get() = values.getValue("SleepTimerEnded")
+    val SaveQueue: String get() = values.getValue("SaveQueue")
+    val ClearUpNext: String get() = values.getValue("ClearUpNext")
+    fun RemoveX(x: String): String = values.getValue("RemoveX").format(x)
+    val Back: String get() = values.getValue("Back")
+    val Add: String get() = values.getValue("Add")
+    fun DurationXSeconds(x: String): String = values.getValue("DurationXSeconds").format(x)
+    fun DurationXMinutes(x: String): String = values.getValue("DurationXMinutes").format(x)
+    fun DurationXHoursYMinutes(x: String, y: String): String = values.getValue("DurationXHoursYMinutes").format(x, y)
+    val Today: String get() = values.getValue("Today")
+    fun XDaysAgo(x: String): String = values.getValue("XDaysAgo").format(x)
+    val SomethingWentWrong: String get() = values.getValue("SomethingWentWrong")
+    fun ErrorX(x: String): String = values.getValue("ErrorX").format(x)
+    fun DeletePlaylistNoteX(x: String): String = values.getValue("DeletePlaylistNoteX").format(x)
+
     fun ExportedX(x: String): String = values.getValue("ExportedX").format(x)
     fun ExportFailedX(x: String): String = values.getValue("ExportFailedX").format(x)
     fun LaunchingEqualizerFailedX(x: String): String = values.getValue("LaunchingEqualizerFailedX").format(x)
@@ -588,5 +681,97 @@ fun rememberStrings(language: String): Strings = Strings(
         "SortSongsBy" to stringResource(Res.string.SortSongsBy),
         "PlayModeX" to stringResource(Res.string.PlayModeX),
         "More" to stringResource(Res.string.More),
+        "Favorites" to stringResource(Res.string.Favorites),
+        "RecentlyAdded" to stringResource(Res.string.RecentlyAdded),
+        "Lossless" to stringResource(Res.string.Lossless),
+        "ReverseOrder" to stringResource(Res.string.ReverseOrder),
+        "AllSongs" to stringResource(Res.string.AllSongs),
+        "SearchResults" to stringResource(Res.string.SearchResults),
+        "NoSongsMatchSearch" to stringResource(Res.string.NoSongsMatchSearch),
+        "ShowAllX" to stringResource(Res.string.ShowAllX),
+        "AddX" to stringResource(Res.string.AddX),
+        "Shuffle" to stringResource(Res.string.Shuffle),
+        "RandomOrder" to stringResource(Res.string.RandomOrder),
+        "Ascending" to stringResource(Res.string.Ascending),
+        "Descending" to stringResource(Res.string.Descending),
+        "Folder" to stringResource(Res.string.Folder),
+        "Groups" to stringResource(Res.string.Groups),
+        "Browse" to stringResource(Res.string.Browse),
+        "ThemeAndColors" to stringResource(Res.string.ThemeAndColors),
+        "EndOfQueue" to stringResource(Res.string.EndOfQueue),
+        "XSectionsShown" to stringResource(Res.string.XSectionsShown),
+        "PlayerSettingsSummary" to stringResource(Res.string.PlayerSettingsSummary),
+        "NowPlayingSettingsSummary" to stringResource(Res.string.NowPlayingSettingsSummary),
+        "MiniPlayerSettingsSummary" to stringResource(Res.string.MiniPlayerSettingsSummary),
+        "ChecksAtLaunch" to stringResource(Res.string.ChecksAtLaunch),
+        "Off" to stringResource(Res.string.Off),
+        "On" to stringResource(Res.string.On),
+        "AppearanceSettingsSummary" to stringResource(Res.string.AppearanceSettingsSummary),
+        "InX" to stringResource(Res.string.InX),
+        "WallpaperColors" to stringResource(Res.string.WallpaperColors),
+        "Tinted" to stringResource(Res.string.Tinted),
+        "Neutral" to stringResource(Res.string.Neutral),
+        "Vivid" to stringResource(Res.string.Vivid),
+        "Contrast" to stringResource(Res.string.Contrast),
+        "SystemX" to stringResource(Res.string.SystemX),
+        "SearchLanguages" to stringResource(Res.string.SearchLanguages),
+        "Filters" to stringResource(Res.string.Filters),
+        "TagsAndSorting" to stringResource(Res.string.TagsAndSorting),
+        "Cache" to stringResource(Res.string.Cache),
+        "MediaFoldersNote" to stringResource(Res.string.MediaFoldersNote),
+        "NotScanned" to stringResource(Res.string.NotScanned),
+        "ExcludedFoldersNote" to stringResource(Res.string.ExcludedFoldersNote),
+        "ScannedInsideExcluded" to stringResource(Res.string.ScannedInsideExcluded),
+        "ExceptionsNote" to stringResource(Res.string.ExceptionsNote),
+        "FilterEverything" to stringResource(Res.string.FilterEverything),
+        "FilterSkipRecordings" to stringResource(Res.string.FilterSkipRecordings),
+        "FilterSkipChatApps" to stringResource(Res.string.FilterSkipChatApps),
+        "InvalidRegex" to stringResource(Res.string.InvalidRegex),
+        "FilterKeepsXOfY" to stringResource(Res.string.FilterKeepsXOfY),
+        "ClearCacheNote" to stringResource(Res.string.ClearCacheNote),
+        "ClearAndRescan" to stringResource(Res.string.ClearAndRescan),
+        "InternalStorage" to stringResource(Res.string.InternalStorage),
+        "StorageX" to stringResource(Res.string.StorageX),
+        "SelectAtLeast2Tabs" to stringResource(Res.string.SelectAtLeast2Tabs),
+        "PreviousAndNext" to stringResource(Res.string.PreviousAndNext),
+        "PreviousOnWideOnly" to stringResource(Res.string.PreviousOnWideOnly),
+        "BackAndForward" to stringResource(Res.string.BackAndForward),
+        "JumpXBackYAhead" to stringResource(Res.string.JumpXBackYAhead),
+        "ScrollLongTitles" to stringResource(Res.string.ScrollLongTitles),
+        "SongTitle" to stringResource(Res.string.SongTitle),
+        "BackAndForwardButtons" to stringResource(Res.string.BackAndForwardButtons),
+        "BesidePlayXBackYAhead" to stringResource(Res.string.BesidePlayXBackYAhead),
+        "AudioFormat" to stringResource(Res.string.AudioFormat),
+        "AudioFormatSummary" to stringResource(Res.string.AudioFormatSummary),
+        "KeepScreenOnForLyrics" to stringResource(Res.string.KeepScreenOnForLyrics),
+        "WhileLyricsShowing" to stringResource(Res.string.WhileLyricsShowing),
+        "Playback" to stringResource(Res.string.Playback),
+        "AudioFocus" to stringResource(Res.string.AudioFocus),
+        "Headphones" to stringResource(Res.string.Headphones),
+        "SeekButtons" to stringResource(Res.string.SeekButtons),
+        "BackXSeconds" to stringResource(Res.string.BackXSeconds),
+        "ForwardXSeconds" to stringResource(Res.string.ForwardXSeconds),
+        "SleepTimerXMinutesLeft" to stringResource(Res.string.SleepTimerXMinutesLeft),
+        "SleepTimerOff" to stringResource(Res.string.SleepTimerOff),
+        "XMinutesShort" to stringResource(Res.string.XMinutesShort),
+        "RepeatOff" to stringResource(Res.string.RepeatOff),
+        "RepeatAll" to stringResource(Res.string.RepeatAll),
+        "RepeatOne" to stringResource(Res.string.RepeatOne),
+        "PlayingFrom" to stringResource(Res.string.PlayingFrom),
+        "ClosePlayer" to stringResource(Res.string.ClosePlayer),
+        "SleepTimerEnded" to stringResource(Res.string.SleepTimerEnded),
+        "SaveQueue" to stringResource(Res.string.SaveQueue),
+        "ClearUpNext" to stringResource(Res.string.ClearUpNext),
+        "RemoveX" to stringResource(Res.string.RemoveX),
+        "Back" to stringResource(Res.string.Back),
+        "Add" to stringResource(Res.string.Add),
+        "DurationXSeconds" to stringResource(Res.string.DurationXSeconds),
+        "DurationXMinutes" to stringResource(Res.string.DurationXMinutes),
+        "DurationXHoursYMinutes" to stringResource(Res.string.DurationXHoursYMinutes),
+        "Today" to stringResource(Res.string.Today),
+        "XDaysAgo" to stringResource(Res.string.XDaysAgo),
+        "SomethingWentWrong" to stringResource(Res.string.SomethingWentWrong),
+        "ErrorX" to stringResource(Res.string.ErrorX),
+        "DeletePlaylistNoteX" to stringResource(Res.string.DeletePlaylistNoteX),
     ),
 )

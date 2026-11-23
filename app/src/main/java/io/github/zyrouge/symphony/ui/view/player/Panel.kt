@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.ui.components.bentoFloatingSurface
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoMotion
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
@@ -484,7 +485,7 @@ internal fun PlayerMediumHeaderInfo(
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            "Playing from",
+            context.symphony.t.PlayingFrom,
             style = BentoTypography.label,
             color = colors.sub,
             maxLines = 1,
@@ -511,7 +512,7 @@ internal fun PlayerCloseButton(onClose: () -> Unit) {
     ) {
         Icon(
             Icons.Filled.Close,
-            "Close player",
+            LocalStrings.current.ClosePlayer,
             tint = colors.sub,
             modifier = Modifier.size(BentoSizes.ICON.dp),
         )

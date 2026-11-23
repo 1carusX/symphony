@@ -45,8 +45,7 @@ fun HomeTabsDialog(context: ViewContext, onDismiss: () -> Unit) {
         onDismiss = onDismiss,
     ) {
         Text(
-            // TODO(i18n): the translated hint still says "at most 5".
-            "Select at least 2 tabs",
+            context.symphony.t.SelectAtLeast2Tabs,
             style = BentoTypography.secondary,
             color = colors.sub,
         )

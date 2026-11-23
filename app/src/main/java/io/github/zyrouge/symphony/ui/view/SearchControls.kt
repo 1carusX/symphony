@@ -41,6 +41,7 @@ import io.github.zyrouge.symphony.ui.components.BentoGenreChip
 import io.github.zyrouge.symphony.ui.components.BentoSmartFilterTile
 import io.github.zyrouge.symphony.ui.components.label
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
@@ -153,7 +154,7 @@ internal fun BentoSearchFilterTiles(
                     Box(modifier = Modifier.weight(1f)) {
                         BentoSmartFilterTile(
                             icon = filter.icon,
-                            label = filter.label,
+                            label = filter.label(LocalStrings.current),
                             count = context.symphony.t.XSongs(
                                 (filterCounts[filter] ?: 0).toString(),
                             ),

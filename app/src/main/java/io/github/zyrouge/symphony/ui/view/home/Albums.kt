@@ -142,8 +142,7 @@ private fun AlbumGroupTile(
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " +
-            context.symphony.t.XSongs(album.numberOfTracks.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(album.numberOfTracks.toString())),
         onShowAll = { context.navController.navigate(AlbumViewRoute(album.id)) },
         menu = { expanded, onDismissRequest ->
             AlbumDropdownMenu(context, album, expanded, onDismissRequest)

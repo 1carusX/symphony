@@ -50,7 +50,7 @@ fun PlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
             )
         },
     ) {
-        SettingsSheetSectionLabel("Playback")
+        SettingsSheetSectionLabel(context.symphony.t.Playback)
         BentoSheetSwitchRow(
             title = context.symphony.t.GaplessPlayback,
             checked = gapless,
@@ -66,14 +66,14 @@ fun PlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
             value = fadeDuration,
             range = 0.5f..6f,
             step = 0.5f,
-            label = ::formatSettingSecs,
+            label = { formatSettingSecs(it, context.symphony.t) },
             onChange = { settings.fadePlaybackDuration.setValue(it) },
             defaultValue = settings.fadePlaybackDuration.defaultValue,
             onReset = {
                 settings.fadePlaybackDuration.setValue(settings.fadePlaybackDuration.defaultValue)
             },
         )
-        SettingsSheetSectionLabel("Audio focus")
+        SettingsSheetSectionLabel(context.symphony.t.AudioFocus)
         BentoSheetSwitchRow(
             title = context.symphony.t.RequireAudioFocus,
             checked = requireAudioFocus,
@@ -84,7 +84,7 @@ fun PlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
             checked = ignoreAudioFocusLoss,
             onCheckedChange = { settings.ignoreAudioFocusLoss.setValue(it) },
         )
-        SettingsSheetSectionLabel("Headphones")
+        SettingsSheetSectionLabel(context.symphony.t.Headphones)
         BentoSheetSwitchRow(
             title = context.symphony.t.PlayOnHeadphonesConnect,
             checked = playOnHeadphones,
@@ -95,13 +95,13 @@ fun PlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
             checked = pauseOnHeadphones,
             onCheckedChange = { settings.pauseOnHeadphonesDisconnect.setValue(it) },
         )
-        SettingsSheetSectionLabel("Seek buttons")
+        SettingsSheetSectionLabel(context.symphony.t.SeekButtons)
         BentoSheetSliderRow(
             title = context.symphony.t.FastRewindDuration,
             value = seekBack.toFloat(),
             range = SEEK_RANGE,
             step = 1f,
-            label = ::formatSettingSecs,
+            label = { formatSettingSecs(it, context.symphony.t) },
             onChange = { settings.seekBackDuration.setValue(it.roundToInt()) },
             defaultValue = settings.seekBackDuration.defaultValue.toFloat(),
             onReset = { settings.seekBackDuration.setValue(settings.seekBackDuration.defaultValue) },
@@ -111,7 +111,7 @@ fun PlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
             value = seekForward.toFloat(),
             range = SEEK_RANGE,
             step = 1f,
-            label = ::formatSettingSecs,
+            label = { formatSettingSecs(it, context.symphony.t) },
             onChange = { settings.seekForwardDuration.setValue(it.roundToInt()) },
             defaultValue = settings.seekForwardDuration.defaultValue.toFloat(),
             onReset = { settings.seekForwardDuration.setValue(settings.seekForwardDuration.defaultValue) },

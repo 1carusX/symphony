@@ -72,6 +72,7 @@ import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.ui.helpers.Assets
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoGridClass
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
@@ -694,7 +695,7 @@ fun <T> BentoSortMenu(
                         )
                     },
                     label = reverseLabel,
-                    value = if (reverse) "On" else "Off",
+                    value = if (reverse) LocalStrings.current.On else LocalStrings.current.Off,
                     onClick = {
                         onDismissRequest()
                         onReverseChange(!reverse)
