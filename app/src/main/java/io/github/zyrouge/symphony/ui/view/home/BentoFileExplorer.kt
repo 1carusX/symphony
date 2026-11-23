@@ -74,6 +74,10 @@ fun BentoFileExplorer(
     val favorites by context.symphony.groove.playlist.favorites.collectAsState()
 
     val categorized = currentFolder.listedChildren()
+    val folderSource = when (currentFolder.parent) {
+        null -> context.symphony.t.LocalStorage
+        else -> currentFolder.name
+    }
     val folders = if (sortReverse) categorized.folders.sortedBy { it.name }.reversed()
     else categorized.folders.sortedBy { it.name }
     val songIds = context.symphony.groove.song
@@ -100,10 +104,10 @@ fun BentoFileExplorer(
             ),
             canPlay = songs.isNotEmpty(),
             onPlay = {
-                context.symphony.radio.shorty.playQueue(songIds, shuffle = false)
+                context.symphony.radio.shorty.playQueue(songIds, shuffle = false, source = folderSource)
             },
             onShuffle = {
-                context.symphony.radio.shorty.playQueue(songIds, shuffle = true)
+                context.symphony.radio.shorty.playQueue(songIds, shuffle = true, source = folderSource)
             },
         )
         when {
@@ -153,6 +157,7 @@ fun BentoFileExplorer(
                             context.symphony.radio.shorty.playQueue(
                                 songIds,
                                 options = Radio.PlayOptions(index = songs.indexOf(song)),
+                                source = folderSource,
                             )
                         },
                     )

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -86,6 +87,7 @@ import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.bentoAlbumMatchesQuery
 import io.github.zyrouge.symphony.ui.components.bentoArtistNameMatchesQuery
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.bentoSongMatchesQuery
 import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
 import io.github.zyrouge.symphony.ui.components.formatBentoDaysAgo
@@ -145,7 +147,8 @@ data class SearchViewRoute(val initialChip: String?)
  * smart filter tiles, genre chips and one results tile. Artist and album
  * hits sit above the songs; filters, genre and query combine; the
  * "Recently added" filter orders the results newest first with "N d ago"
- * badges. On wide windows the filters move to a 320 dp sticky side column.
+ * badges. On wide windows the filters move to a 320 dp sticky side column;
+ * elsewhere the header, filters and results scroll as one list.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -170,6 +173,7 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
     var showSortMenu by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val textFieldFocusRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
     var currentTermsRoutine by remember { mutableStateOf<Job?>(null) }
 
     fun setTerms(nTerms: String) {
@@ -220,7 +224,6 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
     }
 
     LaunchedEffect(Unit) {
-        textFieldFocusRequester.requestFocus()
         setTerms(terms)
     }
 
@@ -269,6 +272,69 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
         else -> BentoSpacing.GAP_OTHER.dp
     }
 
+    // The back button and the search field with the sort button inside it (DESIGN.md 4.3, 5.5).
+    val header: @Composable () -> Unit = {
+        LaunchedEffect(Unit) {
+            // Once per visit: on compact windows the header scrolls out and back in.
+            if (!initialFocusRequested) {
+                initialFocusRequested = true
+                textFieldFocusRequester.requestFocus()
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = gutter, end = gutter, top = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            IconButton(
+                content = {
+                    Icon(
+                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        context.symphony.t.SearchYourMusic,
+                        tint = colors.fg,
+                    )
+                },
+                onClick = { context.navController.popBackStack() },
+            )
+            SearchField(
+                context = context,
+                terms = terms,
+                onTermsChange = { setTerms(it) },
+                focusRequester = textFieldFocusRequester,
+                modifier = Modifier.weight(1f),
+                trailing = {
+                    Box {
+                        IconButton(
+                            content = {
+                                Icon(
+                                    Icons.AutoMirrored.Rounded.Sort,
+                                    "Sort songs by",
+                                    tint = colors.sub,
+                                )
+                            },
+                            onClick = { showSortMenu = !showSortMenu },
+                        )
+                        BentoSortMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false },
+                            title = context.symphony.t.SortSongsBy,
+                            options = SongRepository.SortBy.entries.map {
+                                BentoSortOption(it, it.label(context))
+                            },
+                            selected = sortBy,
+                            onSelect = { sortBy = it },
+                            reverse = sortReverse,
+                            reverseLabel = "Reverse order",
+                            onReverseChange = { sortReverse = it },
+                        )
+                    }
+                },
+            )
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -276,69 +342,20 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
             .statusBarsPadding(),
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = gutter, end = gutter, top = 8.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                IconButton(
-                    content = {
-                        Icon(
-                            Icons.AutoMirrored.Rounded.ArrowBack,
-                            context.symphony.t.SearchYourMusic,
-                            tint = colors.fg,
-                        )
-                    },
-                    onClick = { context.navController.popBackStack() },
-                )
-                SearchField(
-                    context = context,
-                    terms = terms,
-                    onTermsChange = { setTerms(it) },
-                    focusRequester = textFieldFocusRequester,
-                    modifier = Modifier.weight(1f),
-                )
-                Box {
-                    IconButton(
-                        content = {
-                            Icon(
-                                Icons.AutoMirrored.Rounded.Sort,
-                                "Sort songs by",
-                                tint = colors.fg,
-                            )
-                        },
-                        onClick = { showSortMenu = !showSortMenu },
-                    )
-                    BentoSortMenu(
-                        expanded = showSortMenu,
-                        onDismissRequest = { showSortMenu = false },
-                        title = context.symphony.t.SortSongsBy,
-                        options = SongRepository.SortBy.entries.map {
-                            BentoSortOption(it, it.label(context))
-                        },
-                        selected = sortBy,
-                        onSelect = { sortBy = it },
-                        reverse = sortReverse,
-                        reverseLabel = "Reverse order",
-                        onReverseChange = { sortReverse = it },
-                    )
-                }
-            }
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val innerWidth = maxWidth - gutter * 2
+            val wide = innerWidth >= 720.dp &&
+                rememberBentoWindowClass() != BentoWindowClass.SHORT_HEIGHT
 
-            BoxWithConstraints(modifier = Modifier.weight(1f)) {
-                val innerWidth = maxWidth - gutter * 2
-                val wide = innerWidth >= 720.dp &&
-                    rememberBentoWindowClass() != BentoWindowClass.SHORT_HEIGHT
-
-                when {
-                    // Wide layout (DESIGN.md 5.5): the filters move to a 320 dp
-                    // sticky left column and the genre chips wrap.
-                    wide -> Row(
+            when {
+                // Wide layout (DESIGN.md 5.5): the filters move to a 320 dp
+                // sticky left column and the genre chips wrap.
+                wide -> Column(modifier = Modifier.fillMaxSize()) {
+                    header()
+                    Row(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
+                            .weight(1f)
                             .padding(horizontal = gutter),
                         horizontalArrangement = Arrangement.spacedBy(tileGap),
                     ) {
@@ -375,28 +392,43 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
                                 selectedFilter != null ||
                                 selectedGenre != null,
                             playingSongId = playingSong.songId,
-                            playing = playingSong.isPlaying,
+                            isPlaying = playingSong.isPlaying,
                             nowMs = nowMs,
                             modifier = Modifier.weight(1f),
                         )
                     }
+                }
 
-                    else -> Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = gutter),
-                        verticalArrangement = Arrangement.spacedBy(tileGap),
-                    ) {
-                        BentoSearchFilterTiles(
-                            context = context,
-                            selectedFilter = selectedFilter,
-                            filterCounts = filterCounts,
-                            onFilterChange = { selectedFilter = it },
-                            sideColumn = false,
-                        )
+                // Compact and short windows: one list, so the filters scroll away
+                // with the results instead of staying pinned above them.
+                else -> LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    // Clear the floating capsule at the end of the results.
+                    contentPadding = PaddingValues(bottom = bentoBottomInset()),
+                ) {
+                    item(key = "header") {
+                        header()
+                    }
+                    item(key = "filters") {
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = gutter)
+                                .padding(bottom = tileGap),
+                        ) {
+                            BentoSearchFilterTiles(
+                                context = context,
+                                selectedFilter = selectedFilter,
+                                filterCounts = filterCounts,
+                                onFilterChange = { selectedFilter = it },
+                                sideColumn = false,
+                            )
+                        }
+                    }
+                    item(key = "genres") {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(start = gutter, end = gutter, bottom = tileGap)
                                 .horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
@@ -407,22 +439,23 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
                                 onGenreChange = { selectedGenre = it },
                             )
                         }
-                        SearchResultsTile(
-                            context = context,
-                            results = results,
-                            resultSongs = resultSongs,
-                            artistNames = results?.artistNames ?: emptyList(),
-                            albumIds = results?.albumIds ?: emptyList(),
-                            selectedFilter = selectedFilter,
-                            narrowed = terms.isNotBlank() ||
-                                selectedFilter != null ||
-                                selectedGenre != null,
-                            playingSongId = playingSong.songId,
-                            playing = playingSong.isPlaying,
-                            nowMs = nowMs,
-                            modifier = Modifier.weight(1f),
-                        )
                     }
+                    searchResultsTileItems(
+                        context = context,
+                        results = results,
+                        resultSongs = resultSongs,
+                        artistNames = results?.artistNames ?: emptyList(),
+                        albumIds = results?.albumIds ?: emptyList(),
+                        selectedFilter = selectedFilter,
+                        narrowed = terms.isNotBlank() ||
+                            selectedFilter != null ||
+                            selectedGenre != null,
+                        playingSongId = playingSong.songId,
+                        isPlaying = playingSong.isPlaying,
+                        favoriteSongIds = favorites,
+                        nowMs = nowMs,
+                        modifier = Modifier.padding(horizontal = gutter),
+                    )
                 }
             }
         }

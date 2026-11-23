@@ -14,6 +14,7 @@ fun GenericSongListDropdown(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     header: (@Composable () -> Unit)? = null,
+    source: String? = null,
 ) {
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }
 
@@ -25,6 +26,7 @@ fun GenericSongListDropdown(
         BentoQueueMenuItems(
             context = context,
             orderedSongIds = { songIds },
+            source = source,
             onDismissRequest = onDismissRequest,
             onAddToPlaylist = { showAddToPlaylistDialog = true },
         )

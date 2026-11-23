@@ -88,7 +88,7 @@ class RadioQueue(private val symphony: Symphony) {
     }
 
     fun remove(index: Int) {
-        originalQueue.removeAt(index)
+        originalQueue.removeAt(radioOriginalQueueIndex(originalQueue, currentQueue, index, currentShuffleMode))
         currentQueue.removeAt(index)
         symphony.radio.onUpdate.dispatch(Radio.Events.Queue.Modified)
         if (currentSongIndex == index) {
@@ -99,19 +99,21 @@ class RadioQueue(private val symphony: Symphony) {
     }
 
     fun remove(indices: List<Int>) {
-        var deflection = 0
+        // Map every index before anything moves; removing from the end keeps the rest valid.
+        indices
+            .map { radioOriginalQueueIndex(originalQueue, currentQueue, it, currentShuffleMode) }
+            .sortedDescending()
+            .forEach { originalQueue.removeAt(it) }
+        var removedBefore = 0
         var currentSongRemoved = false
-        val sortedIndices = indices.sortedDescending()
-        for (i in sortedIndices) {
-            val index = i - deflection
-            originalQueue.removeAt(index)
-            currentQueue.removeAt(index)
+        for (i in indices.sortedDescending()) {
+            currentQueue.removeAt(i)
             when {
-                i < currentSongIndex -> deflection++
+                i < currentSongIndex -> removedBefore++
                 i == currentSongIndex -> currentSongRemoved = true
             }
         }
-        currentSongIndex -= deflection
+        currentSongIndex -= removedBefore
         symphony.radio.onUpdate.dispatch(Radio.Events.Queue.Modified)
         if (currentSongRemoved) {
             symphony.radio.play(Radio.PlayOptions(index = currentSongIndex))
@@ -213,4 +215,28 @@ class RadioQueue(private val symphony: Symphony) {
             )
         }
     }
+}
+
+/**
+ * Where the song at [index] of [current] sits in [original]. Unshuffled, the
+ * two lists match. Shuffled, the same song can appear more than once, so the
+ * n-th copy in [current] maps to the n-th copy in [original].
+ */
+internal fun radioOriginalQueueIndex(
+    original: List<String>,
+    current: List<String>,
+    index: Int,
+    shuffled: Boolean,
+): Int {
+    if (!shuffled) return index
+    val songId = current[index]
+    val copy = (0 until index).count { current[it] == songId }
+    var seen = 0
+    original.forEachIndexed { i, id ->
+        if (id == songId) {
+            if (seen == copy) return i
+            seen++
+        }
+    }
+    return original.indexOf(songId)
 }

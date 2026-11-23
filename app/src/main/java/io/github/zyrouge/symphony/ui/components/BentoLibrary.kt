@@ -448,7 +448,7 @@ fun BentoSmartFilterTile(
 
 /**
  * A genre chip (DESIGN.md 5.5): 36 dp, radius 18, `surface` with the
- * selected chip in `tonal`.
+ * selected chip in `tonal`; a 1 dp `line` ring in the Contrast scheme.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -458,13 +458,21 @@ fun BentoGenreChip(
     onClick: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
+    val colorScheme = LocalBentoColorScheme.current
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
+    val shape = RoundedCornerShape(BentoRadii.CHIP.dp)
     Box(
         modifier = Modifier
             .height(BentoSizes.GENRE_CHIP.dp)
             .hoverable(interactionSource)
-            .clip(RoundedCornerShape(BentoRadii.CHIP.dp))
+            .clip(shape)
+            .then(
+                when (colorScheme) {
+                    BentoColorScheme.CONTRAST -> Modifier.border(1.dp, colors.line, shape)
+                    else -> Modifier
+                },
+            )
             .background(
                 when {
                     selected -> colors.tonal

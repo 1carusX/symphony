@@ -105,6 +105,7 @@ fun GenreView(context: ViewContext, route: GenreViewRoute) {
                     songIds = songIds,
                     expanded = showOptionsMenu,
                     onDismissRequest = { showOptionsMenu = false },
+                    source = route.genreName,
                 )
             }
         },

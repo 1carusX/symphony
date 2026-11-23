@@ -388,7 +388,11 @@ fun BentoSheetTextField(
     val focused by interactionSource.collectIsFocusedAsState()
     val pill = leadingIcon != null
     val shape = RoundedCornerShape(if (pill) 24.dp else BentoRadii.ROW.dp)
-    val textStyle = BentoTypography.rowTitle.copy(fontWeight = FontWeight.Normal)
+    // BasicTextField does not inherit the app font from the theme.
+    val textStyle = BentoTypography.rowTitle.copy(
+        fontWeight = FontWeight.Normal,
+        fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
+    )
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         label?.let {
             Text(

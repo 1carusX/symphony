@@ -2,6 +2,7 @@ package io.github.zyrouge.symphony.ui.view.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,9 +63,11 @@ import io.github.zyrouge.symphony.ui.components.groupBentoEntriesByLetter
 import io.github.zyrouge.symphony.ui.components.label
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
@@ -184,7 +187,7 @@ fun SongsView(context: ViewContext) {
                                 main = true,
                                 narrow = narrowActions,
                                 onClick = {
-                                    context.symphony.radio.shorty.playQueue(sortedSongIds)
+                                    context.symphony.radio.shorty.playQueue(sortedSongIds, source = "All songs")
                                 },
                             )
                         }
@@ -199,6 +202,7 @@ fun SongsView(context: ViewContext) {
                                     context.symphony.radio.shorty.playQueue(
                                         sortedSongIds,
                                         shuffle = true,
+                                        source = "All songs",
                                     )
                                 },
                             )
@@ -317,14 +321,33 @@ private fun SongsListTile(
     }
     // The tile runs under the floating capsule; the list and the scrubber stay clear of it.
     val bottomInset = bentoBottomInset()
+    val colorScheme = LocalBentoColorScheme.current
+    val tileShape = RoundedCornerShape(BentoRadii.TILE.dp)
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(BentoRadii.TILE.dp))
+            .clip(tileShape)
+            .then(
+                when (colorScheme) {
+                    BentoColorScheme.CONTRAST -> Modifier.border(1.dp, colors.line, tileShape)
+                    else -> Modifier
+                },
+            )
             .background(colors.surface),
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        // The scrubber's room is kept beside the column header too, so the
+        // header labels stay over their cells.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    when {
+                        showScrubber -> Modifier.padding(end = 30.dp)
+                        else -> Modifier
+                    },
+                ),
+        ) {
             if (columnMode) {
                 BentoSongColumnHeader(
                     title = context.symphony.t.Title,
@@ -336,14 +359,7 @@ private fun SongsListTile(
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(bottom = bottomInset),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        when {
-                            showScrubber -> Modifier.padding(end = 30.dp)
-                            else -> Modifier
-                        },
-                    ),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 groups.forEachIndexed { groupIndex, group ->
                     if (lettered) {
@@ -378,6 +394,7 @@ private fun SongsListTile(
                                     Radio.PlayOptions(
                                         index = songIndexById[song.id] ?: 0,
                                     ),
+                                    source = "All songs",
                                 )
                             },
                         )

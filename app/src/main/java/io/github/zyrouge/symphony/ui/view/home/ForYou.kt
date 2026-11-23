@@ -325,6 +325,7 @@ fun ForYouView(
                                 context.symphony.radio.shorty.playQueue(
                                     songIds.toList(),
                                     shuffle = true,
+                                    source = "All songs",
                                 )
                             },
                         )
@@ -406,7 +407,7 @@ fun ForYouView(
                                 geometry = geometry,
                                 tone = BentoTileTone.TONAL,
                                 icon = Icons.AutoMirrored.Rounded.QueueMusic,
-                                label = context.symphony.t.LateNight,
+                                label = playlist.title,
                                 sub = "Playlist · " +
                                     context.symphony.t.XSongs(playlist.numberOfTracks.toString()),
                                 onClick = {

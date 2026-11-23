@@ -31,13 +31,14 @@ internal fun BentoQueueMenuItems(
     onDismissRequest: () -> Unit,
     onAddToPlaylist: () -> Unit,
     queueSongIds: () -> List<String> = orderedSongIds,
+    source: String? = null,
 ) {
     BentoMenuItem(
         label = context.symphony.t.ShufflePlay,
         icon = Icons.Rounded.Shuffle,
         onClick = {
             onDismissRequest()
-            context.symphony.radio.shorty.playQueue(orderedSongIds(), shuffle = true)
+            context.symphony.radio.shorty.playQueue(orderedSongIds(), shuffle = true, source = source)
         },
     )
     BentoMenuItem(

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,12 +30,10 @@ import io.github.zyrouge.symphony.Symphony
 import io.github.zyrouge.symphony.services.groove.Groove
 import io.github.zyrouge.symphony.ui.helpers.TransitionDurations
 import kotlinx.coroutines.delay
-import androidx.compose.ui.Alignment
-import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.zyrouge.symphony.ui.components.AdaptiveSnackbar
 import io.github.zyrouge.symphony.ui.components.BentoDialog
+import io.github.zyrouge.symphony.ui.components.BentoSnackbarHost
 import io.github.zyrouge.symphony.ui.components.settings.BentoListAddRow
 import io.github.zyrouge.symphony.ui.components.settings.BentoListEditorDialog
 import io.github.zyrouge.symphony.ui.components.settings.BentoListTextAddRow
@@ -191,14 +188,7 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
                 }
                 Box(Modifier.padding(8.dp))
             }
-            SnackbarHost(
-                snackbarHostState,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .bentoGestureBarPadding(),
-            ) {
-                AdaptiveSnackbar(it)
-            }
+            BentoSnackbarHost(snackbarHostState)
         }
 
     when (popup) {

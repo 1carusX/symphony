@@ -264,5 +264,7 @@ fun BentoSongColumnHeader(
             textAlign = TextAlign.End,
             modifier = Modifier.width(52.dp),
         )
+        // The More button that ends each row, so the labels stay over their cells.
+        Spacer(Modifier.width(40.dp))
     }
 }

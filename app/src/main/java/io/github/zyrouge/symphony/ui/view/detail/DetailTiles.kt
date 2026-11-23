@@ -2,6 +2,7 @@ package io.github.zyrouge.symphony.ui.view.detail
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -68,9 +69,11 @@ import io.github.zyrouge.symphony.ui.components.darkened
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.helpers.Assets
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.view.AlbumMoreLikeThisTile
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
@@ -618,10 +621,18 @@ fun DetailChipsTile(label: String, chips: List<DetailChip>, geometry: BentoTileG
 @Composable
 private fun DetailChipButton(chip: DetailChip) {
     val colors = LocalBentoColors.current
+    val colorScheme = LocalBentoColorScheme.current
+    val shape = RoundedCornerShape(BentoRadii.CHIP.dp)
     Box(
         modifier = Modifier
             .height(BentoSizes.GENRE_CHIP.dp)
-            .clip(RoundedCornerShape(BentoRadii.CHIP.dp))
+            .clip(shape)
+            .then(
+                when (colorScheme) {
+                    BentoColorScheme.CONTRAST -> Modifier.border(1.dp, colors.line, shape)
+                    else -> Modifier
+                },
+            )
             .background(colors.raised)
             .clickable(onClick = chip.onClick)
             .padding(horizontal = 14.dp),

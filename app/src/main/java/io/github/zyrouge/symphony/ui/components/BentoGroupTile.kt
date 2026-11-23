@@ -213,6 +213,7 @@ fun BentoGroupTile(
                         songIds = remember(songs) { songs.map { it.id } },
                         expanded = menuExpanded,
                         onDismissRequest = onDismissMenu,
+                        source = title,
                         header = {
                             BentoMenuHeader(
                                 title = title,

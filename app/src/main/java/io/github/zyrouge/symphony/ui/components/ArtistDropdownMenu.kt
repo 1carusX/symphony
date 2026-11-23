@@ -41,6 +41,7 @@ fun ArtistDropdownMenu(
         BentoQueueMenuItems(
             context = context,
             orderedSongIds = { artist.getSortedSongIds(context.symphony) },
+            source = artist.name,
             onDismissRequest = onDismissRequest,
             onAddToPlaylist = { showAddToPlaylistDialog = true },
         )

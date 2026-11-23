@@ -36,7 +36,10 @@ fun AlbumArtistTile(context: ViewContext, albumArtist: AlbumArtist) {
             )
         },
         onPlay = {
-            context.symphony.radio.shorty.playQueue(albumArtist.getSortedSongIds(context.symphony))
+            context.symphony.radio.shorty.playQueue(
+                albumArtist.getSortedSongIds(context.symphony),
+                source = albumArtist.name,
+            )
         },
         onClick = {
             context.navController.navigate(AlbumArtistViewRoute(albumArtist.name))
@@ -73,6 +76,7 @@ fun AlbumArtistDropdownMenu(
         BentoQueueMenuItems(
             context = context,
             orderedSongIds = { albumArtist.getSortedSongIds(context.symphony) },
+            source = albumArtist.name,
             onDismissRequest = onDismissRequest,
             onAddToPlaylist = { showAddToPlaylistDialog = true },
         )

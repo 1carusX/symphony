@@ -79,6 +79,7 @@ fun PlaylistDropdownMenu(
             context = context,
             orderedSongIds = { playlist.getSortedSongIds(context.symphony) },
             queueSongIds = { playlist.getSongIds(context.symphony) },
+            source = playlist.title,
             onDismissRequest = onDismissRequest,
             onAddToPlaylist = { showAddToPlaylistDialog = true },
         )

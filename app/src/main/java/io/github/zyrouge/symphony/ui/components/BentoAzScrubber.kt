@@ -20,6 +20,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,7 +69,8 @@ fun resolveBentoScrubLetter(presentLetters: Set<String>, pressedLetter: String):
 data class BentoPlayingSong(val songId: String?, val isPlaying: Boolean)
 
 /**
- * A letter header of the Songs page (DESIGN.md 5.2): 34 dp, 13/700 accent.
+ * A letter header of the Songs page (DESIGN.md 5.2): 34 dp, 13/700 accent,
+ * on `surface` so rows do not show through it while it sticks.
  */
 @Composable
 fun BentoLetterHeader(letter: String) {
@@ -77,6 +79,7 @@ fun BentoLetterHeader(letter: String) {
         modifier = Modifier
             .fillMaxWidth()
             .height(BentoSizes.LETTER_HEADER.dp)
+            .background(colors.surface)
             .padding(horizontal = 8.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
@@ -114,6 +117,9 @@ fun BentoAzScrubber(
     ).coerceAtLeast(120.dp)
     var dragY by remember { mutableStateOf<Float?>(null) }
     var bubbleLetter by remember { mutableStateOf<String?>(null) }
+    // The gesture blocks below outlive recompositions; without this they would
+    // keep the first callback and jump to stale indices after a sort change.
+    val currentOnLetter by rememberUpdatedState(onLetter)
 
     fun scrubAt(yPx: Float, boxHeightPx: Float) {
         with(density) {
@@ -125,7 +131,7 @@ fun BentoAzScrubber(
                 dragY = yPx
                 if (bubbleLetter != letter) {
                     bubbleLetter = letter
-                    onLetter(letter)
+                    currentOnLetter(letter)
                 }
             }
         }
