@@ -156,6 +156,7 @@ fun BentoCollectionPage(
                 context.symphony.radio.shorty.playQueue(
                     queueIds,
                     options = Radio.PlayOptions(index = index),
+                    source = title,
                 )
             },
         )
@@ -179,7 +180,7 @@ fun BentoCollectionPage(
                 tone = BentoTileTone.ACCENT,
                 onClick = {
                     if (queueIds.isNotEmpty()) {
-                        context.symphony.radio.shorty.playQueue(queueIds)
+                        context.symphony.radio.shorty.playQueue(queueIds, source = title)
                     }
                 },
             )
@@ -192,7 +193,7 @@ fun BentoCollectionPage(
                 narrow = geometry.width < 200f,
                 onClick = {
                     if (queueIds.isNotEmpty()) {
-                        context.symphony.radio.shorty.playQueue(queueIds, shuffle = true)
+                        context.symphony.radio.shorty.playQueue(queueIds, shuffle = true, source = title)
                     }
                 },
             )

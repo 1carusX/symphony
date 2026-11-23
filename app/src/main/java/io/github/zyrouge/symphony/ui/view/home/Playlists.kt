@@ -190,12 +190,13 @@ private fun PlaylistGroupTile(
         },
         onOpen = { context.navController.navigate(PlaylistViewRoute(playlist.id)) },
         onPlay = {
-            context.symphony.radio.shorty.playQueue(songIds)
+            context.symphony.radio.shorty.playQueue(songIds, source = playlist.title)
         },
         onPlayAt = { index ->
             context.symphony.radio.shorty.playQueue(
                 songIds,
                 Radio.PlayOptions(index = index),
+                source = playlist.title,
             )
         },
         rowSecondaryOf = { it.artists.joinToString() },

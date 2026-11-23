@@ -314,12 +314,13 @@ private fun FolderGroupTile(
         cover = { BentoGroupFolderCover() },
         onOpen = onOpen,
         onPlay = {
-            context.symphony.radio.shorty.playQueue(songIds)
+            context.symphony.radio.shorty.playQueue(songIds, source = folder.name)
         },
         onPlayAt = { index ->
             context.symphony.radio.shorty.playQueue(
                 songIds,
                 Radio.PlayOptions(index = index),
+                source = folder.name,
             )
         },
         rowSecondaryOf = { it.artists.joinToString() },

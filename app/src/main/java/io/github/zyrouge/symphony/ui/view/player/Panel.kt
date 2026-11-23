@@ -35,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -84,6 +85,8 @@ internal fun BentoPlayerPanel(
 ) {
     var showSpeedPitchDialog by remember { mutableStateOf(false) }
     var showSleepTimerDialog by remember { mutableStateOf(false) }
+    val additionalInfo by context.symphony.settings.nowPlayingAdditionalInfo.flow.collectAsState()
+    val seekControls by context.symphony.settings.nowPlayingSeekControls.flow.collectAsState()
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val topInset = max(
@@ -96,13 +99,28 @@ internal fun BentoPlayerPanel(
                 BentoSizes.PHONE_SHEET_SMALL_HEIGHT_MAX.dp.value,
                 availableHeight.value,
             ).dp
+            val contentWidth = maxWidth - BentoSpacing.PLAYER_CONTENT_INSET.dp * 2
+            // The format line adds height under the title; a shrunken transport row gives some back.
+            val transportScale = bentoTransportScale(
+                contentWidth.value,
+                BentoSizes.PLAY_BUTTON_LG,
+                seekControls,
+            )
+            val fixedContent = PHONE_MEDIUM_FIXED_CONTENT_DP -
+                BentoSizes.PLAY_BUTTON_LG * (1f - transportScale) +
+                when {
+                    additionalInfo && bentoPlayerFormatLine(context, data.song) != null ->
+                        PLAYER_FORMAT_LINE_HEIGHT_DP
+
+                    else -> 0f
+                }
             val coverSize = min(
-                (maxWidth - BentoSpacing.PLAYER_CONTENT_INSET.dp * 2).value,
-                (availableHeight.value - PHONE_MEDIUM_FIXED_CONTENT_DP).coerceAtLeast(160f),
+                contentWidth.value,
+                (availableHeight.value - fixedContent).coerceAtLeast(160f),
             ).dp
             val mediumHeight = min(
                 availableHeight.value,
-                coverSize.value + PHONE_MEDIUM_FIXED_CONTENT_DP,
+                coverSize.value + fixedContent,
             ).dp
             BentoPhonePlayerSheet(
                 context = context,
@@ -460,6 +478,7 @@ internal fun PlayerMediumHeaderInfo(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalBentoColors.current
+    val source by context.symphony.radio.observatory.queueSource.collectAsState()
     Column(
         modifier = modifier.height(48.dp),
         verticalArrangement = Arrangement.Center,
@@ -471,7 +490,7 @@ internal fun PlayerMediumHeaderInfo(
             maxLines = 1,
         )
         Text(
-            context.symphony.t.NowPlaying,
+            source ?: context.symphony.t.Queue,
             style = BentoTypography.body.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
             color = colors.fg,
             maxLines = 1,

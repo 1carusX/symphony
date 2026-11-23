@@ -90,3 +90,13 @@ fun nextBentoSleepTimerMinutes(durationMs: Long?): Int? = when (durationMs) {
 /** Whole minutes left, rounded up so a live timer never displays zero early. */
 fun bentoSleepTimerMinutesLeft(endsAtMs: Long, nowMs: Long): Int =
     ceil((endsAtMs - nowMs).coerceAtLeast(0L) / 60_000.0).toInt()
+
+/**
+ * Milliseconds until [bentoSleepTimerMinutesLeft] next changes, or null once
+ * the timer has ended and the value stays at zero.
+ */
+fun bentoSleepTimerNextMinuteDelayMs(endsAtMs: Long, nowMs: Long): Long? {
+    val leftMs = endsAtMs - nowMs
+    if (leftMs <= 0L) return null
+    return (leftMs - 1L) % 60_000L + 1L
+}

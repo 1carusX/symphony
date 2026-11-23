@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Repeat
@@ -53,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.services.radio.RadioQueue
 import io.github.zyrouge.symphony.ui.components.BentoSeekWave
 import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
@@ -99,6 +103,8 @@ internal fun BentoPlayerTitle(context: ViewContext, data: BentoPlayerData) {
     val isFavorite by remember(data.song.id, favoriteSongIds) {
         derivedStateOf { favoriteSongIds.contains(data.song.id) }
     }
+    val additionalInfo by context.symphony.settings.nowPlayingAdditionalInfo.flow.collectAsState()
+    val formatLine = if (additionalInfo) bentoPlayerFormatLine(context, data.song) else null
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -124,6 +130,21 @@ internal fun BentoPlayerTitle(context: ViewContext, data: BentoPlayerData) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            formatLine?.let {
+                Text(
+                    it,
+                    style = bentoTabularStyle(
+                        BentoTypography.label.copy(
+                            fontWeight = FontWeight.Medium,
+                            fontFamily = appFontFamily,
+                        ),
+                    ),
+                    color = colors.muted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = PLAYER_FORMAT_LINE_TOP_PADDING_DP.dp),
+                )
+            }
         }
         PlayerIconButton(
             icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -150,6 +171,10 @@ internal fun BentoPlayerTransport(
 ) {
     val colors = LocalBentoColors.current
     val playMode = resolvePlayerMode(data.currentLoopMode, data.currentShuffleMode)
+    val seekControls by context.symphony.settings.nowPlayingSeekControls.flow.collectAsState()
+    val seekBack by context.symphony.settings.seekBackDuration.flow.collectAsState()
+    val seekForward by context.symphony.settings.seekForwardDuration.flow.collectAsState()
+    val playSize = if (short) BentoSizes.PLAY_BUTTON_MD else BentoSizes.PLAY_BUTTON_LG
     val timerMinutes by produceState(
         initialValue = data.sleepTimer?.let {
             bentoSleepTimerMinutesLeft(it.endsAt, System.currentTimeMillis())
@@ -158,111 +183,175 @@ internal fun BentoPlayerTransport(
     ) {
         val timer = data.sleepTimer
         if (timer != null) {
+            // Wake exactly when the shown minute changes.
             while (true) {
-                value = bentoSleepTimerMinutesLeft(timer.endsAt, System.currentTimeMillis())
-                delay(30_000)
+                val now = System.currentTimeMillis()
+                value = bentoSleepTimerMinutesLeft(timer.endsAt, now)
+                delay(bentoSleepTimerNextMinuteDelayMs(timer.endsAt, now) ?: break)
             }
         }
     }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        PlayerIconButton(
-            icon = when (playMode) {
-                PlayerMode.REPEAT_ALL, PlayerMode.REPEAT_OFF -> Icons.Filled.Repeat
-                PlayerMode.REPEAT_ONE -> Icons.Filled.RepeatOne
-                PlayerMode.SHUFFLE -> Icons.Filled.Shuffle
-            },
-            label = context.symphony.t.PlayModeX(playMode.label),
-            size = BentoSizes.ICON_BUTTON.dp,
-            iconSize = BentoSizes.ICON.dp,
-            tint = if (playMode == PlayerMode.REPEAT_OFF) colors.muted else colors.sub,
-            onClick = {
-                val nextMode = when (playMode) {
-                    PlayerMode.REPEAT_OFF -> PlayerMode.REPEAT_ALL
-                    PlayerMode.REPEAT_ALL -> PlayerMode.REPEAT_ONE
-                    PlayerMode.REPEAT_ONE -> PlayerMode.SHUFFLE
-                    PlayerMode.SHUFFLE -> PlayerMode.REPEAT_ALL
-                }
-                when (nextMode) {
-                    PlayerMode.REPEAT_ALL -> {
-                        context.symphony.radio.queue.setShuffleMode(false)
-                        context.symphony.radio.queue.setLoopMode(RadioQueue.LoopMode.Queue)
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        // Shrink every button by the same factor when the row would not fit, e.g. with the
+        // seek buttons on a 360 dp phone or in the small floating window.
+        val scale = bentoTransportScale(maxWidth.value, playSize, seekControls)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            PlayerIconButton(
+                icon = when (playMode) {
+                    PlayerMode.REPEAT_ALL, PlayerMode.REPEAT_OFF -> Icons.Filled.Repeat
+                    PlayerMode.REPEAT_ONE -> Icons.Filled.RepeatOne
+                    PlayerMode.SHUFFLE -> Icons.Filled.Shuffle
+                },
+                label = context.symphony.t.PlayModeX(playMode.label),
+                size = BentoSizes.ICON_BUTTON.dp * scale,
+                iconSize = BentoSizes.ICON.dp,
+                tint = if (playMode == PlayerMode.REPEAT_OFF) colors.muted else colors.sub,
+                onClick = {
+                    val nextMode = nextPlayerMode(playMode)
+                    context.symphony.radio.queue.run {
+                        // Only a change reorders the queue, so turning shuffle on shuffles once.
+                        if (nextMode.shuffle != currentShuffleMode) setShuffleMode(nextMode.shuffle)
+                        setLoopMode(nextMode.loopMode)
                     }
-
-                    PlayerMode.REPEAT_ONE -> {
-                        context.symphony.radio.queue.setShuffleMode(false)
-                        context.symphony.radio.queue.setLoopMode(RadioQueue.LoopMode.Song)
+                },
+            )
+            PlayerIconButton(
+                icon = Icons.Filled.SkipPrevious,
+                label = context.symphony.t.Previous,
+                size = BentoSizes.PREV_NEXT_BUTTON.dp * scale,
+                iconSize = BentoSizes.PREV_NEXT_ICON.dp * scale,
+                tint = colors.fg,
+                onClick = { context.symphony.radio.shorty.previous() },
+            )
+            if (seekControls) {
+                PlayerIconButton(
+                    icon = Icons.Filled.FastRewind,
+                    label = "Back $seekBack seconds",
+                    size = BentoSizes.ICON_BUTTON.dp * scale,
+                    iconSize = BentoSizes.ICON.dp,
+                    tint = colors.sub,
+                    onClick = { context.symphony.radio.shorty.seekFromCurrent(-seekBack) },
+                )
+            }
+            BentoPlayButton(
+                playing = data.isPlaying,
+                size = playSize.dp * scale,
+                iconSize = (if (short) 24.dp else 34.dp) * scale,
+                label = if (data.isPlaying) "Pause" else "Play",
+                onClick = { context.symphony.radio.shorty.playPause() },
+            )
+            if (seekControls) {
+                PlayerIconButton(
+                    icon = Icons.Filled.FastForward,
+                    label = "Forward $seekForward seconds",
+                    size = BentoSizes.ICON_BUTTON.dp * scale,
+                    iconSize = BentoSizes.ICON.dp,
+                    tint = colors.sub,
+                    onClick = { context.symphony.radio.shorty.seekFromCurrent(seekForward) },
+                )
+            }
+            PlayerIconButton(
+                icon = Icons.Filled.SkipNext,
+                label = context.symphony.t.Next,
+                size = BentoSizes.PREV_NEXT_BUTTON.dp * scale,
+                iconSize = BentoSizes.PREV_NEXT_ICON.dp * scale,
+                tint = colors.fg,
+                onClick = { context.symphony.radio.shorty.skip() },
+            )
+            PlayerIconButton(
+                icon = Icons.Outlined.Timer,
+                label = timerMinutes?.let { "Sleep timer: $it minutes left" } ?: "Sleep timer: off",
+                size = BentoSizes.ICON_BUTTON.dp * scale,
+                iconSize = BentoSizes.ICON.dp,
+                tint = if (data.sleepTimer != null) colors.onTonal else colors.sub,
+                background = if (data.sleepTimer != null) colors.tonal else Color.Transparent,
+                selected = data.sleepTimer != null,
+                badge = timerMinutes?.let { "${it}m" },
+                onClick = {
+                    val next = nextBentoSleepTimerMinutes(data.sleepTimer?.duration)
+                    if (next == null) {
+                        context.symphony.radio.clearSleepTimer()
+                    } else {
+                        context.symphony.radio.setSleepTimer(
+                            duration = next * 60_000L,
+                            quitOnEnd = data.sleepTimer?.quitOnEnd ?: false,
+                        )
                     }
-
-                    PlayerMode.SHUFFLE -> {
-                        context.symphony.radio.queue.setLoopMode(RadioQueue.LoopMode.None)
-                        context.symphony.radio.queue.setShuffleMode(true)
-                    }
-
-                    PlayerMode.REPEAT_OFF -> Unit
-                }
-            },
-        )
-        PlayerIconButton(
-            icon = Icons.Filled.SkipPrevious,
-            label = context.symphony.t.Previous,
-            size = BentoSizes.PREV_NEXT_BUTTON.dp,
-            iconSize = BentoSizes.PREV_NEXT_ICON.dp,
-            tint = colors.fg,
-            onClick = { context.symphony.radio.shorty.previous() },
-        )
-        BentoPlayButton(
-            playing = data.isPlaying,
-            size = if (short) BentoSizes.PLAY_BUTTON_MD.dp else BentoSizes.PLAY_BUTTON_LG.dp,
-            iconSize = if (short) 24.dp else 34.dp,
-            label = if (data.isPlaying) "Pause" else "Play",
-            onClick = { context.symphony.radio.shorty.playPause() },
-        )
-        PlayerIconButton(
-            icon = Icons.Filled.SkipNext,
-            label = context.symphony.t.Next,
-            size = BentoSizes.PREV_NEXT_BUTTON.dp,
-            iconSize = BentoSizes.PREV_NEXT_ICON.dp,
-            tint = colors.fg,
-            onClick = { context.symphony.radio.shorty.skip() },
-        )
-        PlayerIconButton(
-            icon = Icons.Outlined.Timer,
-            label = timerMinutes?.let { "Sleep timer: $it minutes left" } ?: "Sleep timer: off",
-            size = BentoSizes.ICON_BUTTON.dp,
-            iconSize = BentoSizes.ICON.dp,
-            tint = if (data.sleepTimer != null) colors.onTonal else colors.sub,
-            background = if (data.sleepTimer != null) colors.tonal else Color.Transparent,
-            selected = data.sleepTimer != null,
-            badge = timerMinutes?.let { "${it}m" },
-            onClick = {
-                val next = nextBentoSleepTimerMinutes(data.sleepTimer?.duration)
-                if (next == null) {
-                    context.symphony.radio.clearSleepTimer()
-                } else {
-                    context.symphony.radio.setSleepTimer(
-                        duration = next * 60_000L,
-                        quitOnEnd = data.sleepTimer?.quitOnEnd ?: false,
-                    )
-                }
-            },
-            onLongClick = onShowSleepTimer,
-        )
+                },
+                onLongClick = onShowSleepTimer,
+            )
+        }
     }
 }
 
-private enum class PlayerMode(val label: String) {
-    REPEAT_OFF("Repeat off"),
-    REPEAT_ALL("Repeat all"),
-    REPEAT_ONE("Repeat one"),
-    SHUFFLE("Shuffle"),
+private const val PLAYER_FORMAT_LINE_TOP_PADDING_DP = 2
+
+/** Height the format line adds under the player title, in dp at the default font scale. */
+internal const val PLAYER_FORMAT_LINE_HEIGHT_DP = 18f
+
+/** The player's format line for [song], or null when nothing about its format is known. */
+internal fun bentoPlayerFormatLine(context: ViewContext, song: Song) = bentoAudioFormatLine(
+    path = song.path,
+    samplingRateK = song.samplingRateK,
+    bitrateK = song.bitrateK,
+    kHz = { context.symphony.t.XKHz(it) },
+    kbps = { context.symphony.t.XKbps(it) },
+)
+
+/**
+ * "FLAC · 44.1 kHz · 920 kbps": the file extension, the sampling rate and the
+ * bitrate, leaving out whatever is unknown. Null when all three are missing.
+ */
+internal fun bentoAudioFormatLine(
+    path: String,
+    samplingRateK: Float?,
+    bitrateK: Long?,
+    kHz: (String) -> String,
+    kbps: (String) -> String,
+): String? = listOfNotNull(
+    path.substringAfterLast('/').substringAfterLast('.', "").uppercase().takeIf { it.isNotEmpty() },
+    samplingRateK?.let { kHz(it.toString().removeSuffix(".0")) },
+    bitrateK?.let { kbps(it.toString()) },
+).joinToString(" · ").takeIf { it.isNotEmpty() }
+
+/**
+ * Factor (at most 1) that shrinks the transport buttons so the row fits in
+ * [availableWidthDp]: play mode, previous, play, next and the sleep timer,
+ * plus back and forward when [seekControls] is on.
+ */
+internal fun bentoTransportScale(availableWidthDp: Float, playSizeDp: Int, seekControls: Boolean): Float {
+    val iconButtons = if (seekControls) 4 else 2
+    val naturalWidth = iconButtons * BentoSizes.ICON_BUTTON + 2 * BentoSizes.PREV_NEXT_BUTTON + playSizeDp
+    return (availableWidthDp / naturalWidth).coerceIn(0f, 1f)
 }
 
-private fun resolvePlayerMode(loopMode: RadioQueue.LoopMode, shuffle: Boolean) = when {
+internal enum class PlayerMode(
+    val label: String,
+    val loopMode: RadioQueue.LoopMode,
+    val shuffle: Boolean,
+) {
+    REPEAT_OFF("Repeat off", RadioQueue.LoopMode.None, false),
+    REPEAT_ALL("Repeat all", RadioQueue.LoopMode.Queue, false),
+    REPEAT_ONE("Repeat one", RadioQueue.LoopMode.Song, false),
+
+    // Shuffle keeps repeating the queue, so playback does not stop after the last shuffled song.
+    SHUFFLE("Shuffle", RadioQueue.LoopMode.Queue, true),
+}
+
+/** The play mode button cycles repeat all -> repeat one -> shuffle -> repeat all. */
+internal fun nextPlayerMode(mode: PlayerMode) = when (mode) {
+    PlayerMode.REPEAT_OFF -> PlayerMode.REPEAT_ALL
+    PlayerMode.REPEAT_ALL -> PlayerMode.REPEAT_ONE
+    PlayerMode.REPEAT_ONE -> PlayerMode.SHUFFLE
+    PlayerMode.SHUFFLE -> PlayerMode.REPEAT_ALL
+}
+
+internal fun resolvePlayerMode(loopMode: RadioQueue.LoopMode, shuffle: Boolean) = when {
     shuffle -> PlayerMode.SHUFFLE
     loopMode == RadioQueue.LoopMode.Song -> PlayerMode.REPEAT_ONE
     loopMode == RadioQueue.LoopMode.Queue -> PlayerMode.REPEAT_ALL

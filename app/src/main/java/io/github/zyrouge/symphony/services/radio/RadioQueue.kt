@@ -35,6 +35,13 @@ class RadioQueue(private val symphony: Symphony) {
             symphony.radio.onUpdate.dispatch(Radio.Events.QueueOption.LoopModeChanged)
         }
 
+    /**
+     * What the queue was started from (an album, a playlist, ...), shown as
+     * "Playing from" in the player. Null when it was started without one.
+     */
+    var currentSource: String? = null
+        internal set
+
     val currentSongId: String?
         get() = getSongIdAt(currentSongIndex)
 
@@ -45,6 +52,7 @@ class RadioQueue(private val symphony: Symphony) {
         originalQueue.clear()
         currentQueue.clear()
         currentSongIndex = -1
+        currentSource = null
         symphony.radio.onUpdate.dispatch(Radio.Events.Queue.Cleared)
     }
 

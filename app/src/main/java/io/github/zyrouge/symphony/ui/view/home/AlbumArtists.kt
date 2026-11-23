@@ -127,12 +127,13 @@ private fun AlbumArtistGroupTile(
         },
         onOpen = { context.navController.navigate(AlbumArtistViewRoute(artist.name)) },
         onPlay = {
-            context.symphony.radio.shorty.playQueue(songIds)
+            context.symphony.radio.shorty.playQueue(songIds, source = artist.name)
         },
         onPlayAt = { index ->
             context.symphony.radio.shorty.playQueue(
                 songIds,
                 Radio.PlayOptions(index = index),
+                source = artist.name,
             )
         },
         rowSecondaryOf = { it.album },

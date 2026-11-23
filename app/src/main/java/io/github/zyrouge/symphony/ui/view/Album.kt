@@ -302,7 +302,7 @@ private fun AlbumGrid(
                         sub = formatBentoDurationMinutes(songs.sumOf { it.duration }),
                         tone = BentoTileTone.ACCENT,
                         onClick = {
-                            context.symphony.radio.shorty.playQueue(trackSongIds)
+                            context.symphony.radio.shorty.playQueue(trackSongIds, source = album.name)
                         },
                     )
 
@@ -316,6 +316,7 @@ private fun AlbumGrid(
                             context.symphony.radio.shorty.playQueue(
                                 trackSongIds,
                                 shuffle = true,
+                                source = album.name,
                             )
                         },
                     )
@@ -340,6 +341,7 @@ private fun AlbumGrid(
                         context = context,
                         songs = songs,
                         trackSongIds = trackSongIds,
+                        source = album.name,
                         geometry = geometry,
                         playingSongId = playingSong.songId,
                         playing = playingSong.isPlaying,

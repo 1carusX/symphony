@@ -10,6 +10,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,8 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -32,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,6 +93,11 @@ private fun ExpandedCapsule(
     val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
     val shape = RoundedCornerShape(BentoRadii.CAPSULE.dp)
     val artSize = if (short) 40.dp else BentoSizes.CAPSULE_ART.dp
+    val trackControls by context.symphony.settings.miniPlayerTrackControls.flow.collectAsState()
+    val seekControls by context.symphony.settings.miniPlayerSeekControls.flow.collectAsState()
+    val textMarquee by context.symphony.settings.miniPlayerTextMarquee.flow.collectAsState()
+    val seekBack by context.symphony.settings.seekBackDuration.flow.collectAsState()
+    val seekForward by context.symphony.settings.seekForwardDuration.flow.collectAsState()
 
     Row(
         modifier = Modifier
@@ -128,7 +137,12 @@ private fun ExpandedCapsule(
                 style = BentoTypography.rowTitle.copy(fontFamily = appFontFamily),
                 color = colors.fg,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                overflow = if (textMarquee) TextOverflow.Clip else TextOverflow.Ellipsis,
+                modifier = if (textMarquee) {
+                    Modifier.basicMarquee(iterations = Int.MAX_VALUE)
+                } else {
+                    Modifier
+                },
             )
             Text(
                 data.song.artists.joinToString(),
@@ -138,11 +152,18 @@ private fun ExpandedCapsule(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        if (showPrevious) {
+        if (showPrevious && trackControls) {
             BentoCapsuleIconButton(
                 icon = { Icon(Icons.Filled.SkipPrevious, "Previous", tint = colors.sub) },
                 label = context.symphony.t.Previous,
                 onClick = { context.symphony.radio.shorty.previous() },
+            )
+        }
+        if (seekControls) {
+            BentoCapsuleIconButton(
+                icon = { Icon(Icons.Filled.FastRewind, "Back $seekBack seconds", tint = colors.sub) },
+                label = "Back $seekBack seconds",
+                onClick = { context.symphony.radio.shorty.seekFromCurrent(-seekBack) },
             )
         }
         Box(
@@ -187,11 +208,20 @@ private fun ExpandedCapsule(
                 onClick = { context.symphony.radio.shorty.playPause() },
             )
         }
-        BentoCapsuleIconButton(
-            icon = { Icon(Icons.Filled.SkipNext, "Next", tint = colors.sub) },
-            label = context.symphony.t.Next,
-            onClick = { context.symphony.radio.shorty.skip() },
-        )
+        if (seekControls) {
+            BentoCapsuleIconButton(
+                icon = { Icon(Icons.Filled.FastForward, "Forward $seekForward seconds", tint = colors.sub) },
+                label = "Forward $seekForward seconds",
+                onClick = { context.symphony.radio.shorty.seekFromCurrent(seekForward) },
+            )
+        }
+        if (trackControls) {
+            BentoCapsuleIconButton(
+                icon = { Icon(Icons.Filled.SkipNext, "Next", tint = colors.sub) },
+                label = context.symphony.t.Next,
+                onClick = { context.symphony.radio.shorty.skip() },
+            )
+        }
     }
 }
 

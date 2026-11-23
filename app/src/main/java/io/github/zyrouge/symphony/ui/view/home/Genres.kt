@@ -120,12 +120,13 @@ private fun GenreGroupTile(
         cover = { BentoGroupGenreCover(genre.name.hashCode()) },
         onOpen = { context.navController.navigate(GenreViewRoute(genre.name)) },
         onPlay = {
-            context.symphony.radio.shorty.playQueue(songIds)
+            context.symphony.radio.shorty.playQueue(songIds, source = genre.name)
         },
         onPlayAt = { index ->
             context.symphony.radio.shorty.playQueue(
                 songIds,
                 Radio.PlayOptions(index = index),
+                source = genre.name,
             )
         },
         rowSecondaryOf = { it.artists.joinToString() },

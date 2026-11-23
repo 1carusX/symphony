@@ -214,6 +214,7 @@ internal fun AlbumTracksTile(
     context: ViewContext,
     songs: List<Song>,
     trackSongIds: List<String>,
+    source: String,
     geometry: BentoTileGeometry,
     playingSongId: String?,
     playing: Boolean,
@@ -243,6 +244,7 @@ internal fun AlbumTracksTile(
                                 context.symphony.radio.shorty.playQueue(
                                     trackSongIds,
                                     Radio.PlayOptions(index = index),
+                                    source = source,
                                 )
                             },
                             onLongClick = { menuSongId = song.id },
