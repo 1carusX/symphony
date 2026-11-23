@@ -233,7 +233,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                             "folders" -> BentoShortcutTile(
                                 geometry = geometry,
                                 icon = Icons.Rounded.Folder,
-                                label = "Library folders",
+                                label = context.symphony.t.LibraryFolders,
                                 sub = "Choose what to scan",
                                 onClick = {
                                     context.navController.navigate(

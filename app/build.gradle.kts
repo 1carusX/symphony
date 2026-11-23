@@ -116,6 +116,7 @@ kotlin {
 dependencies {
     implementation(project(":metaphony"))
     implementation(project(":core"))
+    implementation(project(":i18n"))
     implementation(libs.activity.compose)
     implementation(libs.coil)
     implementation(libs.compose.material.icons.extended)

@@ -216,7 +216,7 @@ internal fun AlbumTracksTile(
     BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
         Column(modifier = Modifier.fillMaxSize()) {
             BentoTileHeader(
-                label = "Tracks",
+                label = context.symphony.t.Tracks,
                 actionLabel = formatBentoDurationMinutes(songs.sumOf { it.duration }),
                 showAction = true,
                 onAction = null,

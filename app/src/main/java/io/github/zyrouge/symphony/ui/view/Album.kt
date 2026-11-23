@@ -345,7 +345,7 @@ private fun AlbumGrid(
                     "more" -> AlbumMoreLikeThisTile(
                         context = context,
                         geometry = geometry,
-                        label = "More like this",
+                        label = context.symphony.t.MoreLikeThis,
                         albums = moreAlbums,
                     )
                 }

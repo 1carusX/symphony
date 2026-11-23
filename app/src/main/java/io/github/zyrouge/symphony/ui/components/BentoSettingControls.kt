@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
@@ -43,6 +44,7 @@ fun BentoSettingGroup(
     title: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val strings = LocalStrings.current
     BentoTile(
         tone = BentoTileTone.PLAIN,
         sizeClass = BentoTileSizeClass.L,
@@ -162,11 +164,12 @@ fun BentoSliderDialog(
     onDismiss: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
+    val strings = LocalStrings.current
     BentoDialog(
         title = title,
         onDismiss = onDismiss,
         actions = if (onReset != null) {
-            { BentoButton(label = "Reset", onClick = onReset) }
+            { BentoButton(label = strings.Reset, onClick = onReset) }
         } else {
             null
         },

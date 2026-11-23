@@ -405,7 +405,7 @@ fun ForYouView(
                                 geometry = geometry,
                                 tone = BentoTileTone.TONAL,
                                 icon = Icons.AutoMirrored.Rounded.QueueMusic,
-                                label = "Late night",
+                                label = context.symphony.t.LateNight,
                                 sub = "Playlist · " +
                                     context.symphony.t.XSongs(playlist.numberOfTracks.toString()),
                                 onClick = {

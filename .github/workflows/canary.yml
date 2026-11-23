@@ -54,7 +54,6 @@ jobs:
 
             - name: 🔨 Build assets
               run: |
-                  npm run prebuild
                   chmod +x ./gradlew
                   ./gradlew assembleCanary
                   ./gradlew bundleCanary

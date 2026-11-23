@@ -12,7 +12,7 @@ import io.github.zyrouge.symphony.services.Permissions
 import io.github.zyrouge.symphony.services.Settings
 import io.github.zyrouge.symphony.services.database.Database
 import io.github.zyrouge.symphony.services.groove.Groove
-import io.github.zyrouge.symphony.services.i18n.Translator
+import io.github.zyrouge.symphony.i18n.Strings
 import io.github.zyrouge.symphony.services.radio.Radio
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,9 +32,13 @@ class Symphony(application: Application) : AndroidViewModel(application), Sympho
     val database = Database(this)
     val groove = Groove(this)
     val radio = Radio(this)
-    val translator = Translator(this)
 
-    var t by mutableStateOf(translator.getCurrentTranslation())
+    private var stringsState by mutableStateOf<Strings?>(null)
+    var t: Strings
+        get() = stringsState ?: error("strings are not initialised")
+        set(value) {
+            stringsState = value
+        }
 
     val applicationContext get() = getApplication<Application>().applicationContext
     var closeApp: (() -> Unit)? = null
@@ -68,11 +72,6 @@ class Symphony(application: Application) : AndroidViewModel(application), Sympho
 
     override fun onSymphonyReady() {
         checkVersion()
-        viewModelScope.launch {
-            translator.onChange { nTranslation ->
-                t = nTranslation
-            }
-        }
     }
 
     override fun onCleared() {

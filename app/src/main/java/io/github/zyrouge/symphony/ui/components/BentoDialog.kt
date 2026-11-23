@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
@@ -36,6 +37,7 @@ fun BentoDialog(
     actions: (@Composable RowScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val strings = LocalStrings.current
     val colors = LocalBentoColors.current
     val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
     Dialog(onDismissRequest = onDismiss) {
@@ -60,7 +62,7 @@ fun BentoDialog(
             ) {
                 actions?.invoke(this)
                 BentoButton(
-                    label = "Done",
+                    label = strings.Done,
                     onClick = onDismiss,
                     filled = true,
                 )

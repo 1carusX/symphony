@@ -19,7 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.zyrouge.symphony.services.i18n.CommonTranslation
+import io.github.zyrouge.symphony.services.locales.localeNativeName
+import io.github.zyrouge.symphony.services.locales.symphonyLocales
 import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.components.BentoOptionDialog
 import io.github.zyrouge.symphony.ui.components.BentoPageHeader
@@ -65,12 +66,10 @@ fun AppearanceSettingsView(context: ViewContext) {
     val contentScale by context.symphony.settings.contentScale.flow.collectAsState()
     var popup by remember { mutableStateOf<AppearancePopup?>(null) }
 
-    val languages = remember(context.symphony.translator.translations) {
-        val native = context.symphony.translator.translations.localeNativeNames
-        val defaultName = context.symphony.translator.getDefaultLocaleNativeName()
-        listOf("" to "${CommonTranslation.System} ($defaultName)") + native.entries.map {
-            it.key to it.value
-        }
+    val languages = remember {
+        val defaultName = localeNativeName(java.util.Locale.getDefault().language)
+        listOf("" to "System ($defaultName)") +
+            symphonyLocales.map { it.code to it.nativeName }
     }
     val languageValue = language ?: ""
 
@@ -153,6 +152,25 @@ fun AppearanceSettingsView(context: ViewContext) {
             onSelect = { index ->
                 val key = languages[index].first
                 context.symphony.settings.language.setValue(key.takeUnless { it == "" })
+                @Suppress("DEPRECATION")
+                run {
+                    val activity = context.activity
+                    val tag = key.ifEmpty { "en" }
+                    if (android.os.Build.VERSION.SDK_INT >= 33) {
+                        activity.getSystemService(android.app.LocaleManager::class.java)
+                            .applicationLocales = android.os.LocaleList.forLanguageTags(tag)
+                    } else {
+                        val locale = java.util.Locale.forLanguageTag(tag)
+                        val configuration =
+                            android.content.res.Configuration(activity.resources.configuration)
+                        configuration.setLocale(locale)
+                        activity.resources.updateConfiguration(
+                            configuration,
+                            activity.resources.displayMetrics,
+                        )
+                        activity.recreate()
+                    }
+                }
                 popup = null
             },
             onDismiss = { popup = null },

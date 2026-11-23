@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.Density
 import androidx.core.view.WindowCompat
 import io.github.zyrouge.symphony.Symphony
+import io.github.zyrouge.symphony.i18n.rememberStrings
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 
 enum class ThemeMode {
@@ -66,6 +67,11 @@ fun SymphonyTheme(
         }
     }
 
+    val strings = rememberStrings(
+        language = context.symphony.settings.language.value ?: java.util.Locale.getDefault().language,
+    )
+    context.symphony.t = strings
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         val activity = view.context as Activity
@@ -75,7 +81,8 @@ fun SymphonyTheme(
         }
     }
 
-    val textDirection = when (context.symphony.t.LocaleDirection) {
+    val localeDirection = io.github.zyrouge.symphony.services.locales.localeDirection(context.symphony.settings.language.value)
+    val textDirection = when (localeDirection) {
         "ltr" -> TextDirection.Ltr
         "rtl" -> TextDirection.Rtl
         else -> TextDirection.Unspecified
@@ -90,6 +97,7 @@ fun SymphonyTheme(
         typography = typography,
         content = {
             CompositionLocalProvider(
+                LocalStrings provides strings,
                 LocalDensity provides Density(
                     LocalDensity.current.density * contentScale,
                     LocalDensity.current.fontScale * fontScale,

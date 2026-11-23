@@ -80,7 +80,7 @@ internal fun SettingsThemeTile(
                 fourColumns = geometry.width >= 520f,
                 onSelect = { context.symphony.settings.bentoThemeMode.setValue(it) },
             )
-            SettingsTileLabel(text = "Color scheme")
+            SettingsTileLabel(text = context.symphony.t.ColorScheme)
             SettingsSchemeOptions(
                 context = context,
                 colorMode = colorMode,

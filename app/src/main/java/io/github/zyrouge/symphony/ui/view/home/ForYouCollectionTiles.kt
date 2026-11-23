@@ -74,7 +74,7 @@ internal fun ForYouLibraryStatTile(
     BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
         Box(modifier = Modifier.fillMaxSize()) {
             BentoStatContent(
-                label = "Your library",
+                label = context.symphony.t.YourLibrary,
                 value = formatBentoDurationMinutes(totalDurationMs),
                 valueStyle = bentoStatValueStyle(geometry.sizeClass, appFontFamily),
                 sub = "${context.symphony.t.XSongs(songCount.toString())} · " +
@@ -307,7 +307,7 @@ internal fun ForYouUpNextTile(
     BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
         Column(modifier = Modifier.fillMaxSize()) {
             BentoTileHeader(
-                label = "Up next",
+                label = context.symphony.t.UpNext,
                 actionLabel = when {
                     upNext.isEmpty() -> "End of queue"
                     else -> context.symphony.t.XSongs(upNext.size.toString())

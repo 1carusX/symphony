@@ -110,7 +110,7 @@ internal fun SettingsLibraryStatTile(
     BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
         Box(modifier = Modifier.fillMaxSize()) {
             BentoStatContent(
-                label = "Library",
+                label = context.symphony.t.Library,
                 value = context.symphony.t.XSongs(songCount.toString()),
                 valueStyle = bentoStatValueStyle(geometry.sizeClass, appFontFamily),
                 sub = "in " + context.symphony.t.XFolders(folderCount.toString()),

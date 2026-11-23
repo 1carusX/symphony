@@ -179,7 +179,7 @@ internal fun BentoGenreChips(
     onGenreChange: (String?) -> Unit,
 ) {
     BentoGenreChip(
-        label = "All genres",
+        label = context.symphony.t.AllGenres,
         selected = selectedGenre == null,
         onClick = { onGenreChange(null) },
     )

@@ -313,7 +313,7 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
                     BentoSortMenu(
                         expanded = showSortMenu,
                         onDismissRequest = { showSortMenu = false },
-                        title = "Sort songs by",
+                        title = context.symphony.t.SortSongsBy,
                         options = SongRepository.SortBy.entries.map {
                             BentoSortOption(it, it.label(context))
                         },
