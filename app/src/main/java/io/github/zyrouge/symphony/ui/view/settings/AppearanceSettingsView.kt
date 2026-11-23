@@ -1,13 +1,10 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.locales.localeNativeName
 import io.github.zyrouge.symphony.services.locales.localeTag
 import io.github.zyrouge.symphony.services.locales.symphonyLocales
@@ -26,6 +22,7 @@ import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.components.BentoOptionDialog
 import io.github.zyrouge.symphony.ui.components.BentoPageHeader
 import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
+import io.github.zyrouge.symphony.ui.components.BentoSettingsColumns
 import io.github.zyrouge.symphony.ui.components.BentoSettingRow
 import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
@@ -81,12 +78,7 @@ fun AppearanceSettingsView(context: ViewContext) {
                 windowClass = windowClass,
                 onBack = { context.navController.popBackStack() },
             )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
+            BentoSettingsColumns {
                 BentoSettingGroup {
                     BentoSettingRow(
                         label = context.symphony.t.Language_,
@@ -112,8 +104,8 @@ fun AppearanceSettingsView(context: ViewContext) {
                         onClick = { popup = AppearancePopup.CONTENT_SCALE },
                     )
                 }
-                Box(Modifier.bentoGestureBarPadding())
             }
+            Box(Modifier.bentoGestureBarPadding())
         }
     }
 

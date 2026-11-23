@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -466,6 +467,13 @@ fun BentoStatContent(
     geometry: BentoTileGeometry,
 ) {
     val tileColors = LocalBentoTileContentColors.current
+    // A wide one-row tile (4x1 on phones) has room for the label and value
+    // only; drop the sub line there instead of clipping it.
+    val subFits = with(LocalDensity.current) {
+        val available = geometry.height.dp - bentoTilePaddingDp(geometry.sizeClass) * 2
+        val needed = BentoTypography.secondary.lineHeight.toDp() * 2 + valueStyle.lineHeight.toDp()
+        needed <= available
+    }
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -484,7 +492,7 @@ fun BentoStatContent(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        if (showsTileSubLabel(geometry.sizeClass, geometry.height)) {
+        if (showsTileSubLabel(geometry.sizeClass, geometry.height) && subFits) {
             Text(
                 sub,
                 style = BentoTypography.secondary,

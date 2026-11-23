@@ -1,11 +1,9 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -46,6 +44,7 @@ import io.github.zyrouge.symphony.ui.components.settings.BentoSystemFolderPicker
 import io.github.zyrouge.symphony.ui.components.BentoPageHeader
 import io.github.zyrouge.symphony.ui.components.BentoOptionDialog
 import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
+import io.github.zyrouge.symphony.ui.components.BentoSettingsColumns
 import io.github.zyrouge.symphony.ui.components.BentoSettingRow
 import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
 import io.github.zyrouge.symphony.ui.components.BentoTextDialog
@@ -117,12 +116,7 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
                     windowClass = rememberBentoWindowClass(),
                     onBack = { context.navController.popBackStack() },
                 )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
+                BentoSettingsColumns {
                     BentoSettingGroup {
                         BentoSettingRow(
                             label = context.symphony.t.MediaFolders,
@@ -194,8 +188,8 @@ fun GrooveSettingsView(context: ViewContext, route: GrooveSettingsViewRoute) {
                             },
                         )
                     }
-                    Box(Modifier.padding(8.dp))
                 }
+                Box(Modifier.padding(8.dp))
             }
             SnackbarHost(
                 snackbarHostState,

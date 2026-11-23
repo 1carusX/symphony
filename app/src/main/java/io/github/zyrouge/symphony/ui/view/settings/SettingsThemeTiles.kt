@@ -1,5 +1,6 @@
 package io.github.zyrouge.symphony.ui.view
 
+import android.os.Build
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
@@ -28,14 +30,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.components.BentoSwitch
 import io.github.zyrouge.symphony.ui.components.BentoTile
 import io.github.zyrouge.symphony.ui.components.BentoTileGeometry
 import io.github.zyrouge.symphony.ui.components.BentoTileTone
@@ -49,7 +54,9 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoPrimaryHue
 import io.github.zyrouge.symphony.ui.theme.bento.BentoThemeMode
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorMode
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
+import io.github.zyrouge.symphony.ui.theme.bento.bentoWallpaperHue
 import kotlin.math.abs
 
 /**
@@ -65,6 +72,11 @@ internal fun SettingsThemeTile(
     val mode by context.symphony.settings.bentoThemeMode.flow.collectAsState()
     val scheme by context.symphony.settings.bentoColorScheme.flow.collectAsState()
     val hue by context.symphony.settings.bentoPrimaryHue.flow.collectAsState()
+    val wallpaperColors by context.symphony.settings.bentoWallpaperColors.flow.collectAsState()
+    val configuration = LocalConfiguration.current
+    val wallpaperHue = remember(wallpaperColors, configuration) {
+        if (wallpaperColors) bentoWallpaperHue(context.activity) else null
+    }
     val colorMode = LocalBentoColorMode.current
 
     BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
@@ -75,7 +87,7 @@ internal fun SettingsThemeTile(
             SettingsTileLabel(text = context.symphony.t.Theme)
             SettingsThemeModeOptions(
                 context = context,
-                hue = hue,
+                hueDegrees = wallpaperHue ?: hue.degrees,
                 selected = mode,
                 fourColumns = geometry.width >= 520f,
                 onSelect = { context.symphony.settings.bentoThemeMode.setValue(it) },
@@ -85,23 +97,70 @@ internal fun SettingsThemeTile(
                 context = context,
                 colorMode = colorMode,
                 hue = hue,
+                wallpaperHue = wallpaperHue,
                 selected = scheme,
                 onSelect = { context.symphony.settings.bentoColorScheme.setValue(it) },
             )
-            SettingsTileLabel(text = context.symphony.t.PrimaryColor)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsTileLabel(text = context.symphony.t.PrimaryColor)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    SettingsWallpaperColorsSwitch(
+                        checked = wallpaperColors,
+                        onCheckedChange = {
+                            context.symphony.settings.bentoWallpaperColors.setValue(it)
+                        },
+                    )
+                }
+            }
             Row(
-                modifier = Modifier.selectableGroup(),
+                modifier = Modifier
+                    .selectableGroup()
+                    // Wallpaper colors override the swatches; picking one turns them off.
+                    .alpha(if (wallpaperHue != null) 0.4f else 1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 BentoPrimaryHue.entries.forEach { hueOption ->
                     SettingsHueSwatch(
                         hue = hueOption,
-                        selected = hue == hueOption,
-                        onSelect = { context.symphony.settings.bentoPrimaryHue.setValue(hueOption) },
+                        selected = wallpaperHue == null && hue == hueOption,
+                        onSelect = {
+                            context.symphony.settings.bentoWallpaperColors.setValue(false)
+                            context.symphony.settings.bentoPrimaryHue.setValue(hueOption)
+                        },
                     )
                 }
             }
         }
+    }
+}
+
+/**
+ * "Wallpaper colors" (prototype v16 `materialYou`, Android 12+): a compact
+ * label and switch on the Primary color line, so the tile keeps its height.
+ */
+@Composable
+private fun SettingsWallpaperColorsSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.toggleable(
+            value = checked,
+            role = Role.Switch,
+            onValueChange = onCheckedChange,
+        ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            "Wallpaper colors",
+            style = BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
+            color = LocalBentoTileContentColors.current.sub,
+            maxLines = 1,
+        )
+        BentoSwitch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
@@ -125,7 +184,7 @@ private fun SettingsTileLabel(text: String) {
 @Composable
 private fun SettingsThemeModeOptions(
     context: ViewContext,
-    hue: BentoPrimaryHue,
+    hueDegrees: Float,
     selected: BentoThemeMode,
     fourColumns: Boolean,
     onSelect: (BentoThemeMode) -> Unit,
@@ -145,7 +204,7 @@ private fun SettingsThemeModeOptions(
                     SettingsThemeModeOption(
                         context = context,
                         option = option,
-                        hue = hue,
+                        hueDegrees = hueDegrees,
                         selected = option == selected,
                         modifier = Modifier.weight(1f),
                         onSelect = { onSelect(option) },
@@ -160,12 +219,13 @@ private fun SettingsThemeModeOptions(
 private fun SettingsThemeModeOption(
     context: ViewContext,
     option: BentoThemeMode,
-    hue: BentoPrimaryHue,
+    hueDegrees: Float,
     selected: Boolean,
     modifier: Modifier = Modifier,
     onSelect: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
+    val contrast = LocalBentoColorScheme.current == BentoColorScheme.CONTRAST
     val fg = when {
         selected -> colors.onAccent
         else -> colors.fg
@@ -175,6 +235,7 @@ private fun SettingsThemeModeOption(
         modifier = modifier
             .height(46.dp)
             .clip(shape)
+            .then(if (contrast) Modifier.border(1.dp, colors.line, shape) else Modifier)
             .background(when {
                 selected -> colors.accent
                 else -> colors.raised
@@ -188,7 +249,7 @@ private fun SettingsThemeModeOption(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        SettingsThemeModeSwatch(mode = option, hue = hue)
+        SettingsThemeModeSwatch(mode = option, hueDegrees = hueDegrees)
         Text(
             option.label(context),
             style = BentoTypography.body.copy(fontWeight = FontWeight.SemiBold),
@@ -204,10 +265,10 @@ private fun SettingsThemeModeOption(
  * light, half dark.
  */
 @Composable
-private fun SettingsThemeModeSwatch(mode: BentoThemeMode, hue: BentoPrimaryHue) {
+private fun SettingsThemeModeSwatch(mode: BentoThemeMode, hueDegrees: Float) {
     val colors = LocalBentoColors.current
-    val light = hslColor(hue.degrees, 0.5f, 0.96f)
-    val dark = hslColor(hue.degrees, 0.12f, 0.16f)
+    val light = hslColor(hueDegrees, 0.5f, 0.96f)
+    val dark = hslColor(hueDegrees, 0.12f, 0.16f)
     Canvas(modifier = Modifier.size(20.dp)) {
         val radius = size.width / 2f
         val fill = when (mode) {
@@ -245,6 +306,7 @@ private fun SettingsSchemeOptions(
     context: ViewContext,
     colorMode: BentoColorMode,
     hue: BentoPrimaryHue,
+    wallpaperHue: Float?,
     selected: BentoColorScheme,
     onSelect: (BentoColorScheme) -> Unit,
 ) {
@@ -254,8 +316,11 @@ private fun SettingsSchemeOptions(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         options.forEach { option ->
-            val preview = remember(option, colorMode, hue) {
-                BentoColorRoles.resolve(option, colorMode, hue)
+            val preview = remember(option, colorMode, hue, wallpaperHue) {
+                when (wallpaperHue) {
+                    null -> BentoColorRoles.resolve(option, colorMode, hue)
+                    else -> BentoColorRoles.resolve(option, colorMode, wallpaperHue)
+                }
             }
             SettingsSchemeOption(
                 context = context,
@@ -279,6 +344,7 @@ private fun SettingsSchemeOption(
     onSelect: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
+    val contrast = LocalBentoColorScheme.current == BentoColorScheme.CONTRAST
     val fg = when {
         selected -> colors.onAccent
         else -> colors.fg
@@ -287,6 +353,7 @@ private fun SettingsSchemeOption(
     Column(
         modifier = modifier
             .clip(shape)
+            .then(if (contrast) Modifier.border(1.dp, colors.line, shape) else Modifier)
             .background(when {
                 selected -> colors.accent
                 else -> colors.raised

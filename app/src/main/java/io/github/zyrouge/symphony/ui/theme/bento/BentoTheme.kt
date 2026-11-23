@@ -1,10 +1,13 @@
 package io.github.zyrouge.symphony.ui.theme.bento
 
+import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 import io.github.zyrouge.symphony.ui.components.BentoTileContentColors
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
 
@@ -33,22 +36,26 @@ val LocalBentoColorMode = staticCompositionLocalOf<BentoColorMode> {
 
 /**
  * Applies the bento theme: resolves the color roles once per selection change
- * (not per recomposition) and exposes them through [LocalBentoColors]. Not yet
- * wired into any screen; later phases host it and connect the settings state.
+ * (not per recomposition) and exposes them through [LocalBentoColors]. A
+ * non-null [hueDegrees] (wallpaper colors) replaces [hue].
  */
 @Composable
 fun BentoTheme(
     mode: BentoThemeMode,
     scheme: BentoColorScheme,
     hue: BentoPrimaryHue,
+    hueDegrees: Float? = null,
     content: @Composable () -> Unit,
 ) {
     val isSystemInDarkTheme = isSystemInDarkTheme()
     val colorMode = remember(mode, isSystemInDarkTheme) {
         mode.toBentoColorMode(isSystemInDarkTheme)
     }
-    val colors = remember(scheme, colorMode, hue) {
-        BentoColorRoles.resolve(scheme, colorMode, hue)
+    val colors = remember(scheme, colorMode, hue, hueDegrees) {
+        when (hueDegrees) {
+            null -> BentoColorRoles.resolve(scheme, colorMode, hue)
+            else -> BentoColorRoles.resolve(scheme, colorMode, hueDegrees)
+        }
     }
     CompositionLocalProvider(
         LocalBentoColors provides colors,
@@ -65,4 +72,15 @@ fun BentoThemeMode.toBentoColorMode(isSystemInDarkTheme: Boolean) = when (this) 
     BentoThemeMode.LIGHT -> BentoColorMode.LIGHT
     BentoThemeMode.DARK -> BentoColorMode.DARK
     BentoThemeMode.BLACK -> BentoColorMode.BLACK
+}
+
+/**
+ * The hue of the system's wallpaper-derived accent (Android 12+), or null on
+ * older versions, where there are no wallpaper colors to follow.
+ */
+fun bentoWallpaperHue(context: Context): Float? = when {
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+        bentoHsl(Color(context.getColor(android.R.color.system_accent1_500)))[0]
+
+    else -> null
 }

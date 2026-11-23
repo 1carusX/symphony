@@ -15,9 +15,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.rememberGrooveVersion
+import io.github.zyrouge.symphony.ui.theme.bento.bentoWallpaperHue
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.view.player.BentoPlayerHost
 import io.github.zyrouge.symphony.ui.view.player.BentoPlayerHostState
@@ -43,6 +45,10 @@ import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsView
 import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsViewRoute
 import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsView
 import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsViewRoute
+import io.github.zyrouge.symphony.ui.view.settings.MiniPlayerSettingsView
+import io.github.zyrouge.symphony.ui.view.settings.MiniPlayerSettingsViewRoute
+import io.github.zyrouge.symphony.ui.view.settings.NowPlayingSettingsView
+import io.github.zyrouge.symphony.ui.view.settings.NowPlayingSettingsViewRoute
 import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsView
 import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsViewRoute
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -63,10 +69,17 @@ fun BaseView(symphony: Symphony, activity: MainActivity) {
         val bentoThemeMode by context.symphony.settings.bentoThemeMode.flow.collectAsState()
         val bentoColorScheme by context.symphony.settings.bentoColorScheme.flow.collectAsState()
         val bentoPrimaryHue by context.symphony.settings.bentoPrimaryHue.flow.collectAsState()
+        val bentoWallpaperColors by context.symphony.settings.bentoWallpaperColors.flow.collectAsState()
+        // A wallpaper change updates the configuration, which re-reads the hue.
+        val configuration = LocalConfiguration.current
+        val wallpaperHue = remember(bentoWallpaperColors, configuration) {
+            if (bentoWallpaperColors) bentoWallpaperHue(context.activity) else null
+        }
         BentoTheme(
             mode = bentoThemeMode,
             scheme = bentoColorScheme,
             hue = bentoPrimaryHue,
+            hueDegrees = wallpaperHue,
         ) {
             val windowClass = rememberBentoWindowClass()
             val playerHost = rememberSaveable(saver = BentoPlayerHostState.Saver) {
@@ -129,6 +142,12 @@ fun BaseView(symphony: Symphony, activity: MainActivity) {
                     }
                     baseComposable<PlayerSettingsViewRoute> {
                         PlayerSettingsView(context)
+                    }
+                    baseComposable<NowPlayingSettingsViewRoute> {
+                        NowPlayingSettingsView(context)
+                    }
+                    baseComposable<MiniPlayerSettingsViewRoute> {
+                        MiniPlayerSettingsView(context)
                     }
                 }
 

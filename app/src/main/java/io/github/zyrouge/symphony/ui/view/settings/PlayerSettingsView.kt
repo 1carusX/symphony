@@ -1,13 +1,10 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,12 +15,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.components.BentoPageHeader
 import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
 import io.github.zyrouge.symphony.ui.components.BentoSwitch
 import io.github.zyrouge.symphony.ui.components.BentoSettingRow
+import io.github.zyrouge.symphony.ui.components.BentoSettingsColumns
 import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
 import io.github.zyrouge.symphony.ui.components.BentoToggleDialog
 import io.github.zyrouge.symphony.ui.components.formatSettingSecs
@@ -82,13 +79,23 @@ fun PlayerSettingsView(context: ViewContext) {
                 windowClass = windowClass,
                 onBack = { context.navController.popBackStack() },
             )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                BentoSettingGroup {
+            BentoSettingsColumns {
+                BentoSettingGroup(title = "Playback") {
+                    BentoSettingRow(
+                        label = context.symphony.t.GaplessPlayback,
+                        value = null,
+                        onClick = {
+                            context.symphony.settings.gaplessPlayback.setValue(!gapless)
+                        },
+                        trailing = {
+                            BentoSwitch(
+                                checked = gapless,
+                                onCheckedChange = {
+                                    context.symphony.settings.gaplessPlayback.setValue(it)
+                                },
+                            )
+                        },
+                    )
                     BentoSettingRow(
                         label = context.symphony.t.FadePlaybackInOut,
                         value = null,
@@ -110,7 +117,7 @@ fun PlayerSettingsView(context: ViewContext) {
                         onClick = { popup = PlayerSettingPopup.FADE_DURATION },
                     )
                 }
-                BentoSettingGroup {
+                BentoSettingGroup(title = "Audio focus") {
                     BentoSettingRow(
                         label = context.symphony.t.RequireAudioFocus,
                         value = null,
@@ -142,7 +149,7 @@ fun PlayerSettingsView(context: ViewContext) {
                         },
                     )
                 }
-                BentoSettingGroup {
+                BentoSettingGroup(title = "Headphones") {
                     BentoSettingRow(
                         label = context.symphony.t.PlayOnHeadphonesConnect,
                         value = null,
@@ -174,7 +181,7 @@ fun PlayerSettingsView(context: ViewContext) {
                         },
                     )
                 }
-                BentoSettingGroup {
+                BentoSettingGroup(title = "Seek buttons") {
                     BentoSettingRow(
                         label = context.symphony.t.FastRewindDuration,
                         value = formatSettingSecs(seekBack.toFloat()),
@@ -186,25 +193,8 @@ fun PlayerSettingsView(context: ViewContext) {
                         onClick = { popup = PlayerSettingPopup.SEEK_FORWARD },
                     )
                 }
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.GaplessPlayback,
-                        value = null,
-                        onClick = {
-                            context.symphony.settings.gaplessPlayback.setValue(!gapless)
-                        },
-                        trailing = {
-                            BentoSwitch(
-                                checked = gapless,
-                                onCheckedChange = {
-                                    context.symphony.settings.gaplessPlayback.setValue(it)
-                                },
-                            )
-                        },
-                    )
-                }
-                Box(Modifier.bentoGestureBarPadding())
             }
+            Box(Modifier.bentoGestureBarPadding())
         }
     }
 

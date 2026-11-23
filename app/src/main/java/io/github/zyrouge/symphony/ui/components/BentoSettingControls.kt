@@ -77,6 +77,7 @@ fun BentoSettingRow(
     value: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    sub: String? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val colors = LocalBentoColors.current
@@ -101,14 +102,24 @@ fun BentoSettingRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            label,
-            style = BentoTypography.rowTitle,
-            color = colors.fg,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                label,
+                style = BentoTypography.rowTitle,
+                color = colors.fg,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (sub != null) {
+                Text(
+                    sub,
+                    style = BentoTypography.secondary,
+                    color = colors.sub,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
         if (value != null) {
             Text(
                 value,
@@ -127,6 +138,27 @@ fun BentoSettingRow(
             )
         }
     }
+}
+
+/** A settings row whose whole surface toggles [checked], with a trailing switch. */
+@Composable
+fun BentoSettingSwitchRow(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    sub: String? = null,
+) {
+    BentoSettingRow(
+        label = label,
+        value = null,
+        sub = sub,
+        modifier = modifier,
+        onClick = { onCheckedChange(!checked) },
+        trailing = {
+            BentoSwitch(checked = checked, onCheckedChange = onCheckedChange)
+        },
+    )
 }
 
 @Composable

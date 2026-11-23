@@ -147,6 +147,9 @@ class Settings(private val symphony: Symphony) {
         enumEntries<BentoPrimaryHue>(),
         BentoPrimaryHue.ROSE,
     )
+
+    /** Android 12+: take the primary hue from the wallpaper instead of [bentoPrimaryHue]. */
+    val bentoWallpaperColors = BooleanEntry("bento_wallpaper_colors", false)
     val lastUsedSongsSortBy = EnumEntry(
         "last_used_song_sort_by",
         enumEntries<SongRepository.SortBy>(),
