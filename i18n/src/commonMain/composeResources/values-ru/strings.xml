@@ -39,14 +39,12 @@
   <string name="Delete">Удалить</string>
   <string name="DeletePlaylist">Удалить плейлист</string>
   <string name="Details">Сведения</string>
-  <string name="Disabled">Откл.</string>
   <string name="DiscNumber">Номер диска</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">Применить</string>
   <string name="Duration">Продолжительность</string>
   <string name="Emerald">Изумрудный</string>
-  <string name="Enabled">Вкл.</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">Эквалайзер</string>
   <string name="Export">Экспорт</string>
@@ -100,7 +98,6 @@ Symphony полностью поддерживается пожертвован�
   <string name="Lime">Лаймовый</string>
   <string name="Loading">Загрузка...</string>
   <string name="LocalStorage">Внешний</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">Текст песни</string>
   <string name="ManageSongs">Управление треками</string>
@@ -217,7 +214,6 @@ Symphony полностью поддерживается пожертвован�
   <string name="XAlbums_other">%1$s альбомов</string>
   <string name="XArtists_other">%1$s исполнителей</string>
   <string name="XBit_other">%1$s-бит</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$s папок</string>
   <string name="XFoldersYFiles_other">%1$s папок, %2$s файлов</string>
   <string name="XGenres_other">%1$s жанров</string>

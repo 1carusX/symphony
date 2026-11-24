@@ -48,14 +48,12 @@ class Strings(
     val Delete: String get() = values.getValue("Delete")
     val DeletePlaylist: String get() = values.getValue("DeletePlaylist")
     val Details: String get() = values.getValue("Details")
-    val Disabled: String get() = values.getValue("Disabled")
     val DiscNumber: String get() = values.getValue("DiscNumber")
     val Discord: String get() = values.getValue("Discord")
     val DiscTotal: String get() = values.getValue("DiscTotal")
     val Done: String get() = values.getValue("Done")
     val Duration: String get() = values.getValue("Duration")
     val Emerald: String get() = values.getValue("Emerald")
-    val Enabled: String get() = values.getValue("Enabled")
     val Encoder: String get() = values.getValue("Encoder")
     val Equalizer: String get() = values.getValue("Equalizer")
     val Export: String get() = values.getValue("Export")
@@ -99,7 +97,6 @@ class Strings(
     val Lime: String get() = values.getValue("Lime")
     val Loading: String get() = values.getValue("Loading")
     val LocalStorage: String get() = values.getValue("LocalStorage")
-    val Loseless: String get() = values.getValue("Loseless")
     val Low: String get() = values.getValue("Low")
     val Lyrics: String get() = values.getValue("Lyrics")
     val ManageSongs: String get() = values.getValue("ManageSongs")
@@ -336,7 +333,6 @@ class Strings(
     fun UnknownArtistX(x: String): String = values.getValue("UnknownArtistX").format(x)
     fun UnknownGenreX(x: String): String = values.getValue("UnknownGenreX").format(x)
     fun UnknownPlaylistX(x: String): String = values.getValue("UnknownPlaylistX").format(x)
-    fun XChannels(x: String): String = values.getValue("XChannels").format(x)
     fun PlayModeX(x: String): String = values.getValue("PlayModeX").format(x)
 
     fun XAlbums(x: String): String = pluralTemplate(
@@ -367,7 +363,12 @@ class Strings(
         other = values.getValue("XFolders_other"),
     ).format(x)
 
-    fun XFoldersYFiles(x: String, y: String): String = values.getValue("XFoldersYFiles_other").format(x, y)
+    fun XFoldersYFiles(x: String, y: String): String = pluralTemplate(
+        language = language,
+        count = x,
+        one = values["XFoldersYFiles_one"],
+        other = values.getValue("XFoldersYFiles_other"),
+    ).format(x, y)
 
     fun XGenres(x: String): String = pluralTemplate(
         language = language,
@@ -462,14 +463,12 @@ fun rememberStrings(language: String): Strings = Strings(
         "Delete" to stringResource(Res.string.Delete),
         "DeletePlaylist" to stringResource(Res.string.DeletePlaylist),
         "Details" to stringResource(Res.string.Details),
-        "Disabled" to stringResource(Res.string.Disabled),
         "DiscNumber" to stringResource(Res.string.DiscNumber),
         "Discord" to stringResource(Res.string.Discord),
         "DiscTotal" to stringResource(Res.string.DiscTotal),
         "Done" to stringResource(Res.string.Done),
         "Duration" to stringResource(Res.string.Duration),
         "Emerald" to stringResource(Res.string.Emerald),
-        "Enabled" to stringResource(Res.string.Enabled),
         "Encoder" to stringResource(Res.string.Encoder),
         "Equalizer" to stringResource(Res.string.Equalizer),
         "Export" to stringResource(Res.string.Export),
@@ -516,7 +515,6 @@ fun rememberStrings(language: String): Strings = Strings(
         "Lime" to stringResource(Res.string.Lime),
         "Loading" to stringResource(Res.string.Loading),
         "LocalStorage" to stringResource(Res.string.LocalStorage),
-        "Loseless" to stringResource(Res.string.Loseless),
         "Low" to stringResource(Res.string.Low),
         "Lyrics" to stringResource(Res.string.Lyrics),
         "ManageSongs" to stringResource(Res.string.ManageSongs),
@@ -636,7 +634,6 @@ fun rememberStrings(language: String): Strings = Strings(
         "XArtists_one" to stringResource(Res.string.XArtists_one),
         "XBit_other" to stringResource(Res.string.XBit_other),
         "XBit_one" to stringResource(Res.string.XBit_one),
-        "XChannels" to stringResource(Res.string.XChannels),
         "XFolders_other" to stringResource(Res.string.XFolders_other),
         "XFolders_one" to stringResource(Res.string.XFolders_one),
         "XFoldersYFiles_other" to stringResource(Res.string.XFoldersYFiles_other),

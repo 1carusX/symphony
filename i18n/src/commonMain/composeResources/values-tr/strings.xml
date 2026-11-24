@@ -39,14 +39,12 @@
   <string name="Delete">Sil</string>
   <string name="DeletePlaylist">Oynatma listesini sil</string>
   <string name="Details">Detaylar</string>
-  <string name="Disabled">Engelli</string>
   <string name="DiscNumber">Disk numarası</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">Bitti</string>
   <string name="Duration">Süre</string>
   <string name="Emerald">Emerald</string>
-  <string name="Enabled">Etkinleştirilmiş</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">Equalizer</string>
   <string name="Export">Export</string>
@@ -96,7 +94,6 @@ Son olarak, Müziğin keyfini Çıkarın!
   <string name="Lime">Lime</string>
   <string name="Loading">Yükleniyor...</string>
   <string name="LocalStorage">Local storage</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">Şarkı sözü</string>
   <string name="ManageSongs">Şarkıları yönet</string>
@@ -213,7 +210,6 @@ Son olarak, Müziğin keyfini Çıkarın!
   <string name="XAlbums_other">%1$s albüm</string>
   <string name="XArtists_other">%1$s sanatçı</string>
   <string name="XBit_other">%1$s-bit</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$s klasör</string>
   <string name="XFoldersYFiles_other">%1$s klasör, %2$s dosya</string>
   <string name="XGenres_other">%1$s tür</string>

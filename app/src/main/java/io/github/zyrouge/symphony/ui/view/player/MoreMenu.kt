@@ -217,7 +217,8 @@ private fun BentoPlayerMoreMenuContent(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                data.song.toSamplingInfoString(context.symphony)?.let {
+                // The same "MP3 · 44.1 kHz · 32 kbps" line as under the player title.
+                bentoPlayerFormatLine(context, data.song)?.let {
                     Text(
                         it,
                         style = BentoTypography.secondary,
@@ -245,7 +246,7 @@ private fun BentoPlayerMoreMenuContent(
         PlayerMenuItem(
             icon = { Icon(Icons.Outlined.Timer, null) },
             label = context.symphony.t.SleepTimer,
-            value = if (data.sleepTimer != null) context.symphony.t.Enabled else context.symphony.t.Disabled,
+            value = if (data.sleepTimer != null) context.symphony.t.On else context.symphony.t.Off,
             onClick = {
                 onDismissRequest()
                 onShowSleepTimer()
@@ -254,7 +255,7 @@ private fun BentoPlayerMoreMenuContent(
         PlayerMenuItem(
             icon = { Icon(Icons.Filled.MotionPhotosPaused, null) },
             label = context.symphony.t.PauseOnCurrentSongEnd,
-            value = if (data.pauseOnCurrentSongEnd) context.symphony.t.Enabled else context.symphony.t.Disabled,
+            value = if (data.pauseOnCurrentSongEnd) context.symphony.t.On else context.symphony.t.Off,
             onClick = {
                 onDismissRequest()
                 context.symphony.radio.setPauseOnCurrentSongEnd(!data.pauseOnCurrentSongEnd)

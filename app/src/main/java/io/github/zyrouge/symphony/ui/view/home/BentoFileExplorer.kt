@@ -44,6 +44,7 @@ import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.SongDropdownMenu
 import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
+import io.github.zyrouge.symphony.ui.components.settings.bentoReadableFolderPath
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.helpers.navigateToFolder
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
@@ -75,9 +76,16 @@ fun BentoFileExplorer(
     val favorites by context.symphony.groove.playlist.favorites.collectAsState()
 
     val categorized = currentFolder.listedChildren()
+    val t = context.symphony.t
+    // Top-level folders are named by their document tree ("primary:Music"), so they
+    // read like the library's folder list instead ("Internal storage › Music").
+    fun displayName(folder: SimpleFileSystem.Folder) = when (folder.parent?.parent) {
+        null -> bentoReadableFolderPath(folder.name, t.InternalStorage, t::StorageX)
+        else -> folder.name
+    }
     val folderSource = when (currentFolder.parent) {
         null -> context.symphony.t.LocalStorage
-        else -> currentFolder.name
+        else -> displayName(currentFolder)
     }
     val folders = if (sortReverse) categorized.folders.sortedBy { it.name }.reversed()
     else categorized.folders.sortedBy { it.name }
@@ -92,6 +100,7 @@ fun BentoFileExplorer(
     Column(modifier = Modifier.fillMaxSize()) {
         PathRow(
             rootLabel = context.symphony.t.LocalStorage,
+            topLabel = { bentoReadableFolderPath(it, t.InternalStorage, t::StorageX) },
             path = currentFolder.fullPath,
             onJump = { depth ->
                 val path = SimplePath(currentFolder.fullPath.parts.subList(1, depth + 1))
@@ -130,7 +139,7 @@ fun BentoFileExplorer(
                     val folderCount = folder.childFoldersCount
                     val songCount = folder.children.values.count { it is SimpleFileSystem.File }
                     FolderRow(
-                        name = folder.name,
+                        name = displayName(folder),
                         sub = listOfNotNull(
                             folderCount.takeIf { it > 0 }
                                 ?.let { context.symphony.t.XFolders(it.toString()) },
@@ -174,7 +183,12 @@ fun BentoFileExplorer(
  * [rootLabel] and the primary volume prefix is dropped.
  */
 @Composable
-private fun PathRow(rootLabel: String, path: SimplePath, onJump: (Int) -> Unit) {
+private fun PathRow(
+    rootLabel: String,
+    topLabel: (String) -> String,
+    path: SimplePath,
+    onJump: (Int) -> Unit,
+) {
     val colors = LocalBentoColors.current
     val scrollState = rememberScrollState()
     LaunchedEffect(path.pathString, scrollState.maxValue) {
@@ -205,7 +219,7 @@ private fun PathRow(rootLabel: String, path: SimplePath, onJump: (Int) -> Unit) 
                 Text(
                     when (index) {
                         0 -> rootLabel
-                        1 -> part.removePrefix("primary:").ifEmpty { part }
+                        1 -> topLabel(part)
                         else -> part
                     },
                     style = BentoTypography.body.copy(fontWeight = FontWeight.SemiBold),

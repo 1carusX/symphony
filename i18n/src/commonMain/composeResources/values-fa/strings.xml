@@ -39,14 +39,12 @@
   <string name="Delete">حذف</string>
   <string name="DeletePlaylist">حذف لیست پخش</string>
   <string name="Details">جزییات</string>
-  <string name="Disabled">غیرفعال</string>
   <string name="DiscNumber">شماره دیسک</string>
   <string name="Discord">دیسکورد</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">انجام شد</string>
   <string name="Duration">طول</string>
   <string name="Emerald">Emerald</string>
-  <string name="Enabled">فعال</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">اکولایزر</string>
   <string name="Export">استخراج</string>
@@ -100,7 +98,6 @@
   <string name="Lime">Lime</string>
   <string name="Loading">بارگیری...</string>
   <string name="LocalStorage">حافظه محلی</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">متن آهنگ</string>
   <string name="ManageSongs">مدیریت آهنگ ها</string>
@@ -217,7 +214,6 @@
   <string name="XAlbums_other">%1$s آلبوم</string>
   <string name="XArtists_other">%1$s هنرمند</string>
   <string name="XBit_other">%1$s-بیت</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$s پوشه</string>
   <string name="XFoldersYFiles_other">%1$s پوشه, %2$s فایل</string>
   <string name="XGenres_other">%1$s ژانر</string>

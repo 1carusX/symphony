@@ -39,14 +39,12 @@
   <string name="Delete">Löschen</string>
   <string name="DeletePlaylist">Wiedergabeliste löschen</string>
   <string name="Details">Details</string>
-  <string name="Disabled">Aus</string>
   <string name="DiscNumber">Disnummer</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">Fertig</string>
   <string name="Duration">Dauer</string>
   <string name="Emerald">Smaragd</string>
-  <string name="Enabled">An</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">Equalizer</string>
   <string name="Export">Export</string>
@@ -100,7 +98,6 @@ Nochmals, danke dass du Symphony ausprobierst!
   <string name="Lime">Limette</string>
   <string name="Loading">Lade...</string>
   <string name="LocalStorage">Lokaler Speicher</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">Liedtext</string>
   <string name="ManageSongs">Lieder verwalten</string>
@@ -220,7 +217,6 @@ Nochmals, danke dass du Symphony ausprobierst!
   <string name="XArtists_one">%1$s Künstler</string>
   <string name="XBit_other">%1$s-bit</string>
   <string name="XBit_one">%1$s-bit</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$s Ordner</string>
   <string name="XFolders_one">%1$s Ordner</string>
   <string name="XFoldersYFiles_other">%1$s Ordner, %2$s Dateien</string>

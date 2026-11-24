@@ -39,14 +39,12 @@
   <string name="Delete">删除</string>
   <string name="DeletePlaylist">删除播放列表</string>
   <string name="Details">详情</string>
-  <string name="Disabled">已关闭</string>
   <string name="DiscNumber">碟号</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">碟片总数</string>
   <string name="Done">完成</string>
   <string name="Duration">时长</string>
   <string name="Emerald">翠绿色</string>
-  <string name="Enabled">已开启</string>
   <string name="Encoder">编码器</string>
   <string name="Equalizer">均衡器</string>
   <string name="Export">导出</string>
@@ -100,7 +98,6 @@ Symphony由来自Github Sponsors，Ko-fi和Patreon的捐赠支持开发。
   <string name="Lime">青柠色</string>
   <string name="Loading">加载中...</string>
   <string name="LocalStorage">设备内部存储</string>
-  <string name="Loseless">无损</string>
   <string name="Low">低</string>
   <string name="Lyrics">歌词</string>
   <string name="ManageSongs">管理歌曲</string>
@@ -217,7 +214,6 @@ Symphony由来自Github Sponsors，Ko-fi和Patreon的捐赠支持开发。
   <string name="XAlbums_other">%1$s 张专辑</string>
   <string name="XArtists_other">%1$s 位艺术家</string>
   <string name="XBit_other">%1$s 位</string>
-  <string name="XChannels">%1$s 声道</string>
   <string name="XFolders_other">%1$s 个文件夹</string>
   <string name="XFoldersYFiles_other">%1$s 个文件夹, %2$s 个文件</string>
   <string name="XGenres_other">%1$s 种类型</string>

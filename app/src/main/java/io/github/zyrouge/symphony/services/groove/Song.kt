@@ -69,28 +69,6 @@ data class Song(
     fun createArtworkImageRequest(symphony: Symphony) =
         symphony.groove.song.createArtworkImageRequest(id)
 
-    fun toSamplingInfoString(symphony: Symphony): String? {
-        val values = mutableListOf<String>()
-        encoder?.let {
-            values.add(it)
-        }
-        channels?.let {
-            values.add(symphony.t.XChannels(it.toString()))
-        }
-        bitrateK?.let {
-            values.add(buildString {
-                append(symphony.t.XKbps(it.toString()))
-            })
-        }
-        samplingRateK?.let {
-            values.add(symphony.t.XKHz(it.toString()))
-        }
-        return when {
-            values.isNotEmpty() -> values.joinToString(", ")
-            else -> null
-        }
-    }
-
     companion object {
         fun parse(
             path: SimplePath,

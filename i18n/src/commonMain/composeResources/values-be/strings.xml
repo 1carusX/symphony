@@ -39,14 +39,12 @@
   <string name="Delete">Выдаліць</string>
   <string name="DeletePlaylist">Выдаліць плэйліст</string>
   <string name="Details">Звесткі</string>
-  <string name="Disabled">Адкл.</string>
   <string name="DiscNumber">Нумар дыска</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">Ужыць</string>
   <string name="Duration">Працягласць</string>
   <string name="Emerald">Ізумрудны</string>
-  <string name="Enabled">Укл.</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">Эквалайзер</string>
   <string name="Export">Экспарт</string>
@@ -100,7 +98,6 @@ Symphony цалкам падтрымліваецца ахвяраваннямі 
   <string name="Lime">Лаймавы</string>
   <string name="Loading">Загрузка...</string>
   <string name="LocalStorage">Local storage</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">Тэкст песні</string>
   <string name="ManageSongs">Кіраванне трэкамі</string>
@@ -217,7 +214,6 @@ Symphony цалкам падтрымліваецца ахвяраваннямі 
   <string name="XAlbums_other">%1$s альбомаў</string>
   <string name="XArtists_other">%1$s выканаўцаў</string>
   <string name="XBit_other">%1$s-біт</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$s тэчак</string>
   <string name="XFoldersYFiles_other">%1$s тэчак, %2$s файлаў</string>
   <string name="XGenres_other">%1$s жанраў</string>

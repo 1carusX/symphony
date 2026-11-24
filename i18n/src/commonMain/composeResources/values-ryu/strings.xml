@@ -39,14 +39,12 @@
   <string name="Delete">さちゅるじょ</string>
   <string name="DeletePlaylist">プレイリストさちゅるじょ</string>
   <string name="Details">しょうさい</string>
-  <string name="Disabled">んーか</string>
   <string name="DiscNumber">ディスクばんごう</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">かんりょう</string>
   <string name="Duration">きょくぬながさ</string>
   <string name="Emerald">エメラルドグリーン</string>
-  <string name="Enabled">ゆうこう</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">イコライザー</string>
   <string name="Export">エクスポート</string>
@@ -100,7 +98,6 @@ Symphonyー、Github Sponsors、Ko-fi、Patreonけいゆでいどぅちふにゆ
   <string name="Lime">ライムグリーン</string>
   <string name="Loading">さぁみくみちゅう...</string>
   <string name="LocalStorage">ローカルストレージ</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">かし</string>
   <string name="ManageSongs">きょくかなーちり</string>
@@ -217,7 +214,6 @@ Symphonyー、Github Sponsors、Ko-fi、Patreonけいゆでいどぅちふにゆ
   <string name="XAlbums_other">%1$sアルバム</string>
   <string name="XArtists_other">%1$sアーティスト</string>
   <string name="XBit_other">%1$s-bit</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$sフォルダ</string>
   <string name="XFoldersYFiles_other">%1$sくぬフォルダー、%2$sくぬファイル</string>
   <string name="XGenres_other">%1$sジャンル</string>

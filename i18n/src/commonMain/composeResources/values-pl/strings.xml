@@ -39,14 +39,12 @@
   <string name="Delete">Usuń</string>
   <string name="DeletePlaylist">Usuń listę odtwarzania</string>
   <string name="Details">Szczegóły</string>
-  <string name="Disabled">Wyłączono</string>
   <string name="DiscNumber">Numer płyty</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Łączna liczba płyt</string>
   <string name="Done">Gotowe</string>
   <string name="Duration">Czas trwania</string>
   <string name="Emerald">Szmaragdowy</string>
-  <string name="Enabled">Włączono</string>
   <string name="Encoder">Koder</string>
   <string name="Equalizer">Korektor dźwięku</string>
   <string name="Export">Eksportuj</string>
@@ -100,7 +98,6 @@ Jeszcze raz dziękujemy za wypróbowanie Symphony!
   <string name="Lime">Limonkowy</string>
   <string name="Loading">Wczytywanie...</string>
   <string name="LocalStorage">Pamięć lokalna</string>
-  <string name="Loseless">Bezstratna</string>
   <string name="Low">Niska</string>
   <string name="Lyrics">Teksty</string>
   <string name="ManageSongs">Zarządzaj utworami</string>
@@ -217,7 +214,6 @@ Jeszcze raz dziękujemy za wypróbowanie Symphony!
   <string name="XAlbums_other">%1$s albumów</string>
   <string name="XArtists_other">%1$s wykonawców</string>
   <string name="XBit_other">%1$s-bit</string>
-  <string name="XChannels">%1$s kanał(y)</string>
   <string name="XFolders_other">%1$s katalogów</string>
   <string name="XFoldersYFiles_other">%1$s katalogów, %2$s plików</string>
   <string name="XGenres_other">%1$s gatunków</string>

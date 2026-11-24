@@ -39,14 +39,12 @@
   <string name="Delete">Xóa</string>
   <string name="DeletePlaylist">Xóa danh sách phát</string>
   <string name="Details">Chi tiết</string>
-  <string name="Disabled">Đã tắt</string>
   <string name="DiscNumber">Tên đĩa</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">Xong</string>
   <string name="Duration">Thời lượng</string>
   <string name="Emerald">Ngọc lục bảo</string>
-  <string name="Enabled">Đã bật</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">Bộ chỉnh âm</string>
   <string name="Export">Xuất danh sách phát</string>
@@ -100,7 +98,6 @@ Một lần nữa, cảm ơn bạn vì đã dùng thử Symphony!
   <string name="Lime">Chanh xanh</string>
   <string name="Loading">Đang tải...</string>
   <string name="LocalStorage">Được lưu trong máy</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">Lời bài hát</string>
   <string name="ManageSongs">Quản lý bài hát</string>
@@ -217,7 +214,6 @@ Một lần nữa, cảm ơn bạn vì đã dùng thử Symphony!
   <string name="XAlbums_other">%1$s album</string>
   <string name="XArtists_other">%1$s nghệ sĩ</string>
   <string name="XBit_other">%1$s-bit</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$s thư mục</string>
   <string name="XFoldersYFiles_other">%1$s thư mục, %2$s tệp</string>
   <string name="XGenres_other">%1$s thể loại</string>

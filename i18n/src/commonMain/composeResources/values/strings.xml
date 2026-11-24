@@ -29,7 +29,7 @@
   <string name="ClearSongCache">Clear song cache</string>
   <string name="Composer">Composer</string>
   <string name="ConsiderContributing">Consider contributing!</string>
-  <string name="ContentScale">Content Scale</string>
+  <string name="ContentScale">Content scale</string>
   <string name="CopiedXToClipboard">Copied \'%1$s\' to clipboard</string>
   <string name="Custom">Custom</string>
   <string name="Cyan">Cyan</string>
@@ -39,14 +39,12 @@
   <string name="Delete">Delete</string>
   <string name="DeletePlaylist">Delete playlist</string>
   <string name="Details">Details</string>
-  <string name="Disabled">Disabled</string>
   <string name="DiscNumber">Disc number</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">Done</string>
   <string name="Duration">Duration</string>
   <string name="Emerald">Emerald</string>
-  <string name="Enabled">Enabled</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">Equalizer</string>
   <string name="Export">Export</string>
@@ -61,7 +59,7 @@
   <string name="FilteringResults">Filtering results...</string>
   <string name="Folders">Folders</string>
   <string name="Font">Font</string>
-  <string name="FontScale">Font Scale</string>
+  <string name="FontScale">Font scale</string>
   <string name="ForYou">For you</string>
   <string name="Fuchsia">Fuchsia</string>
   <string name="GaplessPlayback">Gapless playback</string>
@@ -100,7 +98,6 @@ Once again, thank you for trying out Symphony!
   <string name="Lime">Lime</string>
   <string name="Loading">Loading...</string>
   <string name="LocalStorage">Local storage</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">Lyrics</string>
   <string name="ManageSongs">Manage songs</string>
@@ -124,7 +121,7 @@ Once again, thank you for trying out Symphony!
   <string name="NoLyrics">No lyrics</string>
   <string name="NoResultsFound">No results found</string>
   <string name="NothingIsBeingPlayedRightNow">Nothing is being played right now</string>
-  <string name="NowPlaying">Now Playing</string>
+  <string name="NowPlaying">Now playing</string>
   <string name="Orange">Orange</string>
   <string name="Path">Path</string>
   <string name="Pause">Pause</string>
@@ -220,7 +217,6 @@ Once again, thank you for trying out Symphony!
   <string name="XArtists_one">%1$s artist</string>
   <string name="XBit_other">%1$s-bit</string>
   <string name="XBit_one">%1$s-bit</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$s folders</string>
   <string name="XFolders_one">%1$s folder</string>
   <string name="XFoldersYFiles_other">%1$s folders, %2$s files</string>

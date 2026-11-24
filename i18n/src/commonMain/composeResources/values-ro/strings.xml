@@ -39,14 +39,12 @@
   <string name="Delete">Șterge</string>
   <string name="DeletePlaylist">Șterge playlist</string>
   <string name="Details">Detalii</string>
-  <string name="Disabled">Dezactivat</string>
   <string name="DiscNumber">Numărul discului</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Disc total</string>
   <string name="Done">Gata</string>
   <string name="Duration">Durată</string>
   <string name="Emerald">Emerald</string>
-  <string name="Enabled">Activat</string>
   <string name="Encoder">Encoder</string>
   <string name="Equalizer">Egalizator</string>
   <string name="Export">Exportă</string>
@@ -100,7 +98,6 @@ Din nou, mulțumim pentru că ai încercat Symphony!
   <string name="Lime">Lime</string>
   <string name="Loading">Se încarcă...</string>
   <string name="LocalStorage">În telefon</string>
-  <string name="Loseless">Loseless</string>
   <string name="Low">Low</string>
   <string name="Lyrics">Versuri</string>
   <string name="ManageSongs">Gestionează piese</string>
@@ -220,7 +217,6 @@ Din nou, mulțumim pentru că ai încercat Symphony!
   <string name="XArtists_one">%1$s artist</string>
   <string name="XBit_other">%1$s-bit</string>
   <string name="XBit_one">%1$s-bit</string>
-  <string name="XChannels">%1$s channels</string>
   <string name="XFolders_other">%1$s foldere</string>
   <string name="XFolders_one">%1$s folder</string>
   <string name="XFoldersYFiles_other">%1$s foldere, %2$s fișiere</string>

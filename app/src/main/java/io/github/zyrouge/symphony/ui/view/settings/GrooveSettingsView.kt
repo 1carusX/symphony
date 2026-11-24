@@ -266,7 +266,7 @@ fun ImageQuality.label(context: ViewContext) = when (this) {
     ImageQuality.Low -> context.symphony.t.Low
     ImageQuality.Medium -> context.symphony.t.Medium
     ImageQuality.High -> context.symphony.t.High
-    ImageQuality.Loseless -> context.symphony.t.Loseless
+    ImageQuality.Loseless -> context.symphony.t.Lossless
 }
 
 /** Ready-made patterns; each keeps every folder that passes, so none can empty the library. */

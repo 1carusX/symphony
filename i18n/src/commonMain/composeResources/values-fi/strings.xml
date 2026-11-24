@@ -39,14 +39,12 @@
   <string name="Delete">Poista</string>
   <string name="DeletePlaylist">Poista soittolista</string>
   <string name="Details">Tietoja</string>
-  <string name="Disabled">Pois päältä</string>
   <string name="DiscNumber">Levyn numero</string>
   <string name="Discord">Discord</string>
   <string name="DiscTotal">Levyjen määrä</string>
   <string name="Done">Valmis</string>
   <string name="Duration">Kesto</string>
   <string name="Emerald">Smaragdi</string>
-  <string name="Enabled">Päällä</string>
   <string name="Encoder">Kooderi</string>
   <string name="Equalizer">Taajuuskorjain (EQ)</string>
   <string name="Export">Vie</string>
@@ -100,7 +98,6 @@ Kiitos, kun käytät Symphonyä!
   <string name="Lime">Lime</string>
   <string name="Loading">Ladataan...</string>
   <string name="LocalStorage">Tallennustila</string>
-  <string name="Loseless">Häviötön</string>
   <string name="Low">Matala</string>
   <string name="Lyrics">Lyriikat</string>
   <string name="ManageSongs">Hallitse kappaleita</string>
@@ -220,7 +217,6 @@ Kiitos, kun käytät Symphonyä!
   <string name="XArtists_one">%1$s artisti</string>
   <string name="XBit_other">%1$s-bit</string>
   <string name="XBit_one">%1$s-bit</string>
-  <string name="XChannels">%1$s kanavaa</string>
   <string name="XFolders_other">%1$s kansiota</string>
   <string name="XFolders_one">%1$s kansio</string>
   <string name="XFoldersYFiles_other">%1$s kansiota, %2$s tiedostoa</string>
