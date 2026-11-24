@@ -33,6 +33,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.theme.BentoAppDensity
+import io.github.zyrouge.symphony.ui.theme.bentoAppScale
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
@@ -106,6 +108,7 @@ private fun BentoMenuSheet(
     val maxSheetHeight = (windowHeight - topInset - bottomInset - margin * 4)
         .coerceAtLeast(BentoSizes.MENU_ITEM.dp * 3)
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val menuScroll = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val currentOnDismissRequest by rememberUpdatedState(onDismissRequest)
 
@@ -120,7 +123,8 @@ private fun BentoMenuSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        sheetMaxWidth = (BENTO_MENU_SHEET_MAX_WIDTH + BENTO_MENU_SHEET_MARGIN * 2).dp,
+        sheetMaxWidth = (BENTO_MENU_SHEET_MAX_WIDTH + BENTO_MENU_SHEET_MARGIN * 2).dp *
+            bentoAppScale(),
         shape = RectangleShape,
         containerColor = Color.Transparent,
         contentColor = colors.fg,
@@ -129,29 +133,33 @@ private fun BentoMenuSheet(
         dragHandle = null,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
-        // The transparent margin around the sheet dismisses like the scrim.
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(Unit) { detectTapGestures { hideThenDismiss() } }
-                .padding(
-                    start = margin,
-                    end = margin,
-                    top = margin * 2,
-                    bottom = margin + bottomInset,
-                ),
-        ) {
-            Column(
-                modifier = modifier
+        // The sheet window lays out at its own density; the menu follows the app scale.
+        BentoAppDensity {
+            // The transparent margin around the sheet dismisses like the scrim.
+            Box(
+                modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = maxSheetHeight)
-                    .bentoFloatingSurface(shape, colors.high)
-                    // Taps on the header or between items stay in the sheet.
-                    .pointerInput(Unit) { detectTapGestures { } }
-                    .verticalScroll(rememberScrollState())
-                    .padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 14.dp),
+                    .pointerInput(Unit) { detectTapGestures { hideThenDismiss() } }
+                    .padding(
+                        start = margin,
+                        end = margin,
+                        top = margin * 2,
+                        bottom = margin + bottomInset,
+                    ),
             ) {
-                BentoMenuBody(header = header, content = content)
+                Column(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .heightIn(max = maxSheetHeight)
+                        .bentoFloatingSurface(shape, colors.high)
+                        // Taps on the header or between items stay in the sheet.
+                        .pointerInput(Unit) { detectTapGestures { } }
+                        .bentoScrollbar(menuScroll, colors.muted, BentoRadii.MENU_SHEET.dp)
+                        .verticalScroll(menuScroll)
+                        .padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 14.dp),
+                ) {
+                    BentoMenuBody(header = header, content = content)
+                }
             }
         }
     }
@@ -166,22 +174,28 @@ private fun BentoMenuPopover(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = LocalBentoColors.current
+    val menuScroll = rememberScrollState()
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        modifier = modifier.width(BentoSizes.MENU_WIDTH.dp),
+        modifier = modifier
+            .width(BentoSizes.MENU_WIDTH.dp * bentoAppScale())
+            .bentoScrollbar(menuScroll, colors.muted, BentoRadii.MENU.dp),
+        scrollState = menuScroll,
         shape = RoundedCornerShape(BentoRadii.MENU.dp),
         containerColor = colors.high,
         tonalElevation = 0.dp,
         shadowElevation = BENTO_MENU_SHADOW_ELEVATION.dp,
         border = BorderStroke(1.dp, colors.edge),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-        ) {
-            BentoMenuBody(header = header, content = content)
+        BentoAppDensity {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+            ) {
+                BentoMenuBody(header = header, content = content)
+            }
         }
     }
 }

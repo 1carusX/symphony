@@ -78,7 +78,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import coil3.compose.AsyncImage
@@ -187,7 +186,7 @@ fun BentoSheetDialog(
         )
     }
 
-    Dialog(
+    BentoAppDialog(
         onDismissRequest = { close() },
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
@@ -201,6 +200,7 @@ fun BentoSheetDialog(
         }
         val colors = LocalBentoColors.current
         val density = LocalDensity.current
+        val contentScroll = rememberScrollState()
         val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
         val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
         val shape = RoundedCornerShape(BentoRadii.MENU_SHEET.dp)
@@ -337,7 +337,9 @@ fun BentoSheetDialog(
                         .fillMaxWidth()
                         .then(
                             when {
-                                scrollable -> Modifier.verticalScroll(rememberScrollState())
+                                scrollable -> Modifier
+                                    .bentoScrollbar(contentScroll, colors.muted)
+                                    .verticalScroll(contentScroll)
                                 else -> Modifier
                             },
                         )

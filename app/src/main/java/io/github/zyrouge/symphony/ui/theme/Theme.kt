@@ -95,12 +95,14 @@ fun SymphonyTheme(
         colorScheme = colorScheme,
         typography = typography,
         content = {
+            val appDensity = Density(
+                LocalDensity.current.density * contentScale,
+                LocalDensity.current.fontScale * fontScale,
+            )
             CompositionLocalProvider(
                 LocalStrings provides strings,
-                LocalDensity provides Density(
-                    LocalDensity.current.density * contentScale,
-                    LocalDensity.current.fontScale * fontScale,
-                )
+                LocalDensity provides appDensity,
+                LocalBentoAppDensity provides appDensity,
             ) {
                 content()
             }

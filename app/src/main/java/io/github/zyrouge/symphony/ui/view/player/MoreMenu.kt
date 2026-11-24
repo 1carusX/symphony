@@ -50,7 +50,10 @@ import androidx.compose.ui.window.PopupProperties
 import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.ui.components.AddToPlaylistDialog
 import io.github.zyrouge.symphony.ui.components.MenuRow
+import io.github.zyrouge.symphony.ui.components.bentoScrollbar
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.BentoAppDensity
+import io.github.zyrouge.symphony.ui.theme.bentoAppScale
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
@@ -102,34 +105,36 @@ internal fun BentoPlayerMoreMenu(
             onDismissRequest = onDismissRequest,
             properties = PopupProperties(focusable = false),
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(colors.scrim)
-                    .clickable(onClick = onDismissRequest),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-                Column(
+            BentoAppDensity {
+                Box(
                     modifier = Modifier
-                        .padding(8.dp)
-                        .widthIn(max = 560.dp)
-                        .fillMaxWidth()
-                        .shadow(20.dp, RoundedCornerShape(BentoRadii.MENU_SHEET.dp))
-                        .clip(RoundedCornerShape(BentoRadii.MENU_SHEET.dp))
-                        .background(colors.high)
-                        .clickable { }
-                        .padding(10.dp),
+                        .fillMaxSize()
+                        .background(colors.scrim)
+                        .clickable(onClick = onDismissRequest),
+                    contentAlignment = Alignment.BottomCenter,
                 ) {
-                    BentoPlayerMoreMenuContent(
-                        context = context,
-                        data = data,
-                        onDismissRequest = onDismissRequest,
-                        onShowSpeed = onShowSpeed,
-                        onShowSleepTimer = onShowSleepTimer,
-                        onClosePlayer = onClosePlayer,
-                        onAddToPlaylist = { showAddToPlaylistDialog = true },
-                        onLaunchEqualizer = ::launchEqualizer,
-                    )
+                    Column(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .widthIn(max = 560.dp)
+                            .fillMaxWidth()
+                            .shadow(20.dp, RoundedCornerShape(BentoRadii.MENU_SHEET.dp))
+                            .clip(RoundedCornerShape(BentoRadii.MENU_SHEET.dp))
+                            .background(colors.high)
+                            .clickable { }
+                            .padding(10.dp),
+                    ) {
+                        BentoPlayerMoreMenuContent(
+                            context = context,
+                            data = data,
+                            onDismissRequest = onDismissRequest,
+                            onShowSpeed = onShowSpeed,
+                            onShowSleepTimer = onShowSleepTimer,
+                            onClosePlayer = onClosePlayer,
+                            onAddToPlaylist = { showAddToPlaylistDialog = true },
+                            onLaunchEqualizer = ::launchEqualizer,
+                        )
+                    }
                 }
             }
         }
@@ -137,7 +142,7 @@ internal fun BentoPlayerMoreMenu(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = onDismissRequest,
-            modifier = Modifier.width(BentoSizes.MENU_WIDTH.dp),
+            modifier = Modifier.width(BentoSizes.MENU_WIDTH.dp * bentoAppScale()),
             containerColor = colors.high,
             shape = RoundedCornerShape(BentoRadii.MENU.dp),
             shadowElevation = 16.dp,
@@ -146,16 +151,18 @@ internal fun BentoPlayerMoreMenu(
                 else -> null
             },
         ) {
-            BentoPlayerMoreMenuContent(
-                context = context,
-                data = data,
-                onDismissRequest = onDismissRequest,
-                onShowSpeed = onShowSpeed,
-                onShowSleepTimer = onShowSleepTimer,
-                onClosePlayer = onClosePlayer,
-                onAddToPlaylist = { showAddToPlaylistDialog = true },
-                onLaunchEqualizer = ::launchEqualizer,
-            )
+            BentoAppDensity {
+                BentoPlayerMoreMenuContent(
+                    context = context,
+                    data = data,
+                    onDismissRequest = onDismissRequest,
+                    onShowSpeed = onShowSpeed,
+                    onShowSleepTimer = onShowSleepTimer,
+                    onClosePlayer = onClosePlayer,
+                    onAddToPlaylist = { showAddToPlaylistDialog = true },
+                    onLaunchEqualizer = ::launchEqualizer,
+                )
+            }
         }
     }
 
@@ -180,10 +187,12 @@ private fun BentoPlayerMoreMenuContent(
     onLaunchEqualizer: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
+    val menuScroll = rememberScrollState()
     Column(
         modifier = Modifier
             .heightIn(max = 520.dp)
-            .verticalScroll(rememberScrollState()),
+            .bentoScrollbar(menuScroll, colors.muted, BentoRadii.MENU.dp)
+            .verticalScroll(menuScroll),
     ) {
         Row(
             modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 8.dp, bottom = 12.dp),

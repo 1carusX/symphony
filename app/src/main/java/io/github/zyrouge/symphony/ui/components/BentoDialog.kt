@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
@@ -38,7 +37,7 @@ fun BentoDialog(
     val strings = LocalStrings.current
     val colors = LocalBentoColors.current
     val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
-    Dialog(onDismissRequest = onDismiss) {
+    BentoAppDialog(onDismissRequest = onDismiss) {
         Column(
             modifier = modifier
                 .widthIn(max = 560.dp)

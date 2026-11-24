@@ -24,9 +24,9 @@ import io.github.zyrouge.symphony.ui.components.BentoSheetChoiceRow
 import io.github.zyrouge.symphony.ui.components.BentoSheetDialog
 import io.github.zyrouge.symphony.ui.components.BentoSheetOptionRow
 import io.github.zyrouge.symphony.ui.components.BentoSheetPages
-import io.github.zyrouge.symphony.ui.components.BentoSheetSliderRow
 import io.github.zyrouge.symphony.ui.components.BentoSheetTextField
 import io.github.zyrouge.symphony.ui.components.BentoSheetValueRow
+import io.github.zyrouge.symphony.ui.components.bentoNearestStop
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.SymphonyTypography
@@ -38,7 +38,7 @@ private enum class AppearancePage {
     LANGUAGE,
 }
 
-/** The text and content size stops; the sliders snap to these. */
+/** The text and content sizes offered as chips. */
 private val SCALE_STOPS = listOf(0.85f, 1f, 1.15f, 1.3f, 1.5f)
 
 /** "1×", "1.15×": a scale with at most two decimals. */
@@ -99,28 +99,18 @@ fun AppearanceSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit)
                         // Each font's name is set in that font, so the choice previews itself.
                         optionFontFamily = { SymphonyTypography.all[fontNames[it]]?.fontFamily?.invoke() },
                     )
-                    // The whole app resizes as the sliders move, which is the preview.
-                    BentoSheetSliderRow(
+                    // A few fixed sizes, so chips: the whole app resizes on a tap, which is the preview.
+                    BentoSheetChoiceRow(
                         title = context.symphony.t.FontScale,
-                        value = fontScale,
-                        range = SCALE_STOPS.first()..SCALE_STOPS.last(),
-                        step = 0.05f,
-                        stops = SCALE_STOPS,
-                        label = ::formatScale,
-                        onChange = { settings.fontScale.setValue(it) },
-                        defaultValue = settings.fontScale.defaultValue,
-                        onReset = { settings.fontScale.setValue(settings.fontScale.defaultValue) },
+                        options = SCALE_STOPS.map(::formatScale),
+                        selectedIndex = bentoNearestStop(SCALE_STOPS, fontScale),
+                        onSelect = { settings.fontScale.setValue(SCALE_STOPS[it]) },
                     )
-                    BentoSheetSliderRow(
+                    BentoSheetChoiceRow(
                         title = context.symphony.t.ContentScale,
-                        value = contentScale,
-                        range = SCALE_STOPS.first()..SCALE_STOPS.last(),
-                        step = 0.05f,
-                        stops = SCALE_STOPS,
-                        label = ::formatScale,
-                        onChange = { settings.contentScale.setValue(it) },
-                        defaultValue = settings.contentScale.defaultValue,
-                        onReset = { settings.contentScale.setValue(settings.contentScale.defaultValue) },
+                        options = SCALE_STOPS.map(::formatScale),
+                        selectedIndex = bentoNearestStop(SCALE_STOPS, contentScale),
+                        onSelect = { settings.contentScale.setValue(SCALE_STOPS[it]) },
                     )
                 }
 

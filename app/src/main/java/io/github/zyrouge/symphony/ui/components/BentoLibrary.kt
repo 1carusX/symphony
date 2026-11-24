@@ -72,6 +72,7 @@ import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.ui.helpers.Assets
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.BentoAppDensity
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoGridClass
@@ -643,9 +644,12 @@ fun <T> BentoSortMenu(
 ) {
     val colors = LocalBentoColors.current
     val colorScheme = LocalBentoColorScheme.current
+    val menuScroll = rememberScrollState()
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
+        modifier = Modifier.bentoScrollbar(menuScroll, colors.muted, BentoRadii.MENU.dp),
+        scrollState = menuScroll,
         containerColor = colors.high,
         shape = RoundedCornerShape(BentoRadii.MENU.dp),
         shadowElevation = 16.dp,
@@ -654,53 +658,55 @@ fun <T> BentoSortMenu(
             else -> null
         },
     ) {
-        Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-            Column {
-                Text(
-                    title,
-                    style = BentoTypography.secondary.copy(fontWeight = FontWeight.Bold),
-                    color = colors.muted,
-                    maxLines = 1,
-                    modifier = Modifier.padding(start = 12.dp, top = 6.dp, bottom = 8.dp),
-                )
-                options.forEach { option ->
+        BentoAppDensity {
+            Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                Column {
+                    Text(
+                        title,
+                        style = BentoTypography.secondary.copy(fontWeight = FontWeight.Bold),
+                        color = colors.muted,
+                        maxLines = 1,
+                        modifier = Modifier.padding(start = 12.dp, top = 6.dp, bottom = 8.dp),
+                    )
+                    options.forEach { option ->
+                        MenuRow(
+                            leading = {
+                                if (option.value == selected) {
+                                    Icon(
+                                        Icons.Rounded.Check,
+                                        option.label,
+                                        tint = colors.sub,
+                                        modifier = Modifier.size(22.dp),
+                                    )
+                                } else {
+                                    Spacer(Modifier.size(22.dp))
+                                }
+                            },
+                            label = option.label,
+                            value = null,
+                            onClick = {
+                                onDismissRequest()
+                                onSelect(option.value)
+                            },
+                        )
+                    }
                     MenuRow(
                         leading = {
-                            if (option.value == selected) {
-                                Icon(
-                                    Icons.Rounded.Check,
-                                    option.label,
-                                    tint = colors.sub,
-                                    modifier = Modifier.size(22.dp),
-                                )
-                            } else {
-                                Spacer(Modifier.size(22.dp))
-                            }
+                            Icon(
+                                Icons.AutoMirrored.Rounded.Sort,
+                                reverseLabel,
+                                tint = colors.sub,
+                                modifier = Modifier.size(22.dp),
+                            )
                         },
-                        label = option.label,
-                        value = null,
+                        label = reverseLabel,
+                        value = if (reverse) LocalStrings.current.On else LocalStrings.current.Off,
                         onClick = {
                             onDismissRequest()
-                            onSelect(option.value)
+                            onReverseChange(!reverse)
                         },
                     )
                 }
-                MenuRow(
-                    leading = {
-                        Icon(
-                            Icons.AutoMirrored.Rounded.Sort,
-                            reverseLabel,
-                            tint = colors.sub,
-                            modifier = Modifier.size(22.dp),
-                        )
-                    },
-                    label = reverseLabel,
-                    value = if (reverse) LocalStrings.current.On else LocalStrings.current.Off,
-                    onClick = {
-                        onDismissRequest()
-                        onReverseChange(!reverse)
-                    },
-                )
             }
         }
     }

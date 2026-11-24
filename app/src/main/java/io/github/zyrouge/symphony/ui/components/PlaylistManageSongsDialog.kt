@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.DurationUtils
 
 /**
@@ -45,6 +47,8 @@ fun PlaylistManageSongsDialog(
                 .sortedBy { !initiallySelected.contains(it) }
         }
     }
+
+    val listState = rememberLazyListState()
 
     BentoSheetDialog(
         title = context.symphony.t.ManageSongs,
@@ -82,7 +86,10 @@ fun PlaylistManageSongsDialog(
             }
 
             else -> LazyColumn(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .bentoScrollbar(listState, LocalBentoColors.current.muted),
+                state = listState,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 items(songIds) { songId ->
