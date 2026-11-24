@@ -39,9 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.groove.Groove
 import io.github.zyrouge.symphony.services.groove.Song
@@ -332,10 +336,25 @@ private fun SongsListTile(
     val songIndexById = remember(sortedSongIds) {
         sortedSongIds.withIndex().associate { (index, songId) -> songId to index }
     }
-    // The tile runs under the floating capsule; the list and the scrubber stay clear of it.
+    // The tile runs under the floating capsule while rows continue below it;
+    // the list and the scrubber stay clear of it. Once the last row scrolls
+    // in, the tile's bottom edge follows it up, so at the end of the list the
+    // edge sits above the capsule instead of staying hidden under it.
     val bottomInset = bentoBottomInset()
+    val bottomInsetPx = with(LocalDensity.current) { bottomInset.toPx() }
+    val tileTrim by remember(listState, bottomInsetPx) {
+        derivedStateOf {
+            val info = listState.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()
+            when {
+                last == null || last.index < info.totalItemsCount - 1 -> 0f
+                else -> (info.viewportSize.height - last.offset - last.size).toFloat()
+                    .coerceIn(0f, bottomInsetPx)
+            }
+        }
+    }
     val colorScheme = LocalBentoColorScheme.current
-    val tileShape = RoundedCornerShape(BentoRadii.TILE.dp)
+    val tileShape = BottomTrimmedShape(RoundedCornerShape(BentoRadii.TILE.dp), tileTrim)
 
     Box(
         modifier = modifier
@@ -435,6 +454,16 @@ private fun SongsListTile(
             }
         }
     }
+}
+
+/** [shape] with its bottom [trim] pixels cut off, so a tile's edge can rise with its content. */
+private data class BottomTrimmedShape(val shape: Shape, val trim: Float) : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density) =
+        shape.createOutline(
+            size.copy(height = (size.height - trim).coerceAtLeast(0f)),
+            layoutDirection,
+            density,
+        )
 }
 
 /** Whether a sort shows letter headers and the scrubber (DESIGN.md 5.2). */
