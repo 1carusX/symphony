@@ -389,4 +389,5 @@ Nochmals, danke dass du Symphony ausprobierst!
   <string name="SomethingWentWrong">Etwas ist gewaltig schiefgelaufen</string>
   <string name="ErrorX">Fehler: %1$s</string>
   <string name="DeletePlaylistNoteX">„%1$s“ und die Reihenfolge der Lieder werden entfernt. Die Lieder bleiben in deiner Mediathek.</string>
+  <string name="Search">Suchen</string>
 </resources>

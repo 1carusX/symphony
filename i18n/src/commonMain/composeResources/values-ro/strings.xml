@@ -389,4 +389,5 @@ Din nou, mulțumim pentru că ai încercat Symphony!
   <string name="SomethingWentWrong">Ceva a mers groaznic de prost</string>
   <string name="ErrorX">Eroare: %1$s</string>
   <string name="DeletePlaylistNoteX">„%1$s” și ordinea pieselor vor fi eliminate. Piesele rămân în biblioteca ta.</string>
+  <string name="Search">Caută</string>
 </resources>

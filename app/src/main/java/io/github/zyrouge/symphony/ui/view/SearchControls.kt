@@ -1,13 +1,10 @@
 package io.github.zyrouge.symphony.ui.view
 
 import androidx.compose.foundation.background
-import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
-import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,19 +33,24 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.zyrouge.symphony.ui.components.BentoGenreChip
 import io.github.zyrouge.symphony.ui.components.BentoSmartFilterTile
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import io.github.zyrouge.symphony.ui.components.label
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
+import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
@@ -114,13 +116,20 @@ internal fun SearchField(
                     .onFocusChanged { focused = it.isFocused },
             )
             if (terms.isEmpty()) {
-                Text(
-                    context.symphony.t.SearchYourMusic,
-                    style = BentoTypography.rowTitle,
-                    color = colors.muted,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                // At a large font or content scale the full hint gives way to a plain "Search".
+                val textMeasurer = rememberTextMeasurer()
+                BoxWithConstraints {
+                    val hint = context.symphony.t.SearchYourMusic
+                    val fits = textMeasurer.measure(hint, BentoTypography.rowTitle, maxLines = 1)
+                        .size.width <= constraints.maxWidth
+                    Text(
+                        if (fits) hint else context.symphony.t.Search,
+                        style = BentoTypography.rowTitle,
+                        color = colors.muted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
         if (terms.isNotEmpty()) {

@@ -77,9 +77,14 @@ internal fun ForYouLibraryStatTile(
                 label = context.symphony.t.YourLibrary,
                 value = formatBentoDurationMinutes(totalDurationMs, context.symphony.t),
                 valueStyle = bentoStatValueStyle(geometry.sizeClass, appFontFamily),
-                sub = "${context.symphony.t.XSongs(songCount.toString())} · " +
+                // Beside the corner pill of a narrow tile, two short lines fit where one long one does not.
+                sub = context.symphony.t.XSongs(songCount.toString()) +
+                    (if (geometry.width >= 320f) " · " else "\n") +
                     context.symphony.t.XAlbums(albumCount.toString()),
                 geometry = geometry,
+                // A narrow tile has no room for the value beside the pill, so the
+                // icon-only pill sits in the bottom-right corner instead.
+                bottomEndInset = if (geometry.width >= 320f) 0.dp else 44.dp,
             )
             BentoCallToActionPill(
                 label = context.symphony.t.Rescan,
@@ -87,6 +92,7 @@ internal fun ForYouLibraryStatTile(
                 icon = Icons.Rounded.Refresh,
                 tilePadding = bentoTilePaddingDp(geometry.sizeClass),
                 onClick = libraryRescanAction(context),
+                bottom = geometry.width < 320f,
             )
         }
     }

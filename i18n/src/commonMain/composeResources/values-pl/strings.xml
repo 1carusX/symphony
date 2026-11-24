@@ -398,4 +398,5 @@ Jeszcze raz dziękujemy za wypróbowanie Symphony!
   <string name="SomethingWentWrong">Coś poszło bardzo nie tak</string>
   <string name="ErrorX">Błąd: %1$s</string>
   <string name="DeletePlaylistNoteX">Lista odtwarzania „%1$s” i kolejność jej utworów zostaną usunięte. Utwory pozostaną w bibliotece.</string>
+  <string name="Search">Szukaj</string>
 </resources>

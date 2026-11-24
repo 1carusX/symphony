@@ -1,15 +1,9 @@
 package io.github.zyrouge.symphony.ui.view.player
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -27,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -35,37 +30,45 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.ui.components.bentoFloatingSurface
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
-import io.github.zyrouge.symphony.ui.theme.bento.BentoMotion
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 private const val PHONE_MEDIUM_FIXED_CONTENT_DP = 349f
 
@@ -224,11 +227,16 @@ internal fun BentoPlayerPanel(
     }
 }
 
+/** Settles the landscape window between its levels, like the phone sheet. */
+private val LandscapeLevelSpring = spring<Float>(dampingRatio = 0.86f, stiffness = Spring.StiffnessMediumLow)
+
 /**
  * The floating player window of short (phone landscape) windows, where the
- * medium player is a wide two-column window. Level changes cross-fade the
- * content and animate the window's size; touch windows also follow the
- * finger (DESIGN.md 6.5).
+ * medium player is a wide two-column window. One progress value (0 small,
+ * 1 medium) drives the window's width and height and a cross-fade of the two
+ * layouts, anchored at the bottom-right corner; a drag on the header moves it
+ * with the finger and a release settles it (DESIGN.md 6.5). Dragging on down
+ * from the small window closes it.
  */
 @Composable
 private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
@@ -247,56 +255,72 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
     val colors = LocalBentoColors.current
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
-    val dragOffset = remember { Animatable(0f) }
-    var dragStartedAt by remember { mutableStateOf(level) }
-    var dragDistanceDp by remember { mutableFloatStateOf(0f) }
-    var dragMoved by remember { mutableStateOf(false) }
+    val latestLevel by rememberUpdatedState(level)
 
     val floatingInset = BentoSizes.FLOATING_PLAYER_LANDSCAPE_INSET.dp
+    val smallWidth = BentoSizes.FLOATING_PLAYER_WIDTH.dp
     val mediumWidth = min(
         BentoSizes.FLOATING_PLAYER_LANDSCAPE_MEDIUM_WIDTH.dp.value,
         (maxWidth - BentoSizes.RAIL_SHORT.dp - floatingInset * 2).value,
     ).dp
     val mediumHeight = maxHeight - floatingInset * 2
+    // The small window is as tall as its content, measured as it is laid out.
+    var smallHeightPx by remember { mutableIntStateOf(0) }
 
-    fun finishDrag() {
-        if (!dragMoved) return
-        val target = resolveBentoFloatingPlayerRelease(dragOffset.value / density.density, dragStartedAt)
+    fun progressOf(target: BentoPlayerLevel) = when (target) {
+        BentoPlayerLevel.SMALL -> 0f
+        BentoPlayerLevel.MEDIUM -> 1f
+    }
+
+    val progress = remember { Animatable(progressOf(level)) }
+    // How far a downward drag has pulled the small window towards closing, in px.
+    val closeOffset = remember { Animatable(0f) }
+    var dragging by remember { mutableStateOf(false) }
+    // Set while a release runs its own settle animation, so the level effect does not restart it.
+    var settlingTo by remember { mutableStateOf<BentoPlayerLevel?>(null) }
+    LaunchedEffect(level) {
+        if (dragging || settlingTo == level) return@LaunchedEffect
+        progress.animateTo(progressOf(level), LandscapeLevelSpring)
+    }
+
+    val velocityTracker = remember { VelocityTracker() }
+    var dragTotalPx by remember { mutableFloatStateOf(0f) }
+    var dragStartProgress by remember { mutableFloatStateOf(0f) }
+    fun rangePx() = with(density) {
+        val small = if (smallHeightPx > 0) smallHeightPx.toFloat() else mediumHeight.toPx() / 2f
+        (mediumHeight.toPx() - small).coerceAtLeast(1f)
+    }
+
+    fun release(velocityPxPerSecond: Float) {
+        dragging = false
+        val velocityDpPerMs = velocityPxPerSecond / density.density / 1000f
+        val closedDp = closeOffset.value / density.density
+        val target = when {
+            closedDp > 40f -> null
+            closedDp > 0f && velocityDpPerMs > 0.45f -> null
+            velocityDpPerMs < -0.45f -> BentoPlayerLevel.MEDIUM
+            velocityDpPerMs > 0.45f -> BentoPlayerLevel.SMALL
+            progress.value >= 0.5f -> BentoPlayerLevel.MEDIUM
+            else -> BentoPlayerLevel.SMALL
+        }
         if (target == null) {
             onClose()
             return
         }
+        settlingTo = target
+        coroutineScope.launch { closeOffset.animateTo(0f, LandscapeLevelSpring) }
         coroutineScope.launch {
-            onLevelChange(target)
-            dragOffset.animateTo(
-                0f,
-                animationSpec = tween(
-                    BentoMotion.PHONE_SHEET_OPEN.durationMs,
-                    easing = BentoMotion.DECELERATE,
-                ),
+            progress.animateTo(
+                targetValue = progressOf(target),
+                animationSpec = LandscapeLevelSpring,
+                initialVelocity = -velocityPxPerSecond / rangePx(),
             )
+            settlingTo = null
         }
+        if (target != latestLevel) onLevelChange(target)
     }
 
-    val shape = RoundedCornerShape(BentoRadii.FLOATING_PLAYER.dp)
-    Column(
-        modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(floatingInset)
-            .width(
-                when {
-                    level == BentoPlayerLevel.MEDIUM -> mediumWidth
-                    else -> BentoSizes.FLOATING_PLAYER_WIDTH.dp
-                },
-            )
-            .graphicsLayer { translationY = dragOffset.value }
-            .bentoFloatingSurface(shape, colors.`float`)
-            .pointerInput(Unit) {
-                // Swallow taps that miss a control so they do not reach the page
-                // scrolling underneath the floating panel.
-                detectTapGestures(onTap = {})
-            },
-    ) {
+    val header: @Composable (BentoPlayerLevel) -> Unit = { shownLevel ->
         Box(modifier = Modifier.fillMaxWidth()) {
             if (canResize) {
                 Box(
@@ -311,51 +335,79 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
             PlayerPanelHeader(
                 context = context,
                 data = data,
-                level = level,
+                level = shownLevel,
                 canResize = canResize,
                 onClose = onClose,
                 onToggleLevel = {
                     onLevelChange(
-                        when (level) {
+                        when (latestLevel) {
                             BentoPlayerLevel.SMALL -> BentoPlayerLevel.MEDIUM
                             BentoPlayerLevel.MEDIUM -> BentoPlayerLevel.SMALL
                         },
                     )
                 },
                 onDragStart = {
-                    dragStartedAt = level
-                    dragDistanceDp = 0f
-                    dragMoved = false
+                    dragging = true
+                    dragTotalPx = 0f
+                    dragStartProgress = progress.value
+                    velocityTracker.resetTracking()
                 },
-                onDrag = { amountPx ->
-                    dragDistanceDp += amountPx / density.density
-                    if (!dragMoved && abs(dragDistanceDp) < 6f) {
-                        return@PlayerPanelHeader
-                    }
-                    dragMoved = true
-                    val offsetDp = bentoFloatingPlayerDragOffset(dragDistanceDp)
+                onDrag = { uptimeMillis, amountPx ->
+                    dragTotalPx += amountPx
+                    // The header moves with the window, so track the drag distance, not the position.
+                    velocityTracker.addPosition(uptimeMillis, Offset(0f, dragTotalPx))
+                    val raw = dragStartProgress - dragTotalPx / rangePx()
                     coroutineScope.launch {
-                        dragOffset.snapTo(with(density) { offsetDp.dp.toPx() })
+                        progress.snapTo(raw.coerceIn(0f, 1f))
+                        // Past the small level the window follows the finger down towards closing.
+                        closeOffset.snapTo(if (raw < 0f) -raw * rangePx() else 0f)
                     }
                 },
-                onDragEnd = ::finishDrag,
+                onDragEnd = { release(velocityTracker.calculateVelocity().y) },
             )
         }
+    }
 
-        // The content cross-fades and the window resizes between the levels (DESIGN.md 3.3).
-        AnimatedContent(
-            targetState = level,
-            transitionSpec = {
-                fadeIn(
-                    tween(BentoMotion.LEVEL_CONTENT_FADE.durationMs, delayMillis = 60),
-                ) togetherWith fadeOut(tween(120)) using SizeTransform(clip = true) { _, _ ->
-                    spring(dampingRatio = 0.9f, stiffness = Spring.StiffnessMediumLow)
+    val showSmall by remember { derivedStateOf { progress.value < 1f } }
+    val showMedium by remember { derivedStateOf { progress.value > 0f } }
+    val shape = RoundedCornerShape(BentoRadii.FLOATING_PLAYER.dp)
+    Box(
+        modifier = Modifier
+            .align(Alignment.BottomEnd)
+            .padding(floatingInset)
+            .graphicsLayer { translationY = closeOffset.value }
+            .layout { measurable, _ ->
+                val p = progress.value
+                val smallHeight = when {
+                    smallHeightPx > 0 -> smallHeightPx.toFloat()
+                    else -> mediumHeight.toPx() / 2f
                 }
+                val width = smallWidth.toPx() + (mediumWidth.toPx() - smallWidth.toPx()) * p
+                val height = smallHeight + (mediumHeight.toPx() - smallHeight) * p
+                val placeable = measurable.measure(
+                    Constraints.fixed(width.roundToInt(), height.roundToInt()),
+                )
+                layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+            }
+            .bentoFloatingSurface(shape, colors.`float`)
+            .pointerInput(Unit) {
+                // Swallow taps that miss a control so they do not reach the page
+                // scrolling underneath the floating panel.
+                detectTapGestures(onTap = {})
             },
-            label = "player-level",
-        ) { shownLevel ->
-            when (shownLevel) {
-                BentoPlayerLevel.SMALL -> PlayerSmallContent(
+    ) {
+        // Each layout keeps its own size, anchored at the bottom-right corner; the
+        // window clips whichever is larger and the two cross-fade over its growth.
+        if (showSmall) {
+            Column(
+                modifier = Modifier
+                    .wrapContentSize(Alignment.BottomEnd, unbounded = true)
+                    .width(smallWidth)
+                    .onSizeChanged { smallHeightPx = it.height }
+                    .graphicsLayer { alpha = (1f - progress.value * 2f).coerceIn(0f, 1f) },
+            ) {
+                header(BentoPlayerLevel.SMALL)
+                PlayerSmallContent(
                     context = context,
                     data = data,
                     stage = stage,
@@ -367,20 +419,27 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
                     onShowSleepTimer = onShowSleepTimer,
                     onClosePlayer = onClose,
                 )
-
-                BentoPlayerLevel.MEDIUM -> Column(modifier = Modifier.height(mediumHeight)) {
-                    PlayerMediumLandscapeContent(
-                        context = context,
-                        data = data,
-                        stage = stage,
-                        compact = false,
-                        onStageChange = onStageChange,
-                        onShowSpeed = onShowSpeed,
-                        onShowPitch = onShowPitch,
-                        onShowSleepTimer = onShowSleepTimer,
-                        onClosePlayer = onClose,
-                    )
-                }
+            }
+        }
+        if (showMedium) {
+            Column(
+                modifier = Modifier
+                    .wrapContentSize(Alignment.BottomEnd, unbounded = true)
+                    .size(mediumWidth, mediumHeight)
+                    .graphicsLayer { alpha = ((progress.value - 0.5f) * 2f).coerceIn(0f, 1f) },
+            ) {
+                header(BentoPlayerLevel.MEDIUM)
+                PlayerMediumLandscapeContent(
+                    context = context,
+                    data = data,
+                    stage = stage,
+                    compact = false,
+                    onStageChange = onStageChange,
+                    onShowSpeed = onShowSpeed,
+                    onShowPitch = onShowPitch,
+                    onShowSleepTimer = onShowSleepTimer,
+                    onClosePlayer = onClose,
+                )
             }
         }
     }
@@ -395,7 +454,7 @@ private fun PlayerPanelHeader(
     onClose: () -> Unit,
     onToggleLevel: () -> Unit,
     onDragStart: () -> Unit,
-    onDrag: (Float) -> Unit,
+    onDrag: (uptimeMillis: Long, amountPx: Float) -> Unit,
     onDragEnd: () -> Unit,
 ) {
     val dragModifier = when {
@@ -408,7 +467,7 @@ private fun PlayerPanelHeader(
                     onDragStart = { onDragStart() },
                     onVerticalDrag = { change, dragAmount ->
                         change.consume()
-                        onDrag(dragAmount)
+                        onDrag(change.uptimeMillis, dragAmount)
                     },
                     onDragEnd = onDragEnd,
                     onDragCancel = onDragEnd,

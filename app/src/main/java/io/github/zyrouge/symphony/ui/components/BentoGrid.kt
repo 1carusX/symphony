@@ -34,6 +34,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -73,6 +75,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.zyrouge.symphony.services.radio.RadioPlayer
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
@@ -481,6 +484,8 @@ fun BentoStatContent(
     valueStyle: TextStyle,
     sub: String,
     geometry: BentoTileGeometry,
+    // Room kept free at the end of the bottom line, for a pill in the bottom-right corner.
+    bottomEndInset: Dp = 0.dp,
 ) {
     val tileColors = LocalBentoTileContentColors.current
     // A wide one-row tile (4x1 on phones) has room for the label and value
@@ -490,6 +495,7 @@ fun BentoStatContent(
         val needed = BentoTypography.secondary.lineHeight.toDp() * 2 + valueStyle.lineHeight.toDp()
         needed <= available
     }
+    val showSub = showsTileSubLabel(geometry.sizeClass, geometry.height) && subFits
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -501,20 +507,37 @@ fun BentoStatContent(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        Text(
+        // A value wider than the tile (a long duration in a narrow tile) shrinks to
+        // fit, down to 60 % of its size, rather than cutting off.
+        BasicText(
             value,
-            style = valueStyle,
-            color = tileColors.fg,
+            style = valueStyle.copy(color = tileColors.fg),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(end = if (showSub) 0.dp else bottomEndInset),
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = valueStyle.fontSize * 0.6f,
+                maxFontSize = valueStyle.fontSize,
+                stepSize = 1.sp,
+            ),
         )
-        if (showsTileSubLabel(geometry.sizeClass, geometry.height) && subFits) {
-            Text(
+        if (showSub) {
+            BasicText(
                 sub,
-                style = BentoTypography.secondary,
-                color = tileColors.sub,
+                style = BentoTypography.secondary.copy(color = tileColors.sub),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(end = bottomEndInset),
+                // Beside a corner pill the lines are short; they may shrink a little to fit.
+                autoSize = if (bottomEndInset > 0.dp) {
+                    TextAutoSize.StepBased(
+                        minFontSize = BentoTypography.secondary.fontSize * 0.85f,
+                        maxFontSize = BentoTypography.secondary.fontSize,
+                        stepSize = 0.5.sp,
+                    )
+                } else {
+                    null
+                },
             )
         }
     }
@@ -523,7 +546,8 @@ fun BentoStatContent(
 /**
  * A call-to-action pill (DESIGN.md 4.1): accent, 36 dp high, radius 18, with
  * an icon and a label, or icon-only below 320 dp wide. The design pins it
- * 12 dp from the tile's top-right corner; callers pass the tile padding so
+ * 12 dp from the tile's top-right corner ([bottom]: bottom-right, for narrow
+ * tiles whose value needs the top line); callers pass the tile padding so
  * the pill lands there from inside the padded content.
  */
 @Composable
@@ -533,13 +557,14 @@ fun BoxScope.BentoCallToActionPill(
     icon: ImageVector,
     tilePadding: Dp,
     onClick: () -> Unit,
+    bottom: Boolean = false,
 ) {
     val colors = LocalBentoColors.current
     val inset = 12.dp - tilePadding
     Row(
         modifier = Modifier
-            .align(Alignment.TopEnd)
-            .offset(x = inset, y = inset)
+            .align(if (bottom) Alignment.BottomEnd else Alignment.TopEnd)
+            .offset(x = inset, y = if (bottom) -inset else inset)
             .height(36.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(colors.accent)

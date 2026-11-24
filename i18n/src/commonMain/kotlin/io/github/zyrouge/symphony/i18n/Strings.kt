@@ -323,6 +323,8 @@ class Strings(
     fun ErrorX(x: String): String = values.getValue("ErrorX").format(x)
     fun DeletePlaylistNoteX(x: String): String = values.getValue("DeletePlaylistNoteX").format(x)
 
+    val Search: String get() = values.getValue("Search")
+
     fun ExportedX(x: String): String = values.getValue("ExportedX").format(x)
     fun ExportFailedX(x: String): String = values.getValue("ExportFailedX").format(x)
     fun LaunchingEqualizerFailedX(x: String): String = values.getValue("LaunchingEqualizerFailedX").format(x)
@@ -770,5 +772,6 @@ fun rememberStrings(language: String): Strings = Strings(
         "SomethingWentWrong" to stringResource(Res.string.SomethingWentWrong),
         "ErrorX" to stringResource(Res.string.ErrorX),
         "DeletePlaylistNoteX" to stringResource(Res.string.DeletePlaylistNoteX),
+        "Search" to stringResource(Res.string.Search),
     ),
 )

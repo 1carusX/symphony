@@ -398,4 +398,5 @@ Symphony полностью поддерживается пожертвован�
   <string name="SomethingWentWrong">Что-то пошло совсем не так</string>
   <string name="ErrorX">Ошибка: %1$s</string>
   <string name="DeletePlaylistNoteX">Плейлист «%1$s» и порядок треков в нём будут удалены. Сами треки останутся в медиатеке.</string>
+  <string name="Search">Поиск</string>
 </resources>

@@ -377,4 +377,5 @@ Symphonyは、Github Sponsors、Ko-fi、Patreon経由での寄付によってサ
   <string name="SomethingWentWrong">深刻な問題が発生しました</string>
   <string name="ErrorX">エラー：%1$s</string>
   <string name="DeletePlaylistNoteX">「%1$s」とその曲順は削除されます。曲はライブラリに残ります。</string>
+  <string name="Search">検索</string>
 </resources>

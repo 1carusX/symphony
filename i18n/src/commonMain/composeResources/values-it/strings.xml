@@ -389,4 +389,5 @@ Ancora una volta, grazie per aver scelto Symphony!
   <string name="SomethingWentWrong">Qualcosa è andato terribilmente storto</string>
   <string name="ErrorX">Errore: %1$s</string>
   <string name="DeletePlaylistNoteX">“%1$s” e l\'ordine dei suoi brani verranno rimossi. I brani restano nella tua libreria.</string>
+  <string name="Search">Cerca</string>
 </resources>

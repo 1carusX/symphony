@@ -389,4 +389,5 @@ Kiitos, kun käytät Symphonyä!
   <string name="SomethingWentWrong">Jokin meni pahasti pieleen</string>
   <string name="ErrorX">Virhe: %1$s</string>
   <string name="DeletePlaylistNoteX">”%1$s” ja sen kappaleiden järjestys poistetaan. Kappaleet jäävät kirjastoosi.</string>
+  <string name="Search">Hae</string>
 </resources>

@@ -40,6 +40,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -57,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.pointerInput
 import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.ui.components.bentoFloatingSurface
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
@@ -98,6 +101,11 @@ private fun ExpandedCapsule(
     val textMarquee by context.symphony.settings.miniPlayerTextMarquee.flow.collectAsState()
     val seekBack by context.symphony.settings.seekBackDuration.flow.collectAsState()
     val seekForward by context.symphony.settings.seekForwardDuration.flow.collectAsState()
+    // At a large font or content scale only the play button stays beside the title,
+    // so the title keeps a readable stretch; the player has the other controls.
+    val density = LocalDensity.current
+    val windowWidthDp = with(density) { LocalWindowInfo.current.containerSize.width.toDp().value }
+    val crowded = bentoTooNarrowForText(windowWidthDp - 32f, density.fontScale)
 
     Row(
         modifier = Modifier
@@ -152,14 +160,14 @@ private fun ExpandedCapsule(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        if (showPrevious && trackControls) {
+        if (showPrevious && trackControls && !crowded) {
             BentoCapsuleIconButton(
                 icon = { Icon(Icons.Filled.SkipPrevious, context.symphony.t.Previous, tint = colors.sub) },
                 label = context.symphony.t.Previous,
                 onClick = { context.symphony.radio.shorty.previous() },
             )
         }
-        if (seekControls) {
+        if (seekControls && !crowded) {
             BentoCapsuleIconButton(
                 icon = { Icon(Icons.Filled.FastRewind, context.symphony.t.BackXSeconds(seekBack.toString()), tint = colors.sub) },
                 label = context.symphony.t.BackXSeconds(seekBack.toString()),
@@ -208,14 +216,14 @@ private fun ExpandedCapsule(
                 onClick = { context.symphony.radio.shorty.playPause() },
             )
         }
-        if (seekControls) {
+        if (seekControls && !crowded) {
             BentoCapsuleIconButton(
                 icon = { Icon(Icons.Filled.FastForward, context.symphony.t.ForwardXSeconds(seekForward.toString()), tint = colors.sub) },
                 label = context.symphony.t.ForwardXSeconds(seekForward.toString()),
                 onClick = { context.symphony.radio.shorty.seekFromCurrent(seekForward) },
             )
         }
-        if (trackControls) {
+        if (trackControls && !crowded) {
             BentoCapsuleIconButton(
                 icon = { Icon(Icons.Filled.SkipNext, context.symphony.t.Next, tint = colors.sub) },
                 label = context.symphony.t.Next,

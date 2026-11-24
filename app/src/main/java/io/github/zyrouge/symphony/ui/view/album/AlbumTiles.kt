@@ -1,7 +1,5 @@
 package io.github.zyrouge.symphony.ui.view
 
-import androidx.compose.foundation.layout.heightIn
-import io.github.zyrouge.symphony.ui.components.BentoTextWithMeta
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -15,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,6 +47,7 @@ import io.github.zyrouge.symphony.ui.components.BentoCoverGrid
 import io.github.zyrouge.symphony.ui.components.BentoEqualizerGlyph
 import io.github.zyrouge.symphony.ui.components.BentoMoreButton
 import io.github.zyrouge.symphony.ui.components.BentoStatContent
+import io.github.zyrouge.symphony.ui.components.BentoTextWithMeta
 import io.github.zyrouge.symphony.ui.components.BentoTile
 import io.github.zyrouge.symphony.ui.components.BentoTileGeometry
 import io.github.zyrouge.symphony.ui.components.BentoTileHeader

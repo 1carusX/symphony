@@ -397,4 +397,5 @@ Una vez más, ¡gracias por probar Symphony!
   <string name="SomethingWentWrong">Algo ha salido terriblemente mal</string>
   <string name="ErrorX">Error: %1$s</string>
   <string name="DeletePlaylistNoteX">«%1$s» y el orden de sus canciones se eliminarán. Las canciones seguirán en tu biblioteca.</string>
+  <string name="Search">Buscar</string>
 </resources>

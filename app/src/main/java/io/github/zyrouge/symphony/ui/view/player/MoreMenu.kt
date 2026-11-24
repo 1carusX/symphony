@@ -53,13 +53,13 @@ import io.github.zyrouge.symphony.ui.components.MenuRow
 import io.github.zyrouge.symphony.ui.components.bentoScrollbar
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.BentoAppDensity
-import io.github.zyrouge.symphony.ui.theme.bentoAppScale
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
+import io.github.zyrouge.symphony.ui.theme.bentoAppScale
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
 import io.github.zyrouge.symphony.ui.view.ArtistViewRoute
 import io.github.zyrouge.symphony.utils.Logger

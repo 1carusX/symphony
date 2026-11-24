@@ -57,8 +57,8 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.services.groove.Song
-import io.github.zyrouge.symphony.ui.components.BentoTextWithMeta
 import io.github.zyrouge.symphony.ui.components.BentoEqualizerGlyph
+import io.github.zyrouge.symphony.ui.components.BentoTextWithMeta
 import io.github.zyrouge.symphony.ui.components.BentoTile
 import io.github.zyrouge.symphony.ui.components.BentoTileGeometry
 import io.github.zyrouge.symphony.ui.components.BentoTileSizeClass

@@ -1,8 +1,5 @@
 package io.github.zyrouge.symphony.ui.view
 
-import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
-import androidx.compose.ui.platform.LocalDensity
-import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -84,6 +82,7 @@ import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
 import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import io.github.zyrouge.symphony.ui.components.settings.ConsiderContributingTile
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.helpers.rememberGrooveFolderCount
@@ -94,6 +93,7 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoGridClass
 import io.github.zyrouge.symphony.ui.theme.bento.BentoPrimaryHue
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
+import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.BentoThemeMode
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorMode

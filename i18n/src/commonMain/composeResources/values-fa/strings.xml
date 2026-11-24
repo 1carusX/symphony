@@ -377,4 +377,5 @@
   <string name="SomethingWentWrong">یک مشکل جدی پیش آمد</string>
   <string name="ErrorX">ارور: %1$s</string>
   <string name="DeletePlaylistNoteX">«%1$s» و ترتیب آهنگ‌هایش حذف می‌شود. آهنگ‌ها در کتابخانه باقی می‌مانند.</string>
+  <string name="Search">جست‌وجو</string>
 </resources>

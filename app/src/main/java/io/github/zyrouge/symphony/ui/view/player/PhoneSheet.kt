@@ -89,11 +89,11 @@ internal fun BentoPhonePlayerSheet(
     val coroutineScope = rememberCoroutineScope()
     // The sheet reaches under the gesture bar, so both heights add the bottom inset.
     val navigationBottom = if (floating) 0.dp else bentoSystemBottomInset()
-    // A floating window fits its small level to the content (measured in the layout
-    // below) rather than the phone's fixed height, so no gap opens above the controls.
+    // The small level fits the content (measured in the layout below); [smallHeight]
+    // only stands in until then, so no gap opens above the controls.
     var contentSmallPx by remember { mutableIntStateOf(0) }
     val smallDp = when {
-        floating && contentSmallPx > 0 -> contentSmallPx / density.density
+        contentSmallPx > 0 -> contentSmallPx / density.density
         else -> (smallHeight + navigationBottom).value
     }
     val mediumDp = (mediumHeight + navigationBottom).value.coerceAtMost(containerHeight.value)
@@ -217,7 +217,7 @@ internal fun BentoPhonePlayerSheet(
             .layout { measurable, constraints ->
                 val visiblePx = visible.value.dp.roundToPx()
                 val smallPx = smallDp.dp.roundToPx()
-                if (floating && visiblePx <= smallPx) {
+                if (visiblePx <= smallPx) {
                     // At the small level the stage takes no space, so unbounded this is the content's height.
                     val placeable = measurable.measure(
                         constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity),

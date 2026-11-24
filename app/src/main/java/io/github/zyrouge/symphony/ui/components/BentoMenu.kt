@@ -34,12 +34,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.theme.BentoAppDensity
-import io.github.zyrouge.symphony.ui.theme.bentoAppScale
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
+import io.github.zyrouge.symphony.ui.theme.bentoAppScale
 import kotlinx.coroutines.launch
 
 /** Widest the phone action sheet gets (DESIGN.md 4.5). */

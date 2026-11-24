@@ -401,4 +401,5 @@ Once again, thank you for trying out Symphony!
   <string name="SomethingWentWrong">Something went horribly wrong</string>
   <string name="ErrorX">Error: %1$s</string>
   <string name="DeletePlaylistNoteX">“%1$s” and its song order are removed. The songs stay in your library.</string>
+  <string name="Search">Search</string>
 </resources>

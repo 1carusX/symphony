@@ -373,4 +373,5 @@ Son olarak, Müziğin keyfini Çıkarın!
   <string name="SomethingWentWrong">Bir şeyler çok kötü ters gitti</string>
   <string name="ErrorX">Hata: %1$s</string>
   <string name="DeletePlaylistNoteX">“%1$s” ve şarkı sırası silinir. Şarkılar kitaplığınızda kalır.</string>
+  <string name="Search">Ara</string>
 </resources>
