@@ -315,7 +315,7 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                             )
 
                             "about" -> BentoTile(
-                                tone = BentoTileTone.TONAL,
+                                tone = BentoTileTone.PLAIN,
                                 sizeClass = geometry.sizeClass,
                             ) {
                                 SettingsAboutTileContent(context = context)
