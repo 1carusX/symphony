@@ -72,22 +72,26 @@ import kotlinx.coroutines.delay
 internal fun BentoPlayerSeek(context: ViewContext, data: BentoPlayerData) {
     val colors = LocalBentoColors.current
     val position = data.playbackPosition
+    // While the thumb is dragged (or waits for the seek to land) the times follow it.
+    var scrubRatio by remember { mutableStateOf<Float?>(null) }
+    val played = scrubRatio?.let { (position.total * it).toLong() } ?: position.played
     Column {
         BentoSeekWave(
             context = context,
             position = position,
             playing = data.isPlaying,
             height = BentoSizes.SEEK_HEIGHT.dp,
+            onScrub = { scrubRatio = it },
         )
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
-                DurationUtils.formatMs(position.played),
+                DurationUtils.formatMs(played),
                 style = bentoTabularStyle(BentoTypography.secondary),
                 color = colors.sub,
             )
             Spacer(Modifier.weight(1f))
             Text(
-                "-${DurationUtils.formatMs((position.total - position.played).coerceAtLeast(0L))}",
+                "-${DurationUtils.formatMs((position.total - played).coerceAtLeast(0L))}",
                 style = bentoTabularStyle(BentoTypography.secondary),
                 color = colors.sub,
             )

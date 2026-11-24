@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,6 +41,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.components.bentoFloatingSurface
 import io.github.zyrouge.symphony.ui.components.bentoSystemBottomInset
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
@@ -57,7 +59,9 @@ private val LevelSpring = spring<Float>(dampingRatio = 0.86f, stiffness = Spring
  * header tap, opening lyrics or the queue. Between the small and the medium
  * height the sheet grows upward: the controls stay pinned to the bottom, the
  * cover grows and fades in above them and the two headers cross-fade. Below
- * the small height the sheet slides off the screen.
+ * the small height the sheet slides off the screen. With [floating] it is the
+ * floating window of tablets and foldables, so it grows with the finger too;
+ * without [canResize] (pointer devices) it has no handle and no gestures.
  */
 @Composable
 internal fun BentoPhonePlayerSheet(
@@ -77,13 +81,21 @@ internal fun BentoPhonePlayerSheet(
     onShowPitch: () -> Unit,
     onShowSleepTimer: () -> Unit,
     modifier: Modifier = Modifier,
+    floating: Boolean = false,
+    canResize: Boolean = true,
 ) {
     val colors = LocalBentoColors.current
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
     // The sheet reaches under the gesture bar, so both heights add the bottom inset.
-    val navigationBottom = bentoSystemBottomInset()
-    val smallDp = (smallHeight + navigationBottom).value
+    val navigationBottom = if (floating) 0.dp else bentoSystemBottomInset()
+    // A floating window fits its small level to the content (measured in the layout
+    // below) rather than the phone's fixed height, so no gap opens above the controls.
+    var contentSmallPx by remember { mutableIntStateOf(0) }
+    val smallDp = when {
+        floating && contentSmallPx > 0 -> contentSmallPx / density.density
+        else -> (smallHeight + navigationBottom).value
+    }
     val mediumDp = (mediumHeight + navigationBottom).value.coerceAtMost(containerHeight.value)
         .coerceAtLeast(smallDp + 1f)
     val latestLevel by rememberUpdatedState(level)
@@ -140,7 +152,7 @@ internal fun BentoPhonePlayerSheet(
         if (target != latestLevel) onLevelChange(target)
     }
 
-    val dragModifier = Modifier
+    val dragModifier = if (!canResize) Modifier else Modifier
         .pointerInput(Unit) {
             detectTapGestures {
                 onLevelChange(
@@ -180,16 +192,41 @@ internal fun BentoPhonePlayerSheet(
             )
         }
 
-    val shape = RoundedCornerShape(
-        topStart = BentoRadii.PHONE_SHEET_TOP.dp,
-        topEnd = BentoRadii.PHONE_SHEET_TOP.dp,
-    )
+    val shape = when {
+        floating -> RoundedCornerShape(BentoRadii.FLOATING_PLAYER.dp)
+        else -> RoundedCornerShape(
+            topStart = BentoRadii.PHONE_SHEET_TOP.dp,
+            topEnd = BentoRadii.PHONE_SHEET_TOP.dp,
+        )
+    }
+    val surface = when {
+        floating -> Modifier.bentoFloatingSurface(shape, colors.`float`)
+        else -> Modifier
+            .shadow(
+                elevation = 6.dp,
+                shape = shape,
+                ambientColor = colors.phoneSheetShadow.color,
+                spotColor = colors.phoneSheetShadow.color,
+            )
+            .clip(shape)
+            .background(colors.surface)
+    }
     Column(
         modifier = modifier
             .fillMaxWidth()
             .layout { measurable, constraints ->
                 val visiblePx = visible.value.dp.roundToPx()
                 val smallPx = smallDp.dp.roundToPx()
+                if (floating && visiblePx <= smallPx) {
+                    // At the small level the stage takes no space, so unbounded this is the content's height.
+                    val placeable = measurable.measure(
+                        constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity),
+                    )
+                    contentSmallPx = placeable.height
+                    return@layout layout(placeable.width, placeable.height) {
+                        placeable.place(0, max(0, placeable.height - visiblePx))
+                    }
+                }
                 val heightPx = max(visiblePx, smallPx)
                 val placeable = measurable.measure(
                     constraints.copy(minHeight = heightPx, maxHeight = heightPx),
@@ -199,28 +236,23 @@ internal fun BentoPhonePlayerSheet(
                     placeable.place(0, max(0, smallPx - visiblePx))
                 }
             }
-            .shadow(
-                elevation = 6.dp,
-                shape = shape,
-                ambientColor = colors.phoneSheetShadow.color,
-                spotColor = colors.phoneSheetShadow.color,
-            )
-            .clip(shape)
-            .background(colors.surface)
+            .then(surface)
             .pointerInput(Unit) {
                 // Swallow taps that miss a control so they do not reach the page underneath.
                 detectTapGestures(onTap = {})
             },
     ) {
         Box(modifier = Modifier.fillMaxWidth().then(dragModifier)) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 6.dp)
-                    .size(36.dp, 4.dp)
-                    .clip(CircleShape)
-                    .background(colors.muted.copy(alpha = 0.7f)),
-            )
+            if (canResize) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 6.dp)
+                        .size(36.dp, 4.dp)
+                        .clip(CircleShape)
+                        .background(colors.muted.copy(alpha = 0.7f)),
+                )
+            }
             Row(
                 modifier = Modifier.padding(start = 20.dp, end = 8.dp, top = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -277,7 +309,7 @@ internal fun BentoPhonePlayerSheet(
                 context = context,
                 data = data,
                 stage = stage,
-                compact = true,
+                compact = !floating,
                 onStageChange = onStageChange,
                 onShowSpeed = onShowSpeed,
                 onShowPitch = onShowPitch,

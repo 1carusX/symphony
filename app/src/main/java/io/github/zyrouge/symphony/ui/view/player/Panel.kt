@@ -89,40 +89,47 @@ internal fun BentoPlayerPanel(
     val additionalInfo by context.symphony.settings.nowPlayingAdditionalInfo.flow.collectAsState()
     val seekControls by context.symphony.settings.nowPlayingSeekControls.flow.collectAsState()
 
+    // Sizes of the sheet that grows between the small and the medium player.
+    fun sheetSizes(contentWidth: Dp, availableHeight: Dp): Triple<Dp, Dp, Dp> {
+        val smallHeight = min(
+            BentoSizes.PHONE_SHEET_SMALL_HEIGHT_MAX.dp.value,
+            availableHeight.value,
+        ).dp
+        // The format line adds height under the title; a shrunken transport row gives some back.
+        val transportScale = bentoTransportScale(
+            contentWidth.value,
+            BentoSizes.PLAY_BUTTON_LG,
+            seekControls,
+        )
+        val fixedContent = PHONE_MEDIUM_FIXED_CONTENT_DP -
+            BentoSizes.PLAY_BUTTON_LG * (1f - transportScale) +
+            when {
+                additionalInfo && bentoPlayerFormatLine(context, data.song) != null ->
+                    PLAYER_FORMAT_LINE_HEIGHT_DP
+
+                else -> 0f
+            }
+        val coverSize = min(
+            contentWidth.value,
+            (availableHeight.value - fixedContent).coerceAtLeast(160f),
+        ).dp
+        val mediumHeight = min(
+            availableHeight.value,
+            coverSize.value + fixedContent,
+        ).dp
+        return Triple(smallHeight, mediumHeight, coverSize)
+    }
+
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val topInset = max(
             BentoSizes.PHONE_SHEET_TOP_INSET_MIN.dp.value,
             maxHeight.value * BentoSizes.PHONE_SHEET_TOP_INSET_HEIGHT_RATIO,
         ).dp
         if (compact) {
-            val availableHeight = maxHeight - topInset
-            val smallHeight = min(
-                BentoSizes.PHONE_SHEET_SMALL_HEIGHT_MAX.dp.value,
-                availableHeight.value,
-            ).dp
-            val contentWidth = maxWidth - BentoSpacing.PLAYER_CONTENT_INSET.dp * 2
-            // The format line adds height under the title; a shrunken transport row gives some back.
-            val transportScale = bentoTransportScale(
-                contentWidth.value,
-                BentoSizes.PLAY_BUTTON_LG,
-                seekControls,
+            val (smallHeight, mediumHeight, coverSize) = sheetSizes(
+                contentWidth = maxWidth - BentoSpacing.PLAYER_CONTENT_INSET.dp * 2,
+                availableHeight = maxHeight - topInset,
             )
-            val fixedContent = PHONE_MEDIUM_FIXED_CONTENT_DP -
-                BentoSizes.PLAY_BUTTON_LG * (1f - transportScale) +
-                when {
-                    additionalInfo && bentoPlayerFormatLine(context, data.song) != null ->
-                        PLAYER_FORMAT_LINE_HEIGHT_DP
-
-                    else -> 0f
-                }
-            val coverSize = min(
-                contentWidth.value,
-                (availableHeight.value - fixedContent).coerceAtLeast(160f),
-            ).dp
-            val mediumHeight = min(
-                availableHeight.value,
-                coverSize.value + fixedContent,
-            ).dp
             BentoPhonePlayerSheet(
                 context = context,
                 data = data,
@@ -141,13 +148,47 @@ internal fun BentoPlayerPanel(
                 onShowSleepTimer = { showSleepTimerDialog = true },
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
+        } else if (!short) {
+            // Tablets, foldables and desktop windows: the same growing sheet as a
+            // floating window, so the medium player opens with the finger.
+            val inset = BentoSizes.FLOATING_PLAYER_INSET.dp
+            val (smallHeight, mediumHeight, coverSize) = sheetSizes(
+                contentWidth = BentoSizes.FLOATING_PLAYER_WIDTH.dp -
+                    BentoSpacing.PLAYER_CONTENT_INSET.dp * 2,
+                availableHeight = min(
+                    (maxHeight - inset * 2).value,
+                    BentoSizes.FLOATING_PLAYER_MEDIUM_MAX_HEIGHT.toFloat(),
+                ).dp,
+            )
+            BentoPhonePlayerSheet(
+                context = context,
+                data = data,
+                level = level,
+                stage = stage,
+                containerHeight = maxHeight - inset * 2,
+                smallHeight = smallHeight,
+                mediumHeight = mediumHeight,
+                coverSize = coverSize,
+                onLevelChange = onLevelChange,
+                onStageChange = onStageChange,
+                onClose = onClose,
+                onScrimAlphaChange = {},
+                onShowSpeed = { showSpeedPitchDialog = true },
+                onShowPitch = { showSpeedPitchDialog = true },
+                onShowSleepTimer = { showSleepTimerDialog = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(inset)
+                    .width(BentoSizes.FLOATING_PLAYER_WIDTH.dp),
+                floating = true,
+                canResize = canResize,
+            )
         } else {
             BentoFloatingPlayerWindow(
                 context = context,
                 data = data,
                 level = level,
                 stage = stage,
-                short = short,
                 canResize = canResize,
                 onLevelChange = onLevelChange,
                 onStageChange = onStageChange,
@@ -184,9 +225,10 @@ internal fun BentoPlayerPanel(
 }
 
 /**
- * The floating player window (tablets, foldables, desktop). Level changes
- * cross-fade the content and animate the window's size; touch windows also
- * follow the finger (DESIGN.md 6.5).
+ * The floating player window of short (phone landscape) windows, where the
+ * medium player is a wide two-column window. Level changes cross-fade the
+ * content and animate the window's size; touch windows also follow the
+ * finger (DESIGN.md 6.5).
  */
 @Composable
 private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
@@ -194,7 +236,6 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
     data: BentoPlayerData,
     level: BentoPlayerLevel,
     stage: BentoPlayerStage,
-    short: Boolean,
     canResize: Boolean,
     onLevelChange: (BentoPlayerLevel) -> Unit,
     onStageChange: (BentoPlayerStage) -> Unit,
@@ -211,23 +252,12 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
     var dragDistanceDp by remember { mutableFloatStateOf(0f) }
     var dragMoved by remember { mutableStateOf(false) }
 
-    val floatingInset = when {
-        short -> BentoSizes.FLOATING_PLAYER_LANDSCAPE_INSET.dp
-        else -> BentoSizes.FLOATING_PLAYER_INSET.dp
-    }
-    val availableHeight = maxHeight - floatingInset * 2
-    val mediumWidth = when {
-        short -> min(
-            BentoSizes.FLOATING_PLAYER_LANDSCAPE_MEDIUM_WIDTH.dp.value,
-            (maxWidth - BentoSizes.RAIL_SHORT.dp - floatingInset * 2).value,
-        ).dp
-
-        else -> BentoSizes.FLOATING_PLAYER_WIDTH.dp
-    }
-    val mediumHeight = when {
-        short -> availableHeight
-        else -> min(availableHeight.value, BentoSizes.FLOATING_PLAYER_MEDIUM_MAX_HEIGHT.dp.value).dp
-    }
+    val floatingInset = BentoSizes.FLOATING_PLAYER_LANDSCAPE_INSET.dp
+    val mediumWidth = min(
+        BentoSizes.FLOATING_PLAYER_LANDSCAPE_MEDIUM_WIDTH.dp.value,
+        (maxWidth - BentoSizes.RAIL_SHORT.dp - floatingInset * 2).value,
+    ).dp
+    val mediumHeight = maxHeight - floatingInset * 2
 
     fun finishDrag() {
         if (!dragMoved) return
@@ -255,7 +285,7 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
             .padding(floatingInset)
             .width(
                 when {
-                    short && level == BentoPlayerLevel.MEDIUM -> mediumWidth
+                    level == BentoPlayerLevel.MEDIUM -> mediumWidth
                     else -> BentoSizes.FLOATING_PLAYER_WIDTH.dp
                 },
             )
@@ -330,7 +360,7 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
                     data = data,
                     stage = stage,
                     compact = false,
-                    short = short,
+                    short = true,
                     onStageChange = onStageChange,
                     onShowSpeed = onShowSpeed,
                     onShowPitch = onShowPitch,
@@ -339,32 +369,17 @@ private fun BoxWithConstraintsScope.BentoFloatingPlayerWindow(
                 )
 
                 BentoPlayerLevel.MEDIUM -> Column(modifier = Modifier.height(mediumHeight)) {
-                    when {
-                        short -> PlayerMediumLandscapeContent(
-                            context = context,
-                            data = data,
-                            stage = stage,
-                            compact = false,
-                            onStageChange = onStageChange,
-                            onShowSpeed = onShowSpeed,
-                            onShowPitch = onShowPitch,
-                            onShowSleepTimer = onShowSleepTimer,
-                            onClosePlayer = onClose,
-                        )
-
-                        else -> PlayerMediumContent(
-                            context = context,
-                            data = data,
-                            stage = stage,
-                            compact = false,
-                            phoneCoverSize = 0.dp,
-                            onStageChange = onStageChange,
-                            onShowSpeed = onShowSpeed,
-                            onShowPitch = onShowPitch,
-                            onShowSleepTimer = onShowSleepTimer,
-                            onClosePlayer = onClose,
-                        )
-                    }
+                    PlayerMediumLandscapeContent(
+                        context = context,
+                        data = data,
+                        stage = stage,
+                        compact = false,
+                        onStageChange = onStageChange,
+                        onShowSpeed = onShowSpeed,
+                        onShowPitch = onShowPitch,
+                        onShowSleepTimer = onShowSleepTimer,
+                        onClosePlayer = onClose,
+                    )
                 }
             }
         }
