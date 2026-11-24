@@ -1,5 +1,7 @@
 package io.github.zyrouge.symphony.ui.view
 
+import androidx.compose.foundation.layout.heightIn
+import io.github.zyrouge.symphony.ui.components.BentoTextWithMeta
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -237,7 +239,7 @@ internal fun AlbumTracksTile(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(BentoSizes.TILE_LIST_ROW.dp)
+                        .heightIn(min = BentoSizes.TILE_LIST_ROW.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .combinedClickable(
                             onClick = {
@@ -269,33 +271,42 @@ internal fun AlbumTracksTile(
                             )
                         }
                     }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            song.title,
-                            style = BentoTypography.rowTitle.copy(fontSize = 14.sp),
-                            color = when {
-                                isPlayingSong -> colors.accent
-                                else -> tileColors.fg
-                            },
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        song.artists.takeIf { it.isNotEmpty() }?.let {
+                    // At a large scale the duration gives way to the title.
+                    BentoTextWithMeta(
+                        modifier = Modifier.weight(1f),
+                        gap = 10.dp,
+                        em = 14.sp,
+                        meta = {
                             Text(
-                                it.joinToString(),
-                                style = BentoTypography.label,
+                                DurationUtils.formatMs(song.duration),
+                                style = bentoTabularStyle(BentoTypography.label),
                                 color = tileColors.sub,
+                                maxLines = 1,
+                            )
+                        },
+                    ) {
+                        Column {
+                            Text(
+                                song.title,
+                                style = BentoTypography.rowTitle.copy(fontSize = 14.sp),
+                                color = when {
+                                    isPlayingSong -> colors.accent
+                                    else -> tileColors.fg
+                                },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
+                            song.artists.takeIf { it.isNotEmpty() }?.let {
+                                Text(
+                                    it.joinToString(),
+                                    style = BentoTypography.label,
+                                    color = tileColors.sub,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
                     }
-                    Text(
-                        DurationUtils.formatMs(song.duration),
-                        style = bentoTabularStyle(BentoTypography.label),
-                        color = tileColors.sub,
-                        maxLines = 1,
-                    )
                     Box {
                         BentoMoreButton(
                             contentDescription = context.symphony.t.More,

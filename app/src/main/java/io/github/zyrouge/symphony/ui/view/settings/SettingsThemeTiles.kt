@@ -1,5 +1,9 @@
 package io.github.zyrouge.symphony.ui.view
 
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.FlowRow
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
+import io.github.zyrouge.symphony.ui.components.BentoAdaptiveRow
 import android.os.Build
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -79,6 +83,8 @@ internal fun SettingsThemeTile(
         if (wallpaperColors) bentoWallpaperHue(context.activity) else null
     }
     val colorMode = LocalBentoColorMode.current
+    // A large font or content scale needs fewer options a row (the page also makes this tile taller).
+    val crowded = bentoTooNarrowForText(geometry.width, LocalDensity.current.fontScale)
 
     BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
         Column(
@@ -90,7 +96,11 @@ internal fun SettingsThemeTile(
                 context = context,
                 hueDegrees = wallpaperHue ?: hue.degrees,
                 selected = mode,
-                fourColumns = geometry.width >= 520f,
+                columns = when {
+                    geometry.width >= 520f -> 4
+                    crowded -> 1
+                    else -> 2
+                },
                 onSelect = { context.symphony.settings.bentoThemeMode.setValue(it) },
             )
             SettingsTileLabel(text = context.symphony.t.ColorScheme)
@@ -100,27 +110,36 @@ internal fun SettingsThemeTile(
                 hue = hue,
                 wallpaperHue = wallpaperHue,
                 selected = scheme,
+                perRow = if (crowded) 2 else 4,
                 onSelect = { context.symphony.settings.bentoColorScheme.setValue(it) },
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsTileLabel(text = context.symphony.t.PrimaryColor)
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    SettingsWallpaperColorsSwitch(
-                        checked = wallpaperColors,
-                        onCheckedChange = {
-                            context.symphony.settings.bentoWallpaperColors.setValue(it)
-                        },
-                    )
-                }
+            // The Wallpaper colors switch moves under the label when it crowds it.
+            BentoAdaptiveRow(
+                modifier = Modifier.fillMaxWidth(),
+                gap = 8.dp,
+                leading = null,
+                trailing = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    {
+                        SettingsWallpaperColorsSwitch(
+                            checked = wallpaperColors,
+                            onCheckedChange = {
+                                context.symphony.settings.bentoWallpaperColors.setValue(it)
+                            },
+                        )
+                    }
+                } else {
+                    null
+                },
+            ) {
+                SettingsTileLabel(text = context.symphony.t.PrimaryColor)
             }
-            Row(
+            FlowRow(
                 modifier = Modifier
                     .selectableGroup()
                     // Wallpaper colors override the swatches; picking one turns them off.
                     .alpha(if (wallpaperHue != null) 0.4f else 1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 BentoPrimaryHue.entries.forEach { hueOption ->
                     SettingsHueSwatch(
@@ -187,14 +206,10 @@ private fun SettingsThemeModeOptions(
     context: ViewContext,
     hueDegrees: Float,
     selected: BentoThemeMode,
-    fourColumns: Boolean,
+    columns: Int,
     onSelect: (BentoThemeMode) -> Unit,
 ) {
-    val options = BentoThemeMode.entries
-    val rows: List<List<BentoThemeMode>> = when {
-        fourColumns -> listOf(options)
-        else -> options.chunked(2)
-    }
+    val rows = BentoThemeMode.entries.chunked(columns)
     Column(
         modifier = Modifier.selectableGroup(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -309,28 +324,32 @@ private fun SettingsSchemeOptions(
     hue: BentoPrimaryHue,
     wallpaperHue: Float?,
     selected: BentoColorScheme,
+    perRow: Int,
     onSelect: (BentoColorScheme) -> Unit,
 ) {
-    val options = BentoColorScheme.entries
-    Row(
+    Column(
         modifier = Modifier.selectableGroup(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        options.forEach { option ->
-            val preview = remember(option, colorMode, hue, wallpaperHue) {
-                when (wallpaperHue) {
-                    null -> BentoColorRoles.resolve(option, colorMode, hue)
-                    else -> BentoColorRoles.resolve(option, colorMode, wallpaperHue)
+        BentoColorScheme.entries.chunked(perRow).forEach { rowOptions ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                rowOptions.forEach { option ->
+                    val preview = remember(option, colorMode, hue, wallpaperHue) {
+                        when (wallpaperHue) {
+                            null -> BentoColorRoles.resolve(option, colorMode, hue)
+                            else -> BentoColorRoles.resolve(option, colorMode, wallpaperHue)
+                        }
+                    }
+                    SettingsSchemeOption(
+                        context = context,
+                        option = option,
+                        preview = preview,
+                        selected = option == selected,
+                        modifier = Modifier.weight(1f),
+                        onSelect = { onSelect(option) },
+                    )
                 }
             }
-            SettingsSchemeOption(
-                context = context,
-                option = option,
-                preview = preview,
-                selected = option == selected,
-                modifier = Modifier.weight(1f),
-                onSelect = { onSelect(option) },
-            )
         }
     }
 }

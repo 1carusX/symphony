@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
@@ -20,9 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -126,36 +127,64 @@ fun InformationKeyValue(
     value: @Composable () -> Unit,
 ) {
     val colors = LocalBentoColors.current
-    Row(
+    // The key sits in a 112 dp column beside the value. When that leaves the value
+    // too little room for its longest word (large font or content scale), the key
+    // goes above the value instead, so words are not split across lines.
+    Layout(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 7.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(
-            key,
-            style = BentoTypography.secondary,
-            color = colors.muted,
-            modifier = Modifier
-                .width(112.dp)
-                .padding(top = 1.dp),
-        )
-        Box(modifier = Modifier.weight(1f)) {
-            ProvideTextStyle(
-                value = when {
-                    mono -> BentoTypography.secondary.copy(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.5.sp,
-                        color = colors.fg,
-                    )
+        content = {
+            Text(
+                key,
+                style = BentoTypography.secondary,
+                color = colors.muted,
+                modifier = Modifier.padding(top = 1.dp),
+            )
+            Box {
+                ProvideTextStyle(
+                    value = when {
+                        mono -> BentoTypography.secondary.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.5.sp,
+                            color = colors.fg,
+                        )
 
-                    else -> BentoTypography.body.copy(
-                        fontWeight = FontWeight.Medium,
-                        color = colors.fg,
-                    )
-                },
-            ) {
-                value()
+                        else -> BentoTypography.body.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = colors.fg,
+                        )
+                    },
+                ) {
+                    value()
+                }
+            }
+        },
+    ) { measurables, constraints ->
+        val width = constraints.maxWidth
+        val keyWidth = 112.dp.roundToPx()
+        val valueBeside = (width - keyWidth - 16.dp.roundToPx()).coerceAtLeast(0)
+        val stacked = when {
+            // Paths and IDs break anywhere anyway; they only move once their column is narrower than the key's.
+            mono -> valueBeside < keyWidth
+            else -> measurables[1].minIntrinsicWidth(Constraints.Infinity) > valueBeside
+        }
+        val keyPlaceable = measurables[0].measure(
+            Constraints.fixedWidth(if (stacked) width else keyWidth),
+        )
+        val valuePlaceable = measurables[1].measure(
+            Constraints.fixedWidth(if (stacked) width else valueBeside),
+        )
+        val stackGap = 2.dp.roundToPx()
+        val height = when {
+            stacked -> keyPlaceable.height + stackGap + valuePlaceable.height
+            else -> maxOf(keyPlaceable.height, valuePlaceable.height)
+        }
+        layout(width, height) {
+            keyPlaceable.placeRelative(0, 0)
+            when {
+                stacked -> valuePlaceable.placeRelative(0, keyPlaceable.height + stackGap)
+                else -> valuePlaceable.placeRelative(width - valueBeside, 0)
             }
         }
     }

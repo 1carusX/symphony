@@ -129,7 +129,7 @@ fun BentoSheetValuePill(value: String) {
     val colors = LocalBentoColors.current
     Box(
         modifier = Modifier
-            .widthIn(max = 160.dp)
+            .widthIn(max = 240.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(colors.tonal)
             .padding(horizontal = 10.dp, vertical = 4.dp),

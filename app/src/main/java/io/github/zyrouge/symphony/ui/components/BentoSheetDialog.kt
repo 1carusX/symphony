@@ -629,34 +629,27 @@ internal fun BentoSheetRowLayout(
     trailing: (@Composable () -> Unit)?,
 ) {
     val colors = LocalBentoColors.current
-    Row(
+    // The texts wrap rather than cut off; a trailing control that crowds them moves under them.
+    BentoAdaptiveRow(
         modifier = modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        gap = 14.dp,
+        leading = leading,
+        trailing = trailing,
     ) {
-        leading?.invoke()
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 title,
                 style = BentoTypography.rowTitle,
                 color = colors.fg,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
             )
             subtitle?.let {
                 Text(
                     it,
                     style = BentoTypography.secondary,
                     color = colors.sub,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-        trailing?.invoke()
     }
 }
 

@@ -57,6 +57,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.services.groove.Song
+import io.github.zyrouge.symphony.ui.components.BentoTextWithMeta
 import io.github.zyrouge.symphony.ui.components.BentoEqualizerGlyph
 import io.github.zyrouge.symphony.ui.components.BentoTile
 import io.github.zyrouge.symphony.ui.components.BentoTileGeometry
@@ -374,7 +375,7 @@ fun DetailSongRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(BentoSizes.TILE_LIST_ROW.dp)
+            .heightIn(min = BentoSizes.TILE_LIST_ROW.dp)
             .clip(RoundedCornerShape(12.dp))
             .combinedClickable(onClick = onClick, onLongClick = { showMenu = true })
             .padding(start = 6.dp),
@@ -404,33 +405,42 @@ fun DetailSongRow(
                 }
             }
         }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                song.title,
-                style = BentoTypography.rowTitle.copy(fontSize = 14.sp),
-                color = when {
-                    playing -> colors.accent
-                    else -> tileColors.fg
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (secondary.isNotEmpty()) {
+        // At a large scale the duration gives way to the title.
+        BentoTextWithMeta(
+            modifier = Modifier.weight(1f),
+            gap = 10.dp,
+            em = 14.sp,
+            meta = {
                 Text(
-                    secondary,
-                    style = BentoTypography.label,
+                    DurationUtils.formatMs(song.duration),
+                    style = bentoTabularStyle(BentoTypography.label),
                     color = tileColors.sub,
+                    maxLines = 1,
+                )
+            },
+        ) {
+            Column {
+                Text(
+                    song.title,
+                    style = BentoTypography.rowTitle.copy(fontSize = 14.sp),
+                    color = when {
+                        playing -> colors.accent
+                        else -> tileColors.fg
+                    },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                if (secondary.isNotEmpty()) {
+                    Text(
+                        secondary,
+                        style = BentoTypography.label,
+                        color = tileColors.sub,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
-        Text(
-            DurationUtils.formatMs(song.duration),
-            style = bentoTabularStyle(BentoTypography.label),
-            color = tileColors.sub,
-            maxLines = 1,
-        )
         Box {
             IconButton(onClick = { showMenu = true }) {
                 Icon(

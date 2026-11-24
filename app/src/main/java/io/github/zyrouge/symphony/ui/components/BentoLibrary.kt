@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -217,9 +218,12 @@ fun BentoActionTile(
             .fillMaxWidth()
             .then(
                 // In a grid cell the tile fills the row, so it lines up with its neighbours.
+                // Elsewhere it grows with the font scale, like the grid's rows.
                 when {
                     fillHeight -> Modifier.fillMaxHeight()
-                    else -> Modifier.height(BentoSizes.ACTION_TILE.dp)
+                    else -> Modifier.height(
+                        BentoSizes.ACTION_TILE.dp * LocalDensity.current.fontScale.coerceAtLeast(1f),
+                    )
                 },
             ),
         tone = tone,
@@ -237,8 +241,10 @@ fun BentoActionTile(
                     label,
                     style = BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
                     color = fg,
-                    maxLines = 1,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 6.dp),
                 )
             }
         } else {
@@ -407,8 +413,8 @@ fun BentoSmartFilterTile(
     BentoToneSurface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(
-                when {
+            .heightIn(
+                min = when {
                     sideColumn -> BentoSizes.SMART_FILTER_SIDE_COLUMN.dp
                     else -> BentoSizes.SMART_FILTER.dp
                 },
@@ -421,8 +427,8 @@ fun BentoSmartFilterTile(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp),
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -721,39 +727,39 @@ internal fun MenuRow(
     onClick: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
-    Row(
+    BentoAdaptiveRow(
         modifier = Modifier
             .fillMaxWidth()
-            .height(BentoSizes.MENU_ITEM.dp)
+            .heightIn(min = BentoSizes.MENU_ITEM.dp)
             .clip(RoundedCornerShape(BentoRadii.ROW.dp))
             .combinedClickable(onClick = onClick)
             .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        gap = 14.dp,
+        leading = leading,
+        trailing = value?.let {
+            {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(colors.tonal)
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                ) {
+                    Text(
+                        it,
+                        style = BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
+                        color = colors.onTonal,
+                        maxLines = 1,
+                    )
+                }
+            }
+        },
     ) {
-        leading()
+        // Wraps between words; a value that crowds it moves under it (BentoAdaptiveRow).
         Text(
             label,
             style = BentoTypography.rowTitle.copy(fontWeight = FontWeight.Medium),
             color = colors.fg,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.padding(vertical = 4.dp),
         )
-        value?.let {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colors.tonal)
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
-            ) {
-                Text(
-                    it,
-                    style = BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
-                    color = colors.onTonal,
-                    maxLines = 1,
-                )
-            }
-        }
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -303,7 +304,7 @@ private fun BentoGroupTileRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(BentoSizes.GROUP_ROW.dp)
+            .heightIn(min = BentoSizes.GROUP_ROW.dp)
             .hoverable(interactionSource)
             .combinedClickable(
                 interactionSource = interactionSource,
@@ -356,35 +357,49 @@ private fun BentoGroupTileRow(
                 textAlign = TextAlign.Center,
             )
         }
-        Text(
-            song.title,
-            style = BentoTypography.rowTitle.copy(fontWeight = FontWeight.Medium),
-            color = when {
-                playing -> colors.accent
-                else -> colors.fg
-            },
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        // At a large scale the duration gives way to the title.
+        BentoTextWithMeta(
             modifier = Modifier.weight(1f),
-        )
-        if (!narrow) {
-            secondary?.let {
+            gap = 12.dp,
+            em = BentoTypography.rowTitle.fontSize,
+            meta = {
                 Text(
-                    it,
-                    style = BentoTypography.secondary,
+                    DurationUtils.formatMs(song.duration),
+                    style = bentoTabularStyle(BentoTypography.secondary),
                     color = colors.muted,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(0.55f, fill = false),
                 )
+            },
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(
+                    song.title,
+                    style = BentoTypography.rowTitle.copy(fontWeight = FontWeight.Medium),
+                    color = when {
+                        playing -> colors.accent
+                        else -> colors.fg
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                if (!narrow) {
+                    secondary?.let {
+                        Text(
+                            it,
+                            style = BentoTypography.secondary,
+                            color = colors.muted,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(0.55f, fill = false),
+                        )
+                    }
+                }
             }
         }
-        Text(
-            DurationUtils.formatMs(song.duration),
-            style = bentoTabularStyle(BentoTypography.secondary),
-            color = colors.muted,
-            maxLines = 1,
-        )
     }
 }
 
@@ -398,7 +413,7 @@ private fun BentoGroupShowAllRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(BentoSizes.GROUP_ROW.dp)
+            .heightIn(min = BentoSizes.GROUP_ROW.dp)
             .clip(RoundedCornerShape(BentoRadii.ROW.dp))
             .combinedClickable(onClick = onClick)
             .padding(horizontal = 8.dp),

@@ -1,6 +1,10 @@
 package io.github.zyrouge.symphony.ui.view
 
 import androidx.compose.foundation.background
+import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -147,8 +151,16 @@ internal fun BentoSearchFilterTiles(
     onFilterChange: (BentoSearchFilter?) -> Unit,
     sideColumn: Boolean,
 ) {
+    // A large font or content scale leaves two tiles a row no room for their names.
+    // The window width is converted with the app's density, so the content scale counts.
+    val density = LocalDensity.current
+    val windowWidthDp = with(density) { LocalWindowInfo.current.containerSize.width.toDp().value }
+    val crowded = bentoTooNarrowForText(
+        windowWidthDp - BentoSpacing.GUTTER_COMPACT * 2f,
+        density.fontScale,
+    )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BentoSearchFilter.entries.chunked(if (sideColumn) 1 else 2).forEach { rowFilters ->
+        BentoSearchFilter.entries.chunked(if (sideColumn || crowded) 1 else 2).forEach { rowFilters ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 rowFilters.forEach { filter ->
                     Box(modifier = Modifier.weight(1f)) {

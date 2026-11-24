@@ -73,18 +73,25 @@ const val BENTO_SQUARE_NEIGHBOUR_MIN_HEIGHT = 72f
  * row move by the difference, and tiles reaching that row from above grow or
  * shrink with it, so edges stay aligned. Shrinking stops before any of those
  * tiles drops below [BENTO_SQUARE_NEIGHBOUR_MIN_HEIGHT].
+ *
+ * [rowScale] multiplies the row height, so tiles grow with the font scale.
+ * [reflow] lays the tiles out on two columns instead (see
+ * [reflowBentoPlacements]), for windows too narrow for their text.
  */
 fun measureBentoGrid(
     placements: List<BentoTilePlacement>,
     gridClass: BentoGridClass,
     innerWidthDp: Float,
     squareTileId: String? = null,
+    rowScale: Float = 1f,
+    reflow: Boolean = false,
 ): BentoGridMeasure {
-    val columns = gridClass.columns.toFloat()
-    val rowHeight = gridClass.rowHeightDp.toFloat()
+    val laidOut = if (reflow) reflowBentoPlacements(placements) else placements
+    val columns = if (reflow) 2f else gridClass.columns.toFloat()
+    val rowHeight = gridClass.rowHeightDp * rowScale
     val gap = gridClass.gapDp.toFloat()
     val columnWidth = (innerWidthDp - (columns - 1f) * gap) / columns
-    val tiles = placements.associate { placement ->
+    val tiles = laidOut.associate { placement ->
         val width = placement.columnSpan * columnWidth +
             (placement.columnSpan - 1f) * gap
         val height = placement.rowSpan * rowHeight + (placement.rowSpan - 1f) * gap
@@ -97,10 +104,48 @@ fun measureBentoGrid(
         )
         placement.tileId to (placement to geometry)
     }
-    val maxRow = placements.maxOfOrNull { it.row + it.rowSpan - 1 } ?: 0
+    val maxRow = laidOut.maxOfOrNull { it.row + it.rowSpan - 1 } ?: 0
     val totalHeight = maxRow * rowHeight + (maxRow - 1f).coerceAtLeast(0f) * gap
     val measure = BentoGridMeasure(tiles = tiles, totalHeight = totalHeight)
     return squareTileId?.let { squareBentoTile(measure, it) } ?: measure
+}
+
+/**
+ * The placements on a two-column grid, in reading order (row, then column):
+ * tiles spanning two or more columns take the full width, and single-column
+ * tiles pair up side by side. Row spans stay, so tiles keep their heights.
+ */
+internal fun reflowBentoPlacements(placements: List<BentoTilePlacement>): List<BentoTilePlacement> {
+    val reflowed = mutableListOf<BentoTilePlacement>()
+    var row = 1
+    // A single-column tile in the left half of `row`, waiting for a partner.
+    var half: BentoTilePlacement? = null
+    placements.sortedWith(compareBy({ it.row }, { it.column })).forEach { placement ->
+        val waiting = half
+        when {
+            placement.columnSpan <= 1 && waiting == null -> {
+                val placed = placement.copy(column = 1, row = row, columnSpan = 1)
+                reflowed += placed
+                half = placed
+            }
+
+            placement.columnSpan <= 1 && waiting != null -> {
+                reflowed += placement.copy(column = 2, row = waiting.row, columnSpan = 1)
+                row = waiting.row + max(waiting.rowSpan, placement.rowSpan)
+                half = null
+            }
+
+            else -> {
+                if (waiting != null) {
+                    row = waiting.row + waiting.rowSpan
+                    half = null
+                }
+                reflowed += placement.copy(column = 1, row = row, columnSpan = 2)
+                row += placement.rowSpan
+            }
+        }
+    }
+    return reflowed
 }
 
 private fun squareBentoTile(measure: BentoGridMeasure, tileId: String): BentoGridMeasure? {

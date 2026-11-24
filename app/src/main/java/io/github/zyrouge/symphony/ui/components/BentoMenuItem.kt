@@ -76,7 +76,7 @@ fun BentoMenuItem(
         else -> colors.sub
     }
 
-    Row(
+    BentoAdaptiveRow(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = BentoSizes.MENU_ITEM.dp)
@@ -95,44 +95,51 @@ fun BentoMenuItem(
                 onClick = onClick,
             )
             .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        Box(modifier = Modifier.size(22.dp), contentAlignment = Alignment.Center) {
-            icon?.let {
-                Icon(it, null, tint = iconColor, modifier = Modifier.size(22.dp))
+        gap = 14.dp,
+        leading = {
+            Box(modifier = Modifier.size(22.dp), contentAlignment = Alignment.Center) {
+                icon?.let {
+                    Icon(it, null, tint = iconColor, modifier = Modifier.size(22.dp))
+                }
             }
-        }
+        },
+        trailing = if (value == null && trailingIcon == null) null else {
+            {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    value?.let {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(colors.tonal)
+                                .padding(horizontal = 10.dp, vertical = 4.dp),
+                        ) {
+                            Text(
+                                it,
+                                style = bentoTabularStyle(
+                                    BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
+                                ),
+                                color = colors.onTonal,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                    trailingIcon?.let {
+                        Icon(it, null, tint = colors.muted, modifier = Modifier.size(20.dp))
+                    }
+                }
+            }
+        },
+    ) {
+        // Wraps between words; a value that crowds it moves under it (BentoAdaptiveRow).
         Text(
             label,
             style = BentoTypography.rowTitle.copy(fontWeight = FontWeight.Medium),
             color = labelColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 4.dp),
+            modifier = Modifier.padding(vertical = 4.dp),
         )
-        value?.let {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colors.tonal)
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
-            ) {
-                Text(
-                    it,
-                    style = bentoTabularStyle(
-                        BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
-                    ),
-                    color = colors.onTonal,
-                    maxLines = 1,
-                )
-            }
-        }
-        trailingIcon?.let {
-            Icon(it, null, tint = colors.muted, modifier = Modifier.size(20.dp))
-        }
     }
 }
 
@@ -178,7 +185,7 @@ fun BentoMenuHeader(
                 title,
                 style = BentoTypography.rowTitle,
                 color = colors.fg,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             subtitle?.takeIf { it.isNotEmpty() }?.let {
@@ -186,7 +193,7 @@ fun BentoMenuHeader(
                     it,
                     style = BentoTypography.secondary,
                     color = colors.sub,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
             }

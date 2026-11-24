@@ -47,12 +47,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -381,51 +384,67 @@ internal fun BentoPlayerExtras(
     onClosePlayer: () -> Unit,
 ) {
     var showMore by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        PlayerExtraButton(
-            icon = { Icon(Icons.AutoMirrored.Outlined.Article, null) },
-            label = context.symphony.t.Lyrics,
-            selected = stage == BentoPlayerStage.LYRICS,
-            onClick = {
-                onStageChange(
-                    if (stage == BentoPlayerStage.LYRICS) BentoPlayerStage.COVER
-                    else BentoPlayerStage.LYRICS,
-                )
-            },
-        )
-        PlayerExtraButton(
-            icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
-            label = context.symphony.t.Queue,
-            selected = stage == BentoPlayerStage.QUEUE,
-            onClick = {
-                onStageChange(
-                    if (stage == BentoPlayerStage.QUEUE) BentoPlayerStage.COVER
-                    else BentoPlayerStage.QUEUE,
-                )
-            },
-        )
-        Box {
+    val labels = listOf(context.symphony.t.Lyrics, context.symphony.t.Queue, context.symphony.t.More)
+    val textMeasurer = rememberTextMeasurer()
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        // At a large font or content scale the labelled buttons stop fitting and the
+        // last one would be pushed out of reach, so they drop to icons only.
+        val chromeWidth = with(LocalDensity.current) {
+            (PLAYER_EXTRA_BUTTON_CHROME_DP * labels.size).dp.roundToPx()
+        }
+        val labelledWidth = chromeWidth + labels.sumOf {
+            textMeasurer.measure(it, PlayerExtraLabelStyle, maxLines = 1).size.width
+        }
+        val showLabels = labelledWidth <= constraints.maxWidth
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             PlayerExtraButton(
-                icon = { Icon(Icons.Outlined.MoreHoriz, null) },
-                label = context.symphony.t.More,
-                selected = null,
-                onClick = { showMore = true },
+                icon = { Icon(Icons.AutoMirrored.Outlined.Article, null) },
+                label = context.symphony.t.Lyrics,
+                selected = stage == BentoPlayerStage.LYRICS,
+                showLabel = showLabels,
+                onClick = {
+                    onStageChange(
+                        if (stage == BentoPlayerStage.LYRICS) BentoPlayerStage.COVER
+                        else BentoPlayerStage.LYRICS,
+                    )
+                },
             )
-            BentoPlayerMoreMenu(
-                context = context,
-                data = data,
-                compact = compact,
-                expanded = showMore,
-                onDismissRequest = { showMore = false },
-                onShowSpeed = onShowSpeed,
-                onShowPitch = onShowPitch,
-                onShowSleepTimer = onShowSleepTimer,
-                onClosePlayer = onClosePlayer,
+            PlayerExtraButton(
+                icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
+                label = context.symphony.t.Queue,
+                selected = stage == BentoPlayerStage.QUEUE,
+                showLabel = showLabels,
+                onClick = {
+                    onStageChange(
+                        if (stage == BentoPlayerStage.QUEUE) BentoPlayerStage.COVER
+                        else BentoPlayerStage.QUEUE,
+                    )
+                },
             )
+            Box {
+                PlayerExtraButton(
+                    icon = { Icon(Icons.Outlined.MoreHoriz, null) },
+                    label = context.symphony.t.More,
+                    selected = null,
+                    showLabel = showLabels,
+                    onClick = { showMore = true },
+                )
+                BentoPlayerMoreMenu(
+                    context = context,
+                    data = data,
+                    compact = compact,
+                    expanded = showMore,
+                    onDismissRequest = { showMore = false },
+                    onShowSpeed = onShowSpeed,
+                    onShowPitch = onShowPitch,
+                    onShowSleepTimer = onShowSleepTimer,
+                    onClosePlayer = onClosePlayer,
+                )
+            }
         }
     }
 }
@@ -435,6 +454,7 @@ private fun PlayerExtraButton(
     icon: @Composable () -> Unit,
     label: String,
     selected: Boolean?,
+    showLabel: Boolean,
     onClick: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
@@ -447,6 +467,7 @@ private fun PlayerExtraButton(
             .padding(horizontal = 14.dp)
             .semantics {
                 role = Role.Button
+                if (!showLabel) contentDescription = label
                 selected?.let {
                     toggleableState = if (it) ToggleableState.On else ToggleableState.Off
                 }
@@ -462,14 +483,21 @@ private fun PlayerExtraButton(
                 icon()
             }
         }
-        Text(
-            label,
-            style = BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
-            color = if (selected == true) colors.onTonal else colors.sub,
-            maxLines = 1,
-        )
+        if (showLabel) {
+            Text(
+                label,
+                style = PlayerExtraLabelStyle,
+                color = if (selected == true) colors.onTonal else colors.sub,
+                maxLines = 1,
+            )
+        }
     }
 }
+
+private val PlayerExtraLabelStyle = BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold)
+
+/** A labelled extra button's padding (14 dp a side), icon (20 dp) and icon gap (6 dp). */
+private const val PLAYER_EXTRA_BUTTON_CHROME_DP = 54
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

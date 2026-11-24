@@ -1,5 +1,8 @@
 package io.github.zyrouge.symphony.ui.view
 
+import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
+import androidx.compose.ui.platform.LocalDensity
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -225,9 +228,20 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                 ConsiderContributingTile(context)
                 BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                     val gridClass = rememberBentoGridClass(maxWidth.value.roundToInt())
+                    val crowded = bentoTooNarrowForText(
+                        maxWidth.value - BentoSpacing.GUTTER_COMPACT * 2f,
+                        LocalDensity.current.fontScale,
+                    )
                     BentoGrid(
                         gridClass = gridClass,
-                        placements = settingsPlacements(gridClass),
+                        // With crowded text the theme tile stacks its options, so it gets two more rows.
+                        placements = settingsPlacements(gridClass).map {
+                            when {
+                                !crowded -> it
+                                it.tileId == "theme" -> it.copy(rowSpan = it.rowSpan + 2)
+                                else -> it.copy(row = it.row + 2)
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                     ) { tileId, _, geometry ->
                         when (tileId) {

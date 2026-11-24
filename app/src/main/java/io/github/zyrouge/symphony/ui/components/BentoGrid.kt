@@ -104,10 +104,22 @@ data class BentoTilePlacement(
 )
 
 /**
+ * The least width, in dp divided by the font scale, at which text fits the
+ * phone layouts (a 4-column grid, labelled action tiles). Narrower, as with a
+ * large font or content scale, pages switch to their roomier layouts.
+ */
+const val BENTO_TEXT_ROOM_MIN_WIDTH_DP = 250f
+
+/** True when [widthDp] leaves too little room for text at [fontScale]; see [BENTO_TEXT_ROOM_MIN_WIDTH_DP]. */
+fun bentoTooNarrowForText(widthDp: Float, fontScale: Float) =
+    widthDp / fontScale < BENTO_TEXT_ROOM_MIN_WIDTH_DP
+
+/**
  * The bento grid engine (DESIGN.md 2.3): places tiles per the grid class and
  * the page's placement table inside the page gutter (16 on compact windows,
  * 24 elsewhere). The grid is as tall as its bottom-most tile; the caller hosts
- * it in a scrollable column.
+ * it in a scrollable column. Rows grow with the font scale, and a grid too
+ * narrow for its text ([bentoTooNarrowForText]) reflows onto two columns.
  */
 @Composable
 fun BentoGrid(
@@ -124,8 +136,11 @@ fun BentoGrid(
             else -> BentoSpacing.GUTTER_OTHER.dp
         }
         val innerWidth = maxWidth - gutter * 2
-        val measure = remember(placements, gridClass, innerWidth, squareTileId) {
-            measureBentoGrid(placements, gridClass, innerWidth.value, squareTileId)
+        val fontScale = LocalDensity.current.fontScale
+        val rowScale = fontScale.coerceAtLeast(1f)
+        val reflow = gridClass.columns > 2 && bentoTooNarrowForText(innerWidth.value, fontScale)
+        val measure = remember(placements, gridClass, innerWidth, squareTileId, rowScale, reflow) {
+            measureBentoGrid(placements, gridClass, innerWidth.value, squareTileId, rowScale, reflow)
         }
         Box(
             modifier = Modifier

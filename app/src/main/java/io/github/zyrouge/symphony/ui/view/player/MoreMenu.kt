@@ -214,7 +214,7 @@ private fun BentoPlayerMoreMenuContent(
                     data.song.title,
                     style = BentoTypography.rowTitle,
                     color = colors.fg,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 data.song.toSamplingInfoString(context.symphony)?.let {
@@ -222,7 +222,7 @@ private fun BentoPlayerMoreMenuContent(
                         it,
                         style = BentoTypography.secondary,
                         color = colors.sub,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

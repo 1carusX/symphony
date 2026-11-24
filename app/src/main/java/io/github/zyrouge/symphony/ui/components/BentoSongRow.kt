@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -76,9 +77,10 @@ fun BentoSongRow(
         modifier = Modifier
             .fillMaxWidth()
             .then(
+                // Grows with a large font instead of clipping the two lines.
                 when {
-                    !columns -> Modifier.height(BentoSizes.SONG_ROW.dp)
-                    else -> Modifier.height(BentoSizes.SONG_ROW_COLUMNS.dp)
+                    !columns -> Modifier.heightIn(min = BentoSizes.SONG_ROW.dp)
+                    else -> Modifier.heightIn(min = BentoSizes.SONG_ROW_COLUMNS.dp)
                 },
             )
             .hoverable(interactionSource)
@@ -157,38 +159,52 @@ fun BentoSongRow(
                 modifier = Modifier.width(52.dp),
             )
         } else {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    song.title,
-                    style = BentoTypography.rowTitle,
-                    color = when {
-                        playing -> colors.accent
-                        else -> colors.fg
-                    },
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (artistsLine.isNotEmpty() || !song.album.isNullOrEmpty()) {
+            // At a large scale the duration (and any badge) gives way to the title.
+            BentoTextWithMeta(
+                modifier = Modifier.weight(1f),
+                gap = 12.dp,
+                em = BentoTypography.rowTitle.fontSize,
+                meta = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        trailing?.invoke(this)
+                        Text(
+                            DurationUtils.formatMs(song.duration),
+                            style = durationStyle,
+                            color = colors.muted,
+                            maxLines = 1,
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                },
+            ) {
+                Column {
                     Text(
-                        listOfNotNull(
-                            artistsLine.takeIf { it.isNotEmpty() },
-                            song.album,
-                        ).joinToString(" · "),
-                        style = BentoTypography.secondary,
-                        color = colors.sub,
+                        song.title,
+                        style = BentoTypography.rowTitle,
+                        color = when {
+                            playing -> colors.accent
+                            else -> colors.fg
+                        },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                    if (artistsLine.isNotEmpty() || !song.album.isNullOrEmpty()) {
+                        Text(
+                            listOfNotNull(
+                                artistsLine.takeIf { it.isNotEmpty() },
+                                song.album,
+                            ).joinToString(" · "),
+                            style = BentoTypography.secondary,
+                            color = colors.sub,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
-            trailing?.invoke(this)
-            Text(
-                DurationUtils.formatMs(song.duration),
-                style = durationStyle,
-                color = colors.muted,
-                maxLines = 1,
-                textAlign = TextAlign.End,
-            )
         }
         menu?.let {
             Box {

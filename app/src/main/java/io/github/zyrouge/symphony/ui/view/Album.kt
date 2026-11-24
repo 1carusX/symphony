@@ -329,6 +329,7 @@ private fun AlbumGrid(
                         icon = Icons.Filled.Queue,
                         label = context.symphony.t.Queue,
                         sub = context.symphony.t.AddX(context.symphony.t.XSongs(songs.size.toString())),
+                        narrow = geometry.width < 200f,
                         onClick = {
                             context.symphony.radio.queue.add(trackSongIds)
                         },

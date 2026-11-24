@@ -2,6 +2,7 @@ package io.github.zyrouge.symphony.ui.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.services.radio.Radio
+import io.github.zyrouge.symphony.ui.components.BentoAdaptiveRow
 import io.github.zyrouge.symphony.ui.components.BentoMiniButton
 import io.github.zyrouge.symphony.ui.components.BentoSearchHitChip
 import io.github.zyrouge.symphony.ui.components.BentoSongRow
@@ -280,13 +282,47 @@ private fun SearchResultsHeader(
     narrowed: Boolean,
 ) {
     val colors = LocalBentoColors.current
-    Row(
+    // The Play and Shuffle buttons move under the title when they crowd it.
+    BentoAdaptiveRow(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 60.dp)
             .padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        gap = 8.dp,
+        leading = null,
+        trailing = if (resultSongs.isEmpty()) null else {
+            {
+                // Wraps onto a second line when even the full width cannot hold both.
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    BentoMiniButton(
+                        icon = Icons.Filled.PlayArrow,
+                        label = context.symphony.t.Play,
+                        tone = BentoTileTone.ACCENT,
+                        onClick = {
+                            context.symphony.radio.shorty.playQueue(
+                                resultSongs.map { it.id },
+                                source = context.symphony.t.SearchResults,
+                            )
+                        },
+                    )
+                    BentoMiniButton(
+                        icon = Icons.Filled.Shuffle,
+                        label = context.symphony.t.ShufflePlay,
+                        tone = BentoTileTone.TONAL,
+                        onClick = {
+                            context.symphony.radio.shorty.playQueue(
+                                resultSongs.map { it.id },
+                                shuffle = true,
+                                source = context.symphony.t.SearchResults,
+                            )
+                        },
+                    )
+                }
+            }
+        },
     ) {
         Text(
             when {
@@ -295,35 +331,9 @@ private fun SearchResultsHeader(
             },
             style = BentoTypography.rowTitle,
             color = colors.fg,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
         )
-        if (resultSongs.isNotEmpty()) {
-            BentoMiniButton(
-                icon = Icons.Filled.PlayArrow,
-                label = context.symphony.t.Play,
-                tone = BentoTileTone.ACCENT,
-                onClick = {
-                    context.symphony.radio.shorty.playQueue(
-                        resultSongs.map { it.id },
-                        source = context.symphony.t.SearchResults,
-                    )
-                },
-            )
-            BentoMiniButton(
-                icon = Icons.Filled.Shuffle,
-                label = context.symphony.t.ShufflePlay,
-                tone = BentoTileTone.TONAL,
-                onClick = {
-                    context.symphony.radio.shorty.playQueue(
-                        resultSongs.map { it.id },
-                        shuffle = true,
-                        source = context.symphony.t.SearchResults,
-                    )
-                },
-            )
-        }
     }
 }
 
