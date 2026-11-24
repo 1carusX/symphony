@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -26,13 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.ui.helpers.libraryRescanAction
 import io.github.zyrouge.symphony.R
 import io.github.zyrouge.symphony.services.AppMeta
@@ -54,37 +55,50 @@ import io.github.zyrouge.symphony.utils.ActivityUtils
 
 /**
  * The About tile: app name and version, matching the app info block of the
- * previous settings home.
+ * previous settings home. It is laid out like a medium shortcut tile, an icon
+ * well beside the texts, so it reads as one of the tiles around it.
  */
 @Composable
 internal fun SettingsAboutTileContent(context: ViewContext) {
     val tileColors = LocalBentoTileContentColors.current
+    val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
     Row(
         modifier = Modifier.fillMaxSize(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(14.dp)),
+                .size(48.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(tileColors.fg.copy(alpha = 0.13f)),
             contentAlignment = Alignment.Center,
         ) {
-            AsyncImage(R.drawable.ic_launcher_foreground, null)
+            // The launcher glyph fills the middle 40 % of its canvas, so it is
+            // drawn at 50 dp for a 20 dp glyph, the size of the other wells' icons.
+            Icon(
+                painterResource(R.drawable.ic_launcher_monochrome),
+                null,
+                tint = tileColors.fg,
+                modifier = Modifier.requiredSize(50.dp),
+            )
         }
         Column {
             Text(
                 AppMeta.appName,
-                style = BentoTypography.rowTitle,
+                style = BentoTypography.rowTitle.copy(fontFamily = appFontFamily),
                 color = tileColors.fg,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            // The line breaker does not break after a hyphen that follows digits,
+            // so a narrow tile would split "debug"; the zero-width space lets the
+            // version wrap after its hyphen instead.
             Text(
-                AppMeta.version,
+                AppMeta.version.replace("-", "-​"),
                 style = BentoTypography.secondary,
                 color = tileColors.sub,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             AppMeta.latestVersion?.takeIf { AppMeta.version != it }?.let {
