@@ -12,10 +12,11 @@ on:
             - core/**
             - i18n/**
             - gradle/**
-    pull_request_target:
+    pull_request:
         types:
             - opened
             - edited
+            - synchronize
         paths:
             - app/**
             - core/**
@@ -28,7 +29,7 @@ permissions: {}
 jobs:
     build:
         runs-on: ubuntu-latest
-        if: github.event_name != 'pull_request_target' || github.event.pull_request.draft == false
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
 
         steps:
             - uses: actions/checkout@v4
