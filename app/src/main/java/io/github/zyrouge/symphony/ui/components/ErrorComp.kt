@@ -15,14 +15,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.zyrouge.symphony.i18n.rememberStrings
 
 @Composable
 fun ErrorComp(message: String, stackTrace: String) {
+    // The crash screen runs outside the app theme, so it loads its strings itself.
+    val t = rememberStrings(LocalConfiguration.current.locales[0].language)
     Column(
         modifier = Modifier
             .background(Color.Red)
@@ -42,14 +46,14 @@ fun ErrorComp(message: String, stackTrace: String) {
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                "Something went horribly wrong",
+                t.SomethingWentWrong,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = boldTextStyle,
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                "Error: $message",
+                t.ErrorX(message),
                 style = boldTextStyle,
             )
             Text(stackTrace)

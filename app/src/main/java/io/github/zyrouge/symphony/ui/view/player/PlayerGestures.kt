@@ -46,26 +46,6 @@ fun resolveBentoPhonePlayerRelease(
     }
 }
 
-/** Resolves a floating touch-window release; a null result closes it. */
-fun resolveBentoFloatingPlayerRelease(
-    offsetDp: Float,
-    startedAt: BentoPlayerLevel,
-): BentoPlayerLevel? = when {
-    offsetDp < -40f -> BentoPlayerLevel.MEDIUM
-    offsetDp > 40f -> when (startedAt) {
-        BentoPlayerLevel.MEDIUM -> BentoPlayerLevel.SMALL
-        BentoPlayerLevel.SMALL -> null
-    }
-
-    else -> startedAt
-}
-
-/** Upward floating-window drags move at 60%, capped at 54 dp. */
-fun bentoFloatingPlayerDragOffset(dragDistanceDp: Float): Float = when {
-    dragDistanceDp < 0f -> -minOf(-dragDistanceDp, 90f) * 0.6f
-    else -> dragDistanceDp
-}
-
 /** Phone-sheet dragging rubber-bands above the medium position at 30%. */
 fun bentoPhonePlayerDragTop(
     baseTopDp: Float,
@@ -90,3 +70,13 @@ fun nextBentoSleepTimerMinutes(durationMs: Long?): Int? = when (durationMs) {
 /** Whole minutes left, rounded up so a live timer never displays zero early. */
 fun bentoSleepTimerMinutesLeft(endsAtMs: Long, nowMs: Long): Int =
     ceil((endsAtMs - nowMs).coerceAtLeast(0L) / 60_000.0).toInt()
+
+/**
+ * Milliseconds until [bentoSleepTimerMinutesLeft] next changes, or null once
+ * the timer has ended and the value stays at zero.
+ */
+fun bentoSleepTimerNextMinuteDelayMs(endsAtMs: Long, nowMs: Long): Long? {
+    val leftMs = endsAtMs - nowMs
+    if (leftMs <= 0L) return null
+    return (leftMs - 1L) % 60_000L + 1L
+}

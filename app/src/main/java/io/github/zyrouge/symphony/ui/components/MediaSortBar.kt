@@ -1,10 +1,7 @@
 package io.github.zyrouge.symphony.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,14 +13,13 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -33,10 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
@@ -53,7 +46,6 @@ fun <T : Enum<T>> MediaSortBar(
     onShufflePlay: (() -> Unit)? = null,
     onShowModifyLayout: (() -> Unit)? = null,
 ) {
-    val bentoColors = LocalBentoColors.current
     var showDropdown by remember { mutableStateOf(false) }
     val currentTextStyle = MaterialTheme.typography.bodySmall.run {
         copy(color = LocalBentoColors.current.fg)
@@ -105,27 +97,11 @@ fun <T : Enum<T>> MediaSortBar(
                             onSortChange(it.key)
                         }
 
-                        DropdownMenuItem(
-                            contentPadding = MenuDefaults.DropdownMenuItemContentPadding.run {
-                                val horizontalPadding = calculateLeftPadding(LayoutDirection.Ltr)
-                                PaddingValues(
-                                    start = horizontalPadding.div(2),
-                                    end = horizontalPadding.times(4),
-                                )
-                            },
-                            leadingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(18.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (it.key == sort) bentoColors.accent else bentoColors.raised,
-                                        )
-                                        .clickable(onClick = onClick),
-                                )
-                            },
-                            text = {
-                                Text(it.value(context))
+                        BentoMenuItem(
+                            label = it.value(context),
+                            icon = when (it.key) {
+                                sort -> Icons.Rounded.Check
+                                else -> null
                             },
                             onClick = onClick,
                         )

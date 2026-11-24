@@ -2,11 +2,13 @@ package io.github.zyrouge.symphony.ui.view.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -55,20 +58,23 @@ import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LoaderScaffold
 import io.github.zyrouge.symphony.ui.components.SongDropdownMenu
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.components.groupBentoEntriesByLetter
 import io.github.zyrouge.symphony.ui.components.label
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
 import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop
 import io.github.zyrouge.symphony.ui.view.SettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsViewRoute
 import kotlinx.coroutines.launch
 
 /**
@@ -99,7 +105,6 @@ fun SongsView(context: ViewContext) {
     }
     val playingSong = rememberBentoPlayingSong(context)
     val favorites by context.symphony.groove.playlist.favorites.collectAsState()
-    var menuSongId by remember { mutableStateOf<String?>(null) }
     var showSortMenu by remember { mutableStateOf(false) }
 
     LoaderScaffold(context, isLoading = isUpdating) {
@@ -129,9 +134,7 @@ fun SongsView(context: ViewContext) {
                         modifier = Modifier
                             .clickable {
                                 context.navController.navigate(
-                                    GrooveSettingsViewRoute(
-                                        SettingsViewRoute.ELEMENT_MEDIA_FOLDERS,
-                                    ),
+                                    SettingsViewRoute(SettingsViewRoute.ELEMENT_MEDIA_FOLDERS),
                                 )
                             }
                             .padding(2.dp),
@@ -163,73 +166,88 @@ fun SongsView(context: ViewContext) {
                         .padding(horizontal = gutter),
                     verticalArrangement = Arrangement.spacedBy(tileGap),
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(tileGap),
-                    ) {
-                        Box(modifier = Modifier.weight(2f)) {
-                            BentoActionTile(
-                                icon = Icons.Filled.PlayArrow,
-                                label = context.symphony.t.PlayAll,
-                                sub = context.symphony.t.XSongs(songs.size.toString()) +
-                                    when {
-                                        narrowActions -> ""
-                                        else -> " · " +
-                                            formatBentoDurationMinutes(
-                                                songs.sumOf { it.duration },
-                                            )
-                                    },
-                                tone = BentoTileTone.ACCENT,
-                                main = true,
-                                narrow = narrowActions,
-                                onClick = {
-                                    context.symphony.radio.shorty.playQueue(sortedSongIds)
+                    val playAllTile: @Composable () -> Unit = {
+                        BentoActionTile(
+                            icon = Icons.Filled.PlayArrow,
+                            label = context.symphony.t.PlayAll,
+                            sub = context.symphony.t.XSongs(songs.size.toString()) +
+                                when {
+                                    narrowActions -> ""
+                                    else -> " · " +
+                                        formatBentoDurationMinutes(
+                                            songs.sumOf { it.duration }, context.symphony.t)
                                 },
-                            )
+                            tone = BentoTileTone.ACCENT,
+                            main = true,
+                            narrow = narrowActions,
+                            onClick = {
+                                context.symphony.radio.shorty.playQueue(sortedSongIds, source = context.symphony.t.AllSongs)
+                            },
+                        )
+                    }
+                    val shuffleTile: @Composable () -> Unit = {
+                        BentoActionTile(
+                            icon = Icons.Filled.Shuffle,
+                            label = context.symphony.t.ShufflePlay,
+                            sub = context.symphony.t.RandomOrder,
+                            tone = BentoTileTone.TONAL,
+                            narrow = narrowActions,
+                            onClick = {
+                                context.symphony.radio.shorty.playQueue(
+                                    sortedSongIds,
+                                    shuffle = true,
+                                    source = context.symphony.t.AllSongs,
+                                )
+                            },
+                        )
+                    }
+                    val sortTile: @Composable () -> Unit = {
+                        BentoActionTile(
+                            icon = Icons.AutoMirrored.Rounded.Sort,
+                            label = sortBy.label(context),
+                            sub = when {
+                                sortReverse -> context.symphony.t.Descending
+                                else -> context.symphony.t.Ascending
+                            },
+                            narrow = narrowActions,
+                            onClick = { showSortMenu = true },
+                        )
+                        BentoSortMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false },
+                            title = context.symphony.t.SortSongsBy,
+                            options = SongRepository.SortBy.entries.map {
+                                BentoSortOption(it, it.label(context))
+                            },
+                            selected = sortBy,
+                            onSelect = {
+                                context.symphony.settings.lastUsedSongsSortBy.setValue(it)
+                            },
+                            reverse = sortReverse,
+                            reverseLabel = context.symphony.t.ReverseOrder,
+                            onReverseChange = {
+                                context.symphony.settings.lastUsedSongsSortReverse.setValue(it)
+                            },
+                        )
+                    }
+                    // A large font or content scale leaves three tiles in a row no room
+                    // for their labels, so Play all gets a row of its own.
+                    if (bentoTooNarrowForText(innerWidth.value, LocalDensity.current.fontScale)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(tileGap)) {
+                            playAllTile()
+                            Row(horizontalArrangement = Arrangement.spacedBy(tileGap)) {
+                                Box(modifier = Modifier.weight(1f)) { shuffleTile() }
+                                Box(modifier = Modifier.weight(1f)) { sortTile() }
+                            }
                         }
-                        Box(modifier = Modifier.weight(1f)) {
-                            BentoActionTile(
-                                icon = Icons.Filled.Shuffle,
-                                label = context.symphony.t.ShufflePlay,
-                                sub = "Random order",
-                                tone = BentoTileTone.TONAL,
-                                narrow = narrowActions,
-                                onClick = {
-                                    context.symphony.radio.shorty.playQueue(
-                                        sortedSongIds,
-                                        shuffle = true,
-                                    )
-                                },
-                            )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            BentoActionTile(
-                                icon = Icons.AutoMirrored.Rounded.Sort,
-                                label = sortBy.label(context),
-                                sub = when {
-                                    sortReverse -> "Descending"
-                                    else -> "Ascending"
-                                },
-                                narrow = narrowActions,
-                                onClick = { showSortMenu = true },
-                            )
-                            BentoSortMenu(
-                                expanded = showSortMenu,
-                                onDismissRequest = { showSortMenu = false },
-                                title = context.symphony.t.SortSongsBy,
-                                options = SongRepository.SortBy.entries.map {
-                                    BentoSortOption(it, it.label(context))
-                                },
-                                selected = sortBy,
-                                onSelect = {
-                                    context.symphony.settings.lastUsedSongsSortBy.setValue(it)
-                                },
-                                reverse = sortReverse,
-                                reverseLabel = "Reverse order",
-                                onReverseChange = {
-                                    context.symphony.settings.lastUsedSongsSortReverse.setValue(it)
-                                },
-                            )
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(tileGap),
+                        ) {
+                            Box(modifier = Modifier.weight(2f)) { playAllTile() }
+                            Box(modifier = Modifier.weight(1f)) { shuffleTile() }
+                            Box(modifier = Modifier.weight(1f)) { sortTile() }
                         }
                     }
 
@@ -244,8 +262,6 @@ fun SongsView(context: ViewContext) {
                         columnMode = columnMode,
                         showScrubber = showScrubber,
                         favorites = favorites,
-                        menuSongId = menuSongId,
-                        onMenuSongIdChange = { menuSongId = it },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -272,8 +288,6 @@ private fun SongsListTile(
     columnMode: Boolean,
     showScrubber: Boolean,
     favorites: List<String>,
-    menuSongId: String?,
-    onMenuSongIdChange: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalBentoColors.current
@@ -318,14 +332,35 @@ private fun SongsListTile(
     val songIndexById = remember(sortedSongIds) {
         sortedSongIds.withIndex().associate { (index, songId) -> songId to index }
     }
+    // The tile runs under the floating capsule; the list and the scrubber stay clear of it.
+    val bottomInset = bentoBottomInset()
+    val colorScheme = LocalBentoColorScheme.current
+    val tileShape = RoundedCornerShape(BentoRadii.TILE.dp)
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(BentoRadii.TILE.dp))
+            .clip(tileShape)
+            .then(
+                when (colorScheme) {
+                    BentoColorScheme.CONTRAST -> Modifier.border(1.dp, colors.line, tileShape)
+                    else -> Modifier
+                },
+            )
             .background(colors.surface),
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        // The scrubber's room is kept beside the column header too, so the
+        // header labels stay over their cells.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    when {
+                        showScrubber -> Modifier.padding(end = 30.dp)
+                        else -> Modifier
+                    },
+                ),
+        ) {
             if (columnMode) {
                 BentoSongColumnHeader(
                     title = context.symphony.t.Title,
@@ -336,14 +371,8 @@ private fun SongsListTile(
             }
             LazyColumn(
                 state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        when {
-                            showScrubber -> Modifier.padding(end = 30.dp)
-                            else -> Modifier
-                        },
-                    ),
+                contentPadding = PaddingValues(bottom = bottomInset),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 groups.forEachIndexed { groupIndex, group ->
                     if (lettered) {
@@ -357,31 +386,31 @@ private fun SongsListTile(
                         contentType = { _, _ -> Groove.Kind.SONG },
                     ) { _, song ->
                         val playing = song.id == playingSongId
-                        Box {
-                            BentoSongRow(
-                                context = context,
-                                song = song,
-                                playing = playing,
-                                isPlaying = isPlaying,
-                                columns = columnMode,
-                                onLongClick = { onMenuSongIdChange(song.id) },
-                                onClick = {
-                                    context.symphony.radio.shorty.playQueue(
-                                        sortedSongIds,
-                                        Radio.PlayOptions(
-                                            index = songIndexById[song.id] ?: 0,
-                                        ),
-                                    )
-                                },
-                            )
-                            SongDropdownMenu(
-                                context = context,
-                                song = song,
-                                isFavorite = favorites.contains(song.id),
-                                expanded = menuSongId == song.id,
-                                onDismissRequest = { onMenuSongIdChange(null) },
-                            )
-                        }
+                        BentoSongRow(
+                            context = context,
+                            song = song,
+                            playing = playing,
+                            isPlaying = isPlaying,
+                            columns = columnMode,
+                            menu = { expanded, onDismissRequest ->
+                                SongDropdownMenu(
+                                    context = context,
+                                    song = song,
+                                    isFavorite = favorites.contains(song.id),
+                                    expanded = expanded,
+                                    onDismissRequest = onDismissRequest,
+                                )
+                            },
+                            onClick = {
+                                context.symphony.radio.shorty.playQueue(
+                                    sortedSongIds,
+                                    Radio.PlayOptions(
+                                        index = songIndexById[song.id] ?: 0,
+                                    ),
+                                    source = context.symphony.t.AllSongs,
+                                )
+                            },
+                        )
                     }
                 }
             }
@@ -390,7 +419,7 @@ private fun SongsListTile(
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .padding(end = 6.dp),
+                    .padding(end = 6.dp, bottom = bottomInset),
             ) {
                 BentoAzScrubber(
                     presentLetters = presentLetters,

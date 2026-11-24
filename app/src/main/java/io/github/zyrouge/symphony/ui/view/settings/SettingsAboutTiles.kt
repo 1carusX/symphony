@@ -1,5 +1,6 @@
 package io.github.zyrouge.symphony.ui.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -7,8 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,8 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.ui.helpers.libraryRescanAction
@@ -43,7 +46,9 @@ import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
 import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.ActivityUtils
 
@@ -113,8 +118,11 @@ internal fun SettingsLibraryStatTile(
                 label = context.symphony.t.Library,
                 value = context.symphony.t.XSongs(songCount.toString()),
                 valueStyle = bentoStatValueStyle(geometry.sizeClass, appFontFamily),
-                sub = "in " + context.symphony.t.XFolders(folderCount.toString()),
+                sub = context.symphony.t.InX(context.symphony.t.XFolders(folderCount.toString())),
                 geometry = geometry,
+                // A narrow tile has no room for the value beside the pill, so the
+                // icon-only pill sits in the bottom-right corner instead.
+                bottomEndInset = if (geometry.width >= 320f) 0.dp else 44.dp,
             )
             BentoCallToActionPill(
                 label = context.symphony.t.Rescan,
@@ -122,6 +130,7 @@ internal fun SettingsLibraryStatTile(
                 icon = Icons.Rounded.Refresh,
                 tilePadding = bentoTilePaddingDp(geometry.sizeClass),
                 onClick = libraryRescanAction(context),
+                bottom = geometry.width < 320f,
             )
         }
     }
@@ -178,30 +187,46 @@ internal fun SettingsLegacyLinksRow(context: ViewContext) {
     }
 }
 
+/** A link pill (prototype `gchip`): 36 dp, radius 18, `surface` fill, 14/600 label. */
 @Composable
 private fun LinkChip(context: ViewContext, icon: ImageVector? = null, label: String, url: String) {
+    val colors = LocalBentoColors.current
+    val shape = RoundedCornerShape(18.dp)
     Row(
         modifier = Modifier
-            .border(
-                1.dp,
-                LocalBentoColors.current.line,
-                RoundedCornerShape(4.dp),
+            .height(36.dp)
+            .clip(shape)
+            .then(
+                when (LocalBentoColorScheme.current) {
+                    BentoColorScheme.CONTRAST -> Modifier.border(1.dp, colors.line, shape)
+                    else -> Modifier
+                },
             )
-            .clip(RoundedCornerShape(4.dp))
+            .background(colors.surface)
             .clickable {
                 ActivityUtils.startBrowserActivity(context.activity, url.toUri())
             }
-            .padding(6.dp, 4.dp),
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         icon?.let {
             Icon(
                 it,
                 null,
-                modifier = Modifier.size(16.dp),
-                tint = LocalBentoColors.current.accent,
+                modifier = Modifier.size(18.dp),
+                tint = colors.accent,
             )
-            Spacer(modifier = Modifier.width(4.dp))
         }
-        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(
+            label,
+            style = BentoTypography.body.copy(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
+            ),
+            color = colors.fg,
+            maxLines = 1,
+        )
     }
 }

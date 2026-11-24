@@ -38,9 +38,11 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Headphones
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -79,6 +82,7 @@ import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
 import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import io.github.zyrouge.symphony.ui.components.settings.ConsiderContributingTile
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.helpers.rememberGrooveFolderCount
@@ -89,6 +93,7 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoGridClass
 import io.github.zyrouge.symphony.ui.theme.bento.BentoPrimaryHue
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
+import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.BentoThemeMode
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorMode
@@ -96,13 +101,15 @@ import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoGridClass
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
-import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsViewRoute
+import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsDialog
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.zyrouge.symphony.ui.view.settings.HomeTabsDialog
+import io.github.zyrouge.symphony.ui.view.settings.MiniPlayerSettingsDialog
+import io.github.zyrouge.symphony.ui.view.settings.NowPlayingSettingsDialog
 import io.github.zyrouge.symphony.ui.view.settings.UpdatesDialog
-import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsViewRoute
+import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsDialog
+import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsDialog
 import io.github.zyrouge.symphony.utils.ActivityUtils
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -116,54 +123,71 @@ data class SettingsViewRoute(val initialElement: String? = null) {
 }
 
 /**
- * Settings placement tables (DESIGN.md, Appendix A, "settings"). The kit has
- * no tile for the existing Appearance page (language, font and scaling), so
- * its link splits the About slot instead of being dropped.
+ * Settings placement tables (prototype v16 `SETL2`): Appearance, Player, Now
+ * playing and Mini player sit next to the theme and library tiles; Library
+ * folders keeps a slot of its own because this app has no Library page.
  */
 private fun settingsPlacements(gridClass: BentoGridClass) = when (gridClass) {
     BentoGridClass.C4 -> listOf(
         BentoTilePlacement("theme", 1, 1, 4, 4),
         BentoTilePlacement("lib", 1, 5, 4, 1),
-        BentoTilePlacement("home", 1, 6, 2, 1),
+        BentoTilePlacement("appearance", 1, 6, 2, 1),
         BentoTilePlacement("player", 3, 6, 2, 1),
-        BentoTilePlacement("folders", 1, 7, 2, 1),
-        BentoTilePlacement("updates", 3, 7, 2, 1),
-        BentoTilePlacement("about", 1, 8, 2, 1),
-        BentoTilePlacement("appearance", 3, 8, 2, 1),
+        BentoTilePlacement("nowp", 1, 7, 2, 1),
+        BentoTilePlacement("mini", 3, 7, 2, 1),
+        BentoTilePlacement("home", 1, 8, 2, 1),
+        BentoTilePlacement("folders", 3, 8, 2, 1),
+        BentoTilePlacement("updates", 1, 9, 2, 1),
+        BentoTilePlacement("about", 3, 9, 2, 1),
     )
 
     BentoGridClass.C6 -> listOf(
         BentoTilePlacement("theme", 1, 1, 4, 3),
         BentoTilePlacement("lib", 5, 1, 2, 1),
-        BentoTilePlacement("home", 5, 2, 2, 1),
+        BentoTilePlacement("appearance", 5, 2, 2, 1),
         BentoTilePlacement("player", 5, 3, 2, 1),
-        BentoTilePlacement("folders", 1, 4, 2, 1),
-        BentoTilePlacement("updates", 3, 4, 2, 1),
-        BentoTilePlacement("about", 5, 4, 2, 1),
-        BentoTilePlacement("appearance", 1, 5, 6, 1),
+        BentoTilePlacement("nowp", 1, 4, 2, 1),
+        BentoTilePlacement("mini", 3, 4, 2, 1),
+        BentoTilePlacement("home", 5, 4, 2, 1),
+        BentoTilePlacement("folders", 1, 5, 2, 1),
+        BentoTilePlacement("updates", 3, 5, 2, 1),
+        BentoTilePlacement("about", 5, 5, 2, 1),
     )
 
     BentoGridClass.C8, BentoGridClass.SHORT -> listOf(
         BentoTilePlacement("theme", 1, 1, 4, 3),
         BentoTilePlacement("lib", 5, 1, 4, 1),
-        BentoTilePlacement("home", 5, 2, 2, 1),
+        BentoTilePlacement("appearance", 5, 2, 2, 1),
         BentoTilePlacement("player", 7, 2, 2, 1),
-        BentoTilePlacement("folders", 5, 3, 4, 1),
-        BentoTilePlacement("updates", 1, 4, 2, 1),
-        BentoTilePlacement("about", 3, 4, 2, 1),
-        BentoTilePlacement("appearance", 5, 4, 4, 1),
+        BentoTilePlacement("nowp", 5, 3, 2, 1),
+        BentoTilePlacement("mini", 7, 3, 2, 1),
+        BentoTilePlacement("home", 1, 4, 2, 1),
+        BentoTilePlacement("folders", 3, 4, 2, 1),
+        BentoTilePlacement("updates", 5, 4, 2, 1),
+        BentoTilePlacement("about", 7, 4, 2, 1),
     )
 
     BentoGridClass.C12 -> listOf(
         BentoTilePlacement("theme", 1, 1, 5, 3),
         BentoTilePlacement("lib", 6, 1, 7, 1),
-        BentoTilePlacement("home", 6, 2, 3, 1),
+        BentoTilePlacement("appearance", 6, 2, 3, 1),
         BentoTilePlacement("player", 9, 2, 4, 1),
-        BentoTilePlacement("folders", 6, 3, 3, 1),
-        BentoTilePlacement("updates", 9, 3, 4, 1),
-        BentoTilePlacement("about", 1, 4, 6, 1),
-        BentoTilePlacement("appearance", 7, 4, 6, 1),
+        BentoTilePlacement("nowp", 6, 3, 3, 1),
+        BentoTilePlacement("mini", 9, 3, 4, 1),
+        BentoTilePlacement("home", 1, 4, 3, 1),
+        BentoTilePlacement("folders", 4, 4, 3, 1),
+        BentoTilePlacement("updates", 7, 4, 3, 1),
+        BentoTilePlacement("about", 10, 4, 3, 1),
     )
+}
+
+/** Settings that open in a sheet over the settings page instead of a page of their own. */
+private enum class SettingsDialog {
+    APPEARANCE,
+    LIBRARY,
+    PLAYER,
+    NOW_PLAYING,
+    MINI_PLAYER,
 }
 
 @Composable
@@ -173,7 +197,18 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
     val windowClass = rememberBentoWindowClass()
     val songCount by context.symphony.groove.song.count.collectAsState()
     val folderCount = rememberGrooveFolderCount(context)
+    val homeTabs by context.symphony.settings.homeTabs.flow.collectAsState()
+    val checkForUpdates by context.symphony.settings.checkForUpdates.flow.collectAsState()
     var showHomeTabsDialog by remember { mutableStateOf(false) }
+    // "Add media folders" links arrive with the media folders element and open the Library sheet.
+    var openDialog by remember {
+        mutableStateOf(
+            when (route.initialElement) {
+                SettingsViewRoute.ELEMENT_MEDIA_FOLDERS -> SettingsDialog.LIBRARY
+                else -> null
+            },
+        )
+    }
     var showUpdatesDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -193,9 +228,20 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                 ConsiderContributingTile(context)
                 BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                     val gridClass = rememberBentoGridClass(maxWidth.value.roundToInt())
+                    val crowded = bentoTooNarrowForText(
+                        maxWidth.value - BentoSpacing.GUTTER_COMPACT * 2f,
+                        LocalDensity.current.fontScale,
+                    )
                     BentoGrid(
                         gridClass = gridClass,
-                        placements = settingsPlacements(gridClass),
+                        // With crowded text the theme tile stacks its options, so it gets two more rows.
+                        placements = settingsPlacements(gridClass).map {
+                            when {
+                                !crowded -> it
+                                it.tileId == "theme" -> it.copy(rowSpan = it.rowSpan + 2)
+                                else -> it.copy(row = it.row + 2)
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                     ) { tileId, _, geometry ->
                         when (tileId) {
@@ -216,40 +262,47 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 geometry = geometry,
                                 icon = Icons.Rounded.AutoAwesome,
                                 label = context.symphony.t.Home,
-                                sub = "For you and 6 more sections",
+                                sub = context.symphony.t.XSectionsShown(homeTabs.size.toString()),
                                 onClick = { showHomeTabsDialog = true },
                             )
 
                             "player" -> BentoShortcutTile(
                                 geometry = geometry,
-                                icon = Icons.Rounded.Speed,
+                                icon = Icons.Rounded.Headphones,
                                 label = context.symphony.t.Player,
-                                sub = "Speed, sleep timer",
-                                onClick = {
-                                    context.navController.navigate(PlayerSettingsViewRoute)
-                                },
+                                sub = context.symphony.t.PlayerSettingsSummary,
+                                onClick = { openDialog = SettingsDialog.PLAYER },
+                            )
+
+                            "nowp" -> BentoShortcutTile(
+                                geometry = geometry,
+                                icon = Icons.Rounded.Lyrics,
+                                label = context.symphony.t.NowPlaying,
+                                sub = context.symphony.t.NowPlayingSettingsSummary,
+                                onClick = { openDialog = SettingsDialog.NOW_PLAYING },
+                            )
+
+                            "mini" -> BentoShortcutTile(
+                                geometry = geometry,
+                                icon = Icons.Rounded.PlayCircle,
+                                label = context.symphony.t.MiniPlayer,
+                                sub = context.symphony.t.MiniPlayerSettingsSummary,
+                                onClick = { openDialog = SettingsDialog.MINI_PLAYER },
                             )
 
                             "folders" -> BentoShortcutTile(
                                 geometry = geometry,
                                 icon = Icons.Rounded.Folder,
                                 label = context.symphony.t.LibraryFolders,
-                                sub = "Choose what to scan",
-                                onClick = {
-                                    context.navController.navigate(
-                                        GrooveSettingsViewRoute(
-                                            route.initialElement
-                                                ?: SettingsViewRoute.ELEMENT_MEDIA_FOLDERS,
-                                        ),
-                                    )
-                                },
+                                sub = context.symphony.t.XFolders(folderCount.toString()),
+                                onClick = { openDialog = SettingsDialog.LIBRARY },
                             )
 
                             "updates" -> BentoShortcutTile(
                                 geometry = geometry,
                                 icon = Icons.Rounded.Refresh,
                                 label = context.symphony.t.Updates,
-                                sub = "Check for new versions",
+                                sub = if (checkForUpdates) context.symphony.t.ChecksAtLaunch else context.symphony.t.Off,
                                 onClick = { showUpdatesDialog = true },
                             )
 
@@ -257,10 +310,8 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                                 geometry = geometry,
                                 icon = Icons.Rounded.Palette,
                                 label = context.symphony.t.Appearance,
-                                sub = "Language, font and scaling",
-                                onClick = {
-                                    context.navController.navigate(AppearanceSettingsViewRoute)
-                                },
+                                sub = context.symphony.t.AppearanceSettingsSummary,
+                                onClick = { openDialog = SettingsDialog.APPEARANCE },
                             )
 
                             "about" -> BentoTile(
@@ -283,6 +334,34 @@ fun SettingsView(context: ViewContext, route: SettingsViewRoute) {
                         context = context,
                         onDismiss = { showHomeTabsDialog = false },
                     )
+                }
+                when (openDialog) {
+                    SettingsDialog.APPEARANCE -> AppearanceSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    SettingsDialog.LIBRARY -> GrooveSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    SettingsDialog.PLAYER -> PlayerSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    SettingsDialog.NOW_PLAYING -> NowPlayingSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    SettingsDialog.MINI_PLAYER -> MiniPlayerSettingsDialog(
+                        context = context,
+                        onDismissRequest = { openDialog = null },
+                    )
+
+                    null -> Unit
                 }
                 Spacer(Modifier.height(16.dp))
                 SettingsLegacyLinksRow(context)

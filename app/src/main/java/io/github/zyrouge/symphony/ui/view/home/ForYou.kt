@@ -80,6 +80,7 @@ import io.github.zyrouge.symphony.ui.components.BentoTilePlacement
 import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.BentoTileSizeClass
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
 import io.github.zyrouge.symphony.ui.components.fitBentoCoverGrid
@@ -324,6 +325,7 @@ fun ForYouView(
                                 context.symphony.radio.shorty.playQueue(
                                     songIds.toList(),
                                     shuffle = true,
+                                    source = context.symphony.t.AllSongs,
                                 )
                             },
                         )
@@ -396,7 +398,7 @@ fun ForYouView(
                             geometry = geometry,
                             icon = Icons.Rounded.Tune,
                             label = context.symphony.t.Settings,
-                            sub = "Theme and colors",
+                            sub = context.symphony.t.ThemeAndColors,
                             onClick = { context.navController.navigate(SettingsViewRoute()) },
                         )
 
@@ -405,8 +407,8 @@ fun ForYouView(
                                 geometry = geometry,
                                 tone = BentoTileTone.TONAL,
                                 icon = Icons.AutoMirrored.Rounded.QueueMusic,
-                                label = context.symphony.t.LateNight,
-                                sub = "Playlist · " +
+                                label = playlist.title,
+                                sub = context.symphony.t.Playlist + " · " +
                                     context.symphony.t.XSongs(playlist.numberOfTracks.toString()),
                                 onClick = {
                                     context.navController.navigate(PlaylistViewRoute(playlist.id))
@@ -426,7 +428,7 @@ fun ForYouView(
                         )
                     }
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(bentoBottomInset(16.dp)))
             }
         }
     }

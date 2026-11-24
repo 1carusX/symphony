@@ -16,17 +16,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
-import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
-import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
+import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -51,9 +51,8 @@ import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.ui.view.AlbumArtistViewRoute
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
-import io.github.zyrouge.symphony.ui.view.ArtistViewRoute
+import io.github.zyrouge.symphony.utils.DurationUtils
 import io.github.zyrouge.symphony.utils.Logger
 
 @Composable
@@ -207,17 +206,28 @@ fun SongDropdownMenu(
 
     BentoMenu(
         expanded = expanded,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        header = {
+            BentoMenuHeader(
+                title = song.title,
+                subtitle = listOfNotNull(
+                    song.artists.joinToString().takeIf { it.isNotEmpty() },
+                    DurationUtils.formatMs(song.duration),
+                ).joinToString(" · "),
+                art = {
+                    BentoMenuArt(song.createArtworkImageRequest(context.symphony).build())
+                },
+            )
+        },
     ) {
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.Filled.Favorite, null)
+        BentoMenuItem(
+            label = when {
+                isFavorite -> context.symphony.t.Unfavorite
+                else -> context.symphony.t.Favorite
             },
-            text = {
-                Text(
-                    if (isFavorite) context.symphony.t.Unfavorite
-                    else context.symphony.t.Favorite
-                )
+            icon = when {
+                isFavorite -> Icons.Filled.Favorite
+                else -> Icons.Rounded.FavoriteBorder
             },
             onClick = {
                 onDismissRequest()
@@ -229,13 +239,9 @@ fun SongDropdownMenu(
                 }
             }
         )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-            },
-            text = {
-                Text(context.symphony.t.PlayNext)
-            },
+        BentoMenuItem(
+            label = context.symphony.t.PlayNext,
+            icon = Icons.Rounded.SkipNext,
             onClick = {
                 onDismissRequest()
                 context.symphony.radio.queue.add(
@@ -244,79 +250,41 @@ fun SongDropdownMenu(
                 )
             }
         )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null)
-            },
-            text = {
-                Text(context.symphony.t.AddToQueue)
-            },
+        BentoMenuItem(
+            label = context.symphony.t.AddToQueue,
+            icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
             onClick = {
                 onDismissRequest()
                 context.symphony.radio.queue.add(song.id)
             }
         )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.AutoMirrored.Filled.PlaylistAdd, null)
-            },
-            text = {
-                Text(context.symphony.t.AddToPlaylist)
-            },
+        BentoMenuItem(
+            label = context.symphony.t.AddToPlaylist,
+            icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
             onClick = {
                 onDismissRequest()
                 showAddToPlaylistDialog = true
             }
         )
-        song.artists.forEach { artistName ->
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(Icons.Filled.Person, null)
-                },
-                text = {
-                    Text("${context.symphony.t.ViewArtist}: $artistName")
-                },
-                onClick = {
-                    onDismissRequest()
-                    context.navController.navigate(ArtistViewRoute(artistName))
-                }
-            )
-        }
-        song.albumArtists.forEach { albumArtist ->
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(Icons.Filled.Person, null)
-                },
-                text = {
-                    Text("${context.symphony.t.ViewAlbumArtist}: $albumArtist")
-                },
-                onClick = {
-                    onDismissRequest()
-                    context.navController.navigate(AlbumArtistViewRoute(albumArtist))
-                }
-            )
-        }
+        BentoMenuDivider()
         context.symphony.groove.album.getIdFromSong(song)?.let { albumId ->
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(Icons.Filled.Album, null)
-                },
-                text = {
-                    Text(context.symphony.t.ViewAlbum)
-                },
+            BentoMenuItem(
+                label = context.symphony.t.ViewAlbum,
+                icon = Icons.Outlined.Album,
                 onClick = {
                     onDismissRequest()
                     context.navController.navigate(AlbumViewRoute(albumId))
                 }
             )
         }
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.Filled.Share, null)
-            },
-            text = {
-                Text(context.symphony.t.ShareSong)
-            },
+        BentoGoToArtistItem(
+            context = context,
+            links = remember(song) { bentoSongArtistLinks(song) },
+            onDismissRequest = onDismissRequest,
+        )
+        BentoMenuItem(
+            label = context.symphony.t.ShareSong,
+            icon = Icons.Outlined.Share,
             onClick = {
                 onDismissRequest()
                 try {
@@ -336,19 +304,18 @@ fun SongDropdownMenu(
                 }
             }
         )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(Icons.Filled.Info, null)
-            },
-            text = {
-                Text(context.symphony.t.Details)
-            },
+        BentoMenuItem(
+            label = context.symphony.t.Details,
+            icon = Icons.Outlined.Info,
             onClick = {
                 onDismissRequest()
                 showInfoDialog = true
             }
         )
-        trailingContent?.invoke(this, onDismissRequest)
+        trailingContent?.let {
+            BentoMenuDivider()
+            it.invoke(this, onDismissRequest)
+        }
     }
 
     if (showInfoDialog) {

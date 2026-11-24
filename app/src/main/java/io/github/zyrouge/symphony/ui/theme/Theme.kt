@@ -2,17 +2,14 @@ package io.github.zyrouge.symphony.ui.theme
 
 import android.app.Activity
 import android.content.res.Configuration
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextDirection
@@ -21,6 +18,8 @@ import androidx.core.view.WindowCompat
 import io.github.zyrouge.symphony.Symphony
 import io.github.zyrouge.symphony.i18n.rememberStrings
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoColorMode
+import io.github.zyrouge.symphony.ui.theme.bento.toBentoColorMode
 
 enum class ThemeMode {
     SYSTEM,
@@ -41,34 +40,29 @@ fun SymphonyTheme(
     context: ViewContext,
     content: @Composable () -> Unit,
 ) {
-    val themeMode by context.symphony.settings.themeMode.flow.collectAsState()
-    val useMaterialYou by context.symphony.settings.useMaterialYou.flow.collectAsState()
+    // The Bento theme mode drives the remaining Material components and the system bar icons,
+    // so they match the Bento surfaces instead of the old theme setting.
+    val bentoThemeMode by context.symphony.settings.bentoThemeMode.flow.collectAsState()
     val primaryColorName by context.symphony.settings.primaryColor.flow.collectAsState()
     val fontName by context.symphony.settings.fontFamily.flow.collectAsState()
     val fontScale by context.symphony.settings.fontScale.flow.collectAsState()
     val contentScale by context.symphony.settings.contentScale.flow.collectAsState()
 
-    val colorSchemeMode = themeMode.toColorSchemeMode(isSystemInDarkTheme())
-    val colorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && useMaterialYou) {
-        val currentContext = LocalContext.current
-        when (colorSchemeMode) {
-            ColorSchemeMode.LIGHT -> dynamicLightColorScheme(currentContext)
-            ColorSchemeMode.DARK -> dynamicDarkColorScheme(currentContext)
-            ColorSchemeMode.BLACK -> ThemeColorSchemes.toBlackColorScheme(
-                dynamicDarkColorScheme(currentContext)
-            )
-        }
-    } else {
-        val primaryColor = ThemeColors.resolvePrimaryColor(primaryColorName)
-        when (colorSchemeMode) {
-            ColorSchemeMode.LIGHT -> ThemeColorSchemes.createLightColorScheme(primaryColor)
-            ColorSchemeMode.DARK -> ThemeColorSchemes.createDarkColorScheme(primaryColor)
-            ColorSchemeMode.BLACK -> ThemeColorSchemes.createBlackColorScheme(primaryColor)
-        }
+    val colorSchemeMode = when (bentoThemeMode.toBentoColorMode(isSystemInDarkTheme())) {
+        BentoColorMode.LIGHT -> ColorSchemeMode.LIGHT
+        BentoColorMode.DARK -> ColorSchemeMode.DARK
+        BentoColorMode.BLACK -> ColorSchemeMode.BLACK
+    }
+    val primaryColor = ThemeColors.resolvePrimaryColor(primaryColorName)
+    val colorScheme = when (colorSchemeMode) {
+        ColorSchemeMode.LIGHT -> ThemeColorSchemes.createLightColorScheme(primaryColor)
+        ColorSchemeMode.DARK -> ThemeColorSchemes.createDarkColorScheme(primaryColor)
+        ColorSchemeMode.BLACK -> ThemeColorSchemes.createBlackColorScheme(primaryColor)
     }
 
     val strings = rememberStrings(
-        language = context.symphony.settings.language.value ?: java.util.Locale.getDefault().language,
+        language = context.symphony.settings.language.value
+            ?: LocalConfiguration.current.locales[0].language,
     )
     context.symphony.t = strings
 
@@ -76,16 +70,21 @@ fun SymphonyTheme(
     if (!view.isInEditMode) {
         val activity = view.context as Activity
         SideEffect {
-            WindowCompat.getInsetsController(activity.window, view)
-                .isAppearanceLightStatusBars = colorSchemeMode == ColorSchemeMode.LIGHT
+            WindowCompat.getInsetsController(activity.window, view).apply {
+                isAppearanceLightStatusBars = colorSchemeMode == ColorSchemeMode.LIGHT
+                isAppearanceLightNavigationBars = colorSchemeMode == ColorSchemeMode.LIGHT
+            }
         }
     }
 
-    val localeDirection = io.github.zyrouge.symphony.services.locales.localeDirection(context.symphony.settings.language.value)
-    val textDirection = when (localeDirection) {
-        "ltr" -> TextDirection.Ltr
-        "rtl" -> TextDirection.Rtl
-        else -> TextDirection.Unspecified
+    val selectedLanguage = context.symphony.settings.language.value
+    val textDirection = when {
+        // "System": the platform's layout direction already follows the system locale.
+        selectedLanguage == null -> TextDirection.Unspecified
+        io.github.zyrouge.symphony.services.locales.localeDirection(selectedLanguage) == "rtl" ->
+            TextDirection.Rtl
+
+        else -> TextDirection.Ltr
     }
     val typography = SymphonyTypography.toTypography(
         SymphonyTypography.resolveFont(fontName),
@@ -96,12 +95,14 @@ fun SymphonyTheme(
         colorScheme = colorScheme,
         typography = typography,
         content = {
+            val appDensity = Density(
+                LocalDensity.current.density * contentScale,
+                LocalDensity.current.fontScale * fontScale,
+            )
             CompositionLocalProvider(
                 LocalStrings provides strings,
-                LocalDensity provides Density(
-                    LocalDensity.current.density * contentScale,
-                    LocalDensity.current.fontScale * fontScale,
-                )
+                LocalDensity provides appDensity,
+                LocalBentoAppDensity provides appDensity,
             ) {
                 content()
             }

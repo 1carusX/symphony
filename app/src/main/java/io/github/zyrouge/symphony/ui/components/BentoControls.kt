@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -79,6 +80,8 @@ fun BentoTextField(
             color = colors.fg,
             fontSize = BentoTypography.rowTitle.fontSize,
             fontWeight = BentoTypography.rowTitle.fontWeight,
+            // BasicTextField does not inherit the app font from the theme.
+            fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
         ),
         modifier = modifier
             .fillMaxWidth()

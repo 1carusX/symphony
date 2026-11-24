@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
@@ -44,6 +45,7 @@ import io.github.zyrouge.symphony.ui.components.BentoGroupedTileColumns
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LoaderScaffold
 import io.github.zyrouge.symphony.ui.components.NewPlaylistDialog
+import io.github.zyrouge.symphony.ui.components.PlaylistDropdownMenu
 import io.github.zyrouge.symphony.ui.components.bentoGroupTileHeightDp
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
@@ -84,7 +86,9 @@ fun PlaylistsView(context: ViewContext) {
         }
     }
 
-    val playlists by remember(playlistIds) {
+    // Renames and edits replace playlists in place, so the version is a key too.
+    val grooveVersion = LocalGrooveVersion.current
+    val playlists by remember(playlistIds, grooveVersion) {
         derivedStateOf {
             playlistIds.mapNotNull { context.symphony.groove.playlist.get(it) }
         }
@@ -152,9 +156,11 @@ private fun PlaylistGroupTile(
     playing: Boolean,
     narrow: Boolean,
 ) {
-    val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
-    val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
-    val songIds by remember(playlist.id, sortBy, sortReverse) {
+    // A playlist keeps its own order (custom by default), not the Songs tab's sort.
+    val sortBy by context.symphony.settings.lastUsedPlaylistSongsSortBy.flow.collectAsState()
+    val sortReverse by context.symphony.settings.lastUsedPlaylistSongsSortReverse.flow.collectAsState()
+    val grooveVersion = LocalGrooveVersion.current
+    val songIds by remember(playlist, sortBy, sortReverse, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 playlist.getSongIds(context.symphony),
@@ -174,7 +180,7 @@ private fun PlaylistGroupTile(
         title = playlist.title,
         subtitle = context.symphony.t.XSongs(playlist.numberOfTracks.toString()) +
             " · " +
-            formatBentoDurationMinutes(songs.sumOf { it.duration }),
+            formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
         songs = songs,
         cover = {
             BentoGroupPlaylistCover(
@@ -184,21 +190,29 @@ private fun PlaylistGroupTile(
         },
         onOpen = { context.navController.navigate(PlaylistViewRoute(playlist.id)) },
         onPlay = {
-            context.symphony.radio.shorty.playQueue(songIds)
+            context.symphony.radio.shorty.playQueue(songIds, source = playlist.title)
         },
         onPlayAt = { index ->
             context.symphony.radio.shorty.playQueue(
                 songIds,
                 Radio.PlayOptions(index = index),
+                source = playlist.title,
             )
         },
         rowSecondaryOf = { it.artists.joinToString() },
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " +
-            context.symphony.t.XSongs(playlist.numberOfTracks.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(playlist.numberOfTracks.toString())),
         onShowAll = { context.navController.navigate(PlaylistViewRoute(playlist.id)) },
+        menu = { expanded, onDismissRequest ->
+            PlaylistDropdownMenu(
+                context,
+                playlist,
+                expanded = expanded,
+                onDismissRequest = onDismissRequest,
+            )
+        },
     )
 }
 

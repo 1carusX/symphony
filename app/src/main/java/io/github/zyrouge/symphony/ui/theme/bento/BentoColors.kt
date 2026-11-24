@@ -146,10 +146,26 @@ object BentoColorRoles {
         scheme: BentoColorScheme,
         mode: BentoColorMode,
         hue: BentoPrimaryHue,
+    ): BentoColors = resolve(scheme, mode) { values -> Color(values[hue.ordinal].toInt()) }
+
+    /**
+     * The roles at any hue, for wallpaper colors. Every hue-dependent token is
+     * `hsl(h s l / a)` with the same s, l and a for all primary hues, so each
+     * role keeps those and takes [hueDegrees]; hue-independent roles are
+     * unchanged.
+     */
+    fun resolve(
+        scheme: BentoColorScheme,
+        mode: BentoColorMode,
+        hueDegrees: Float,
+    ): BentoColors = resolve(scheme, mode) { values -> rehueBentoRole(values, hueDegrees) }
+
+    private fun resolve(
+        scheme: BentoColorScheme,
+        mode: BentoColorMode,
+        role: (LongArray) -> Color,
     ): BentoColors {
         val palette = palettes.getValue(scheme).getValue(mode)
-        val index = hue.ordinal
-        fun role(values: LongArray) = Color(values[index].toInt())
         return BentoColors(
             bg = role(palette.bg),
             surface = role(palette.surface),
@@ -625,4 +641,40 @@ object BentoColorRoles {
             BentoColorMode.BLACK to contrastBlack,
         ),
     )
+}
+
+/**
+ * One role at [hueDegrees]: a hue-independent role (the same value for every
+ * primary hue) is returned as is; otherwise the saturation, lightness and
+ * alpha of its first hue are kept and the hue replaced.
+ */
+internal fun rehueBentoRole(values: LongArray, hueDegrees: Float): Color {
+    val base = Color(values[0].toInt())
+    if (values.all { it == values[0] }) return base
+    val (_, saturation, lightness) = bentoHsl(base)
+    return Color.hsl(
+        hue = ((hueDegrees % 360f) + 360f) % 360f,
+        saturation = saturation.coerceIn(0f, 1f),
+        lightness = lightness.coerceIn(0f, 1f),
+        alpha = base.alpha,
+    )
+}
+
+/** Hue in degrees, saturation and lightness in 0..1 of an sRGB [color]. */
+fun bentoHsl(color: Color): FloatArray {
+    val r = color.red
+    val g = color.green
+    val b = color.blue
+    val max = maxOf(r, g, b)
+    val min = minOf(r, g, b)
+    val lightness = (max + min) / 2f
+    val delta = max - min
+    if (delta == 0f) return floatArrayOf(0f, 0f, lightness)
+    val saturation = delta / (1f - kotlin.math.abs(2f * lightness - 1f))
+    val hue = when (max) {
+        r -> 60f * (((g - b) / delta) % 6f)
+        g -> 60f * ((b - r) / delta + 2f)
+        else -> 60f * ((r - g) / delta + 4f)
+    }
+    return floatArrayOf((hue + 360f) % 360f, saturation, lightness)
 }

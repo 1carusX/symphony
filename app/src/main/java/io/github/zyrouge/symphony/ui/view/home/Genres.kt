@@ -22,6 +22,7 @@ import io.github.zyrouge.symphony.ui.components.bentoGroupTileHeightDp
 import io.github.zyrouge.symphony.ui.components.bentoNamesGroupComparator
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.GenreViewRoute
 
@@ -93,7 +94,8 @@ private fun GenreGroupTile(
 ) {
     val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
     val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
-    val songIds by remember(genre.name, sortBy, sortReverse) {
+    val grooveVersion = LocalGrooveVersion.current
+    val songIds by remember(genre.name, sortBy, sortReverse, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 genre.getSongIds(context.symphony),
@@ -113,25 +115,25 @@ private fun GenreGroupTile(
         title = genre.name,
         subtitle = context.symphony.t.XSongs(genre.numberOfTracks.toString()) +
             " · " +
-            formatBentoDurationMinutes(songs.sumOf { it.duration }),
+            formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
         songs = songs,
         cover = { BentoGroupGenreCover(genre.name.hashCode()) },
         onOpen = { context.navController.navigate(GenreViewRoute(genre.name)) },
         onPlay = {
-            context.symphony.radio.shorty.playQueue(songIds)
+            context.symphony.radio.shorty.playQueue(songIds, source = genre.name)
         },
         onPlayAt = { index ->
             context.symphony.radio.shorty.playQueue(
                 songIds,
                 Radio.PlayOptions(index = index),
+                source = genre.name,
             )
         },
         rowSecondaryOf = { it.artists.joinToString() },
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " +
-            context.symphony.t.XSongs(genre.numberOfTracks.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(genre.numberOfTracks.toString())),
         onShowAll = { context.navController.navigate(GenreViewRoute(genre.name)) },
     )
 }

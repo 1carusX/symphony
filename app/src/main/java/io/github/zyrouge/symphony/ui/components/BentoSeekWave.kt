@@ -1,9 +1,9 @@
 package io.github.zyrouge.symphony.ui.components
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -19,8 +19,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -41,12 +47,16 @@ import io.github.zyrouge.symphony.services.radio.RadioPlayer
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.DurationUtils
+import kotlinx.coroutines.delay
+import kotlin.math.abs
 import kotlin.math.sin
 
 /**
  * The tile seek bar (DESIGN.md 4.3): an accent wave on a `track` line with a
  * 4 x 22 thumb; the wave animates while playing and flattens into a 4 dp
- * line while paused. Tap and drag seek the current song.
+ * line while paused. Tap and drag seek the current song. [onScrub] reports
+ * the ratio the thumb shows while it is dragged or waiting for a seek to land,
+ * and null once it follows playback again.
  */
 @Composable
 fun BentoSeekWave(
@@ -56,19 +66,50 @@ fun BentoSeekWave(
     height: Dp,
     accent: Color = LocalBentoColors.current.accent,
     track: Color = LocalBentoColors.current.track,
+    onScrub: (Float?) -> Unit = {},
 ) {
     val hasPlayer = context.symphony.radio.hasPlayer
     // Playback position only arrives every 100 ms (RadioPlayer timer). Interpolate
     // it so the wave slides at frame rate instead of stepping ten times a second.
-    val ratioState = animateFloatAsState(
-        targetValue = position.ratio,
-        animationSpec = tween(durationMillis = 100, easing = LinearEasing),
-        label = "bento-seek-ratio",
-    )
+    val ratioState = remember { Animatable(position.ratio) }
     val wavePhase = rememberWavePhase(playing)
+    // The pointer handlers outlive recompositions, so they read the latest values.
+    val latestPosition by rememberUpdatedState(position)
+    val latestHasPlayer by rememberUpdatedState(hasPlayer)
+    // While dragging, the thumb follows the finger and the song is sought once on release.
+    var dragRatio by remember { mutableStateOf<Float?>(null) }
+    // Where the last seek sent the song. The thumb stays there until the player
+    // reports a position near it, rather than sliding back from the old position.
+    var seekRatio by remember { mutableStateOf<Float?>(null) }
+    LaunchedEffect(position) {
+        val target = seekRatio
+        when {
+            target == null -> ratioState.animateTo(
+                position.ratio,
+                tween(durationMillis = 100, easing = LinearEasing),
+            )
+
+            abs(position.ratio - target) * position.total <= SEEK_SETTLED_MS -> {
+                ratioState.snapTo(position.ratio)
+                seekRatio = null
+            }
+        }
+    }
+    LaunchedEffect(seekRatio) {
+        if (seekRatio == null) return@LaunchedEffect
+        // The player never got there (no player, or the song changed): follow it again.
+        delay(SEEK_TIMEOUT_MS)
+        ratioState.snapTo(latestPosition.ratio)
+        seekRatio = null
+    }
+    val latestOnScrub by rememberUpdatedState(onScrub)
+    LaunchedEffect(Unit) {
+        snapshotFlow { dragRatio ?: seekRatio }.collect { latestOnScrub(it) }
+    }
     val onSeekAtRatio: (Float) -> Unit = { ratio ->
-        if (hasPlayer) {
-            context.symphony.radio.seek((position.total * ratio.coerceIn(0f, 1f)).toLong())
+        if (latestHasPlayer) {
+            seekRatio = ratio.coerceIn(0f, 1f)
+            context.symphony.radio.seek((latestPosition.total * ratio.coerceIn(0f, 1f)).toLong())
         }
     }
     Box(
@@ -79,20 +120,29 @@ fun BentoSeekWave(
                 stateDescription = DurationUtils.formatMs(position.played)
                 progressBarRangeInfo = ProgressBarRangeInfo(position.ratio, 0f..1f)
             }
-            .pointerInput(position.total) {
+            .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     onSeekAtRatio(offset.x / size.width.toFloat())
                 }
             }
-            .pointerInput(position.total) {
-                detectHorizontalDragGestures { change, _ ->
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragStart = { offset ->
+                        dragRatio = (offset.x / size.width.toFloat()).coerceIn(0f, 1f)
+                    },
+                    onDragEnd = {
+                        dragRatio?.let(onSeekAtRatio)
+                        dragRatio = null
+                    },
+                    onDragCancel = { dragRatio = null },
+                ) { change, _ ->
                     change.consume()
-                    onSeekAtRatio(change.position.x / size.width.toFloat())
+                    dragRatio = (change.position.x / size.width.toFloat()).coerceIn(0f, 1f)
                 }
             },
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val ratio = ratioState.value
+            val ratio = dragRatio ?: seekRatio ?: ratioState.value
             val centerY = size.height / 2f
             val lineHeight = 5.dp.toPx()
             val halfLine = lineHeight / 2f
@@ -238,6 +288,11 @@ fun BentoEqualizerGlyph(color: Color, playing: Boolean) {
 }
 
 private const val TAU = (2.0 * Math.PI).toFloat()
+
+/** A reported position this close to a seek's target (ms) means the seek landed. */
+private const val SEEK_SETTLED_MS = 1500f
+
+private const val SEEK_TIMEOUT_MS = 1500L
 
 private val BentoWavePhase.value: Float
     get() = when (this) {

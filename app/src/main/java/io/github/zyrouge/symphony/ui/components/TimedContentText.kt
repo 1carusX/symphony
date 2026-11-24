@@ -2,7 +2,6 @@ package io.github.zyrouge.symphony.ui.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -30,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
@@ -73,7 +71,6 @@ fun TimedContentText(
     duration: Long,
     padding: PaddingValues,
     style: TimedContentTextStyle,
-    onSeek: (Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
@@ -142,24 +139,12 @@ fun TimedContentText(
                 },
             )
 
+            // Lines leave taps to the container, which goes back to the cover (DESIGN.md 6.4).
             Text(
                 x.second,
                 modifier = Modifier
                     .animateItem()
-                    .fillMaxWidth()
-                    .pointerInput(Unit) {
-                        detectTapGestures { _ ->
-                            if (!content.isSynced) {
-                                return@detectTapGestures
-                            }
-                            onSeek(i)
-                            activeIndex = i
-                            coroutineScope.launch {
-                                val scrollIndex = calculateRelaxedScrollIndex(i, visibleRange)
-                                scrollState.animateScrollToItem(scrollIndex)
-                            }
-                        }
-                    },
+                    .fillMaxWidth(),
                 style = textStyle,
             )
         }

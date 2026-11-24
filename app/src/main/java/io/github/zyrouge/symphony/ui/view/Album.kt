@@ -73,12 +73,14 @@ import io.github.zyrouge.symphony.ui.components.BentoTileTone
 import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
 import io.github.zyrouge.symphony.ui.components.bentoAlbumTracksRowSpan
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
 import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
 import io.github.zyrouge.symphony.ui.components.fitBentoCoverGrid
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoGridClass
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
@@ -243,7 +245,8 @@ private fun AlbumGrid(
     appFontFamily: FontFamily?,
 ) {
     val playingSong = rememberBentoPlayingSong(context)
-    val trackSongIds by remember(album.id) {
+    val grooveVersion = LocalGrooveVersion.current
+    val trackSongIds by remember(album.id, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 album.getSongIds(context.symphony),
@@ -257,7 +260,7 @@ private fun AlbumGrid(
             trackSongIds.mapNotNull { context.symphony.groove.song.get(it) }
         }
     }
-    val moreAlbums by remember(album.id) {
+    val moreAlbums by remember(album.id, grooveVersion) {
         derivedStateOf {
             val artistAlbumIds = album.artists.flatMap { artistName ->
                 context.symphony.groove.artist.getAlbumIds(artistName)
@@ -282,6 +285,7 @@ private fun AlbumGrid(
                 gridClass = gridClass,
                 placements = albumPlacements(gridClass, tracksRowSpan),
                 modifier = Modifier.fillMaxWidth(),
+                squareTileId = "acover",
             ) { tileId, _, geometry ->
                 when (tileId) {
                     "acover" -> AlbumCoverTile(context = context, album = album, geometry = geometry)
@@ -294,16 +298,18 @@ private fun AlbumGrid(
                     )
 
                     "aplay" -> BentoActionTile(
+                        fillHeight = true,
                         icon = Icons.Filled.PlayArrow,
                         label = context.symphony.t.Play,
-                        sub = formatBentoDurationMinutes(songs.sumOf { it.duration }),
+                        sub = formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
                         tone = BentoTileTone.ACCENT,
                         onClick = {
-                            context.symphony.radio.shorty.playQueue(trackSongIds)
+                            context.symphony.radio.shorty.playQueue(trackSongIds, source = album.name)
                         },
                     )
 
                     "ashuf" -> BentoActionTile(
+                        fillHeight = true,
                         icon = Icons.Filled.Shuffle,
                         label = context.symphony.t.ShufflePlay,
                         sub = null,
@@ -313,14 +319,17 @@ private fun AlbumGrid(
                             context.symphony.radio.shorty.playQueue(
                                 trackSongIds,
                                 shuffle = true,
+                                source = album.name,
                             )
                         },
                     )
 
                     "aqueue" -> BentoActionTile(
+                        fillHeight = true,
                         icon = Icons.Filled.Queue,
                         label = context.symphony.t.Queue,
-                        sub = "Add " + context.symphony.t.XSongs(songs.size.toString()),
+                        sub = context.symphony.t.AddX(context.symphony.t.XSongs(songs.size.toString())),
+                        narrow = geometry.width < 200f,
                         onClick = {
                             context.symphony.radio.queue.add(trackSongIds)
                         },
@@ -337,6 +346,7 @@ private fun AlbumGrid(
                         context = context,
                         songs = songs,
                         trackSongIds = trackSongIds,
+                        source = album.name,
                         geometry = geometry,
                         playingSongId = playingSong.songId,
                         playing = playingSong.isPlaying,
@@ -350,7 +360,7 @@ private fun AlbumGrid(
                     )
                 }
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(bentoBottomInset(16.dp)))
         }
     }
 }

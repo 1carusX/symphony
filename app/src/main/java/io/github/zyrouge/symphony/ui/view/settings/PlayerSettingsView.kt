@@ -1,301 +1,131 @@
 package io.github.zyrouge.symphony.ui.view.settings
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
-import io.github.zyrouge.symphony.ui.components.BentoPageHeader
-import io.github.zyrouge.symphony.ui.components.BentoSettingGroup
-import io.github.zyrouge.symphony.ui.components.BentoSwitch
-import io.github.zyrouge.symphony.ui.components.BentoSettingRow
-import io.github.zyrouge.symphony.ui.components.BentoSliderDialog
-import io.github.zyrouge.symphony.ui.components.BentoToggleDialog
+import io.github.zyrouge.symphony.ui.components.BentoSheetButton
+import io.github.zyrouge.symphony.ui.components.BentoSheetDialog
+import io.github.zyrouge.symphony.ui.components.BentoSheetSliderRow
+import io.github.zyrouge.symphony.ui.components.BentoSheetSwitchRow
 import io.github.zyrouge.symphony.ui.components.formatSettingSecs
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
-import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
-
-@Serializable
-object PlayerSettingsViewRoute
-
-private enum class PlayerSettingPopup {
-    FADE,
-    FADE_DURATION,
-    REQUIRE_AUDIO_FOCUS,
-    IGNORE_AUDIO_FOCUS_LOSS,
-    PLAY_ON_HEADPHONES,
-    PAUSE_ON_HEADPHONES,
-    SEEK_BACK,
-    SEEK_FORWARD,
-    GAPLESS,
-}
 
 private val SEEK_RANGE = 3f..60f
 
+/**
+ * The Player settings (prototype v16 `player`) in a sheet: playback, audio
+ * focus, headphones and the seek button lengths. A sheet rather than a page,
+ * so wide windows do not stretch the rows. Durations are set in place.
+ */
 @Composable
-fun PlayerSettingsView(context: ViewContext) {
-    val scrollState = rememberScrollState()
-    val windowClass = rememberBentoWindowClass()
-    val colors = LocalBentoColors.current
-    val fadePlayback by context.symphony.settings.fadePlayback.flow.collectAsState()
-    val fadeDuration by context.symphony.settings.fadePlaybackDuration.flow.collectAsState()
-    val requireAudioFocus by context.symphony.settings.requireAudioFocus.flow.collectAsState()
-    val ignoreAudioFocusLoss by context.symphony.settings.ignoreAudioFocusLoss.flow.collectAsState()
-    val playOnHeadphones by context.symphony.settings.playOnHeadphonesConnect.flow.collectAsState()
-    val pauseOnHeadphones by context.symphony.settings.pauseOnHeadphonesDisconnect.flow.collectAsState()
-    val seekBack by context.symphony.settings.seekBackDuration.flow.collectAsState()
-    val seekForward by context.symphony.settings.seekForwardDuration.flow.collectAsState()
-    val gapless by context.symphony.settings.gaplessPlayback.flow.collectAsState()
-    var popup by remember { mutableStateOf<PlayerSettingPopup?>(null) }
+fun PlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit) {
+    val settings = context.symphony.settings
+    val fadePlayback by settings.fadePlayback.flow.collectAsState()
+    val fadeDuration by settings.fadePlaybackDuration.flow.collectAsState()
+    val requireAudioFocus by settings.requireAudioFocus.flow.collectAsState()
+    val ignoreAudioFocusLoss by settings.ignoreAudioFocusLoss.flow.collectAsState()
+    val playOnHeadphones by settings.playOnHeadphonesConnect.flow.collectAsState()
+    val pauseOnHeadphones by settings.pauseOnHeadphonesDisconnect.flow.collectAsState()
+    val seekBack by settings.seekBackDuration.flow.collectAsState()
+    val seekForward by settings.seekForwardDuration.flow.collectAsState()
+    val gapless by settings.gaplessPlayback.flow.collectAsState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.bg),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .verticalScroll(scrollState),
-        ) {
-            BentoPageHeader(
-                title = context.symphony.t.Player,
-                windowClass = windowClass,
-                onBack = { context.navController.popBackStack() },
+    BentoSheetDialog(
+        title = context.symphony.t.Player,
+        onDismissRequest = onDismissRequest,
+        actions = {
+            BentoSheetButton(
+                label = context.symphony.t.Done,
+                primary = true,
+                onClick = onDismissRequest,
             )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.FadePlaybackInOut,
-                        value = null,
-                        onClick = {
-                            context.symphony.settings.fadePlayback.setValue(!fadePlayback)
-                        },
-                        trailing = {
-                            BentoSwitch(
-                                checked = fadePlayback,
-                                onCheckedChange = {
-                                    context.symphony.settings.fadePlayback.setValue(it)
-                                },
-                            )
-                        },
-                    )
-                    BentoSettingRow(
-                        label = context.symphony.t.Duration,
-                        value = formatSettingSecs(fadeDuration),
-                        onClick = { popup = PlayerSettingPopup.FADE_DURATION },
-                    )
-                }
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.RequireAudioFocus,
-                        value = null,
-                        onClick = {
-                            context.symphony.settings.requireAudioFocus.setValue(!requireAudioFocus)
-                        },
-                        trailing = {
-                            BentoSwitch(
-                                checked = requireAudioFocus,
-                                onCheckedChange = {
-                                    context.symphony.settings.requireAudioFocus.setValue(it)
-                                },
-                            )
-                        },
-                    )
-                    BentoSettingRow(
-                        label = context.symphony.t.IgnoreAudioFocusLoss,
-                        value = null,
-                        onClick = {
-                            context.symphony.settings.ignoreAudioFocusLoss.setValue(!ignoreAudioFocusLoss)
-                        },
-                        trailing = {
-                            BentoSwitch(
-                                checked = ignoreAudioFocusLoss,
-                                onCheckedChange = {
-                                    context.symphony.settings.ignoreAudioFocusLoss.setValue(it)
-                                },
-                            )
-                        },
-                    )
-                }
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.PlayOnHeadphonesConnect,
-                        value = null,
-                        onClick = {
-                            context.symphony.settings.playOnHeadphonesConnect.setValue(!playOnHeadphones)
-                        },
-                        trailing = {
-                            BentoSwitch(
-                                checked = playOnHeadphones,
-                                onCheckedChange = {
-                                    context.symphony.settings.playOnHeadphonesConnect.setValue(it)
-                                },
-                            )
-                        },
-                    )
-                    BentoSettingRow(
-                        label = context.symphony.t.PauseOnHeadphonesDisconnect,
-                        value = null,
-                        onClick = {
-                            context.symphony.settings.pauseOnHeadphonesDisconnect.setValue(!pauseOnHeadphones)
-                        },
-                        trailing = {
-                            BentoSwitch(
-                                checked = pauseOnHeadphones,
-                                onCheckedChange = {
-                                    context.symphony.settings.pauseOnHeadphonesDisconnect.setValue(it)
-                                },
-                            )
-                        },
-                    )
-                }
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.FastRewindDuration,
-                        value = formatSettingSecs(seekBack.toFloat()),
-                        onClick = { popup = PlayerSettingPopup.SEEK_BACK },
-                    )
-                    BentoSettingRow(
-                        label = context.symphony.t.FastForwardDuration,
-                        value = formatSettingSecs(seekForward.toFloat()),
-                        onClick = { popup = PlayerSettingPopup.SEEK_FORWARD },
-                    )
-                }
-                BentoSettingGroup {
-                    BentoSettingRow(
-                        label = context.symphony.t.GaplessPlayback,
-                        value = null,
-                        onClick = {
-                            context.symphony.settings.gaplessPlayback.setValue(!gapless)
-                        },
-                        trailing = {
-                            BentoSwitch(
-                                checked = gapless,
-                                onCheckedChange = {
-                                    context.symphony.settings.gaplessPlayback.setValue(it)
-                                },
-                            )
-                        },
-                    )
-                }
-                Box(Modifier.bentoGestureBarPadding())
-            }
-        }
-    }
-
-    when (popup) {
-        PlayerSettingPopup.FADE -> BentoToggleDialog(
+        },
+    ) {
+        SettingsSheetSectionLabel(context.symphony.t.Playback)
+        BentoSheetSwitchRow(
+            title = context.symphony.t.GaplessPlayback,
+            checked = gapless,
+            onCheckedChange = { settings.gaplessPlayback.setValue(it) },
+        )
+        BentoSheetSwitchRow(
             title = context.symphony.t.FadePlaybackInOut,
             checked = fadePlayback,
-            onChange = { context.symphony.settings.fadePlayback.setValue(it) },
-            onDismiss = { popup = null },
+            onCheckedChange = { settings.fadePlayback.setValue(it) },
         )
-
-        PlayerSettingPopup.FADE_DURATION -> BentoSliderDialog(
-            title = context.symphony.t.FadePlaybackInOut,
+        BentoSheetSliderRow(
+            title = context.symphony.t.Duration,
             value = fadeDuration,
             range = 0.5f..6f,
-            onValue = { value -> value.times(2).roundToInt().toFloat().div(2) },
-            label = ::formatSettingSecs,
-            onChange = { context.symphony.settings.fadePlaybackDuration.setValue(it) },
+            step = 0.5f,
+            label = { formatSettingSecs(it, context.symphony.t) },
+            onChange = { settings.fadePlaybackDuration.setValue(it) },
+            defaultValue = settings.fadePlaybackDuration.defaultValue,
             onReset = {
-                context.symphony.settings.fadePlaybackDuration.setValue(
-                    context.symphony.settings.fadePlaybackDuration.defaultValue,
-                )
+                settings.fadePlaybackDuration.setValue(settings.fadePlaybackDuration.defaultValue)
             },
-            onDismiss = { popup = null },
         )
-
-        PlayerSettingPopup.REQUIRE_AUDIO_FOCUS -> BentoToggleDialog(
+        SettingsSheetSectionLabel(context.symphony.t.AudioFocus)
+        BentoSheetSwitchRow(
             title = context.symphony.t.RequireAudioFocus,
             checked = requireAudioFocus,
-            onChange = { context.symphony.settings.requireAudioFocus.setValue(it) },
-            onDismiss = { popup = null },
+            onCheckedChange = { settings.requireAudioFocus.setValue(it) },
         )
-
-        PlayerSettingPopup.IGNORE_AUDIO_FOCUS_LOSS -> BentoToggleDialog(
+        BentoSheetSwitchRow(
             title = context.symphony.t.IgnoreAudioFocusLoss,
             checked = ignoreAudioFocusLoss,
-            onChange = { context.symphony.settings.ignoreAudioFocusLoss.setValue(it) },
-            onDismiss = { popup = null },
+            onCheckedChange = { settings.ignoreAudioFocusLoss.setValue(it) },
         )
-
-        PlayerSettingPopup.PLAY_ON_HEADPHONES -> BentoToggleDialog(
+        SettingsSheetSectionLabel(context.symphony.t.Headphones)
+        BentoSheetSwitchRow(
             title = context.symphony.t.PlayOnHeadphonesConnect,
             checked = playOnHeadphones,
-            onChange = { context.symphony.settings.playOnHeadphonesConnect.setValue(it) },
-            onDismiss = { popup = null },
+            onCheckedChange = { settings.playOnHeadphonesConnect.setValue(it) },
         )
-
-        PlayerSettingPopup.PAUSE_ON_HEADPHONES -> BentoToggleDialog(
+        BentoSheetSwitchRow(
             title = context.symphony.t.PauseOnHeadphonesDisconnect,
             checked = pauseOnHeadphones,
-            onChange = { context.symphony.settings.pauseOnHeadphonesDisconnect.setValue(it) },
-            onDismiss = { popup = null },
+            onCheckedChange = { settings.pauseOnHeadphonesDisconnect.setValue(it) },
         )
-
-        PlayerSettingPopup.SEEK_BACK -> BentoSliderDialog(
+        SettingsSheetSectionLabel(context.symphony.t.SeekButtons)
+        BentoSheetSliderRow(
             title = context.symphony.t.FastRewindDuration,
             value = seekBack.toFloat(),
             range = SEEK_RANGE,
-            onValue = { it.roundToInt().toFloat() },
-            label = ::formatSettingSecs,
-            onChange = { context.symphony.settings.seekBackDuration.setValue(it.roundToInt()) },
-            onReset = {
-                context.symphony.settings.seekBackDuration.setValue(
-                    context.symphony.settings.seekBackDuration.defaultValue,
-                )
-            },
-            onDismiss = { popup = null },
+            step = 1f,
+            label = { formatSettingSecs(it, context.symphony.t) },
+            onChange = { settings.seekBackDuration.setValue(it.roundToInt()) },
+            defaultValue = settings.seekBackDuration.defaultValue.toFloat(),
+            onReset = { settings.seekBackDuration.setValue(settings.seekBackDuration.defaultValue) },
         )
-
-        PlayerSettingPopup.SEEK_FORWARD -> BentoSliderDialog(
+        BentoSheetSliderRow(
             title = context.symphony.t.FastForwardDuration,
             value = seekForward.toFloat(),
             range = SEEK_RANGE,
-            onValue = { it.roundToInt().toFloat() },
-            label = ::formatSettingSecs,
-            onChange = { context.symphony.settings.seekForwardDuration.setValue(it.roundToInt()) },
-            onReset = {
-                context.symphony.settings.seekForwardDuration.setValue(
-                    context.symphony.settings.seekForwardDuration.defaultValue,
-                )
-            },
-            onDismiss = { popup = null },
+            step = 1f,
+            label = { formatSettingSecs(it, context.symphony.t) },
+            onChange = { settings.seekForwardDuration.setValue(it.roundToInt()) },
+            defaultValue = settings.seekForwardDuration.defaultValue.toFloat(),
+            onReset = { settings.seekForwardDuration.setValue(settings.seekForwardDuration.defaultValue) },
         )
-
-        PlayerSettingPopup.GAPLESS -> BentoToggleDialog(
-            title = context.symphony.t.GaplessPlayback,
-            checked = gapless,
-            onChange = { context.symphony.settings.gaplessPlayback.setValue(it) },
-            onDismiss = { popup = null },
-        )
-
-        null -> Unit
     }
+}
+
+/** A small heading between groups of rows in a settings sheet. */
+@Composable
+internal fun SettingsSheetSectionLabel(text: String) {
+    Text(
+        text,
+        style = BentoTypography.secondary.copy(fontWeight = FontWeight.SemiBold),
+        color = LocalBentoColors.current.sub,
+        modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 2.dp),
+    )
 }

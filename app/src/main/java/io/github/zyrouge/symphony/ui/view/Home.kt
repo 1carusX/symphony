@@ -40,11 +40,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.AccountTree
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Search
@@ -57,6 +55,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
+import io.github.zyrouge.symphony.ui.view.player.LocalBentoPlayerHost
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -94,21 +95,17 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
-import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.view.home.AlbumArtistsView
 import io.github.zyrouge.symphony.ui.view.home.AlbumsView
 import io.github.zyrouge.symphony.ui.view.home.ArtistsView
-import io.github.zyrouge.symphony.ui.view.home.BrowserView
 import io.github.zyrouge.symphony.ui.view.home.FoldersView
 import io.github.zyrouge.symphony.ui.view.home.ForYouView
 import io.github.zyrouge.symphony.ui.view.home.GenresView
 import io.github.zyrouge.symphony.ui.view.home.PlaylistsView
 import io.github.zyrouge.symphony.ui.view.home.SongsView
-import io.github.zyrouge.symphony.ui.view.home.TreeView
-import io.github.zyrouge.symphony.ui.view.player.BentoPlayerHost
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
@@ -116,8 +113,8 @@ import kotlin.math.roundToInt
 /**
  * Home page sections. The order follows the bento design spec (DESIGN.md
  * §2.2: For you, Songs, Albums, Artists, Genres, Playlists, Folders); the
- * sections the design kit does not cover (AlbumArtists, Browser, Tree) are
- * appended and keep their previous icons.
+ * section the design kit does not cover (AlbumArtists) is appended and keeps
+ * its previous icon. The former Browser and Tree sections live in Folders.
  */
 enum class HomePage(
     val kind: Groove.Kind? = null,
@@ -162,14 +159,6 @@ enum class HomePage(
         label = { it.symphony.t.AlbumArtists },
         icon = Icons.Rounded.SupervisorAccount,
     ),
-    Browser(
-        label = { it.symphony.t.Browser },
-        icon = Icons.Rounded.FolderOpen,
-    ),
-    Tree(
-        label = { it.symphony.t.Tree },
-        icon = Icons.Rounded.AccountTree,
-    ),
 }
 
 @Serializable
@@ -210,12 +199,22 @@ fun HomeView(context: ViewContext) {
             context.symphony.settings.lastHomeTab.setValue(section)
         }
     }
-    var playerOpen by remember { mutableStateOf(false) }
+    val playerHost = LocalBentoPlayerHost.current
     var forYouNowPlayingVisible by remember { mutableStateOf(false) }
-    var capsuleSpaceVisible by remember { mutableStateOf(false) }
     val openPlayer: () -> Unit = {
         if (context.symphony.radio.queue.currentSongId != null) {
-            playerOpen = true
+            playerHost.open = true
+        }
+    }
+    // BaseView hosts the player; Home reports what changes the capsule and resets it on leave.
+    SideEffect {
+        playerHost.capsuleSuppressed = currentTab == HomePage.ForYou && forYouNowPlayingVisible
+        playerHost.hasRail = navigation != HomeNavigation.TABS
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            playerHost.capsuleSuppressed = false
+            playerHost.hasRail = false
         }
     }
 
@@ -278,18 +277,6 @@ fun HomeView(context: ViewContext) {
 
                         HomeNavigation.TABS -> {}
                     }
-                    val capsuleInset by androidx.compose.animation.core.animateDpAsState(
-                        targetValue = if (capsuleSpaceVisible) {
-                            (BentoSizes.CAPSULE_HEIGHT + 12).dp
-                        } else {
-                            0.dp
-                        },
-                        animationSpec = androidx.compose.animation.core.spring(
-                            dampingRatio = 0.8f,
-                            stiffness = 380f,
-                        ),
-                        label = "capsule-space",
-                    )
                     HomeMainColumn(
                         context = context,
                         navigation = navigation,
@@ -300,22 +287,11 @@ fun HomeView(context: ViewContext) {
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxHeight()
-                            .bentoGestureBarPadding()
-                            .padding(bottom = capsuleInset.coerceAtLeast(0.dp))
-,
+                            .fillMaxHeight(),
                     )
             }
         }
 
-        BentoPlayerHost(
-            context = context,
-            windowClass = windowClass,
-            open = playerOpen,
-            capsuleSuppressed = currentTab == HomePage.ForYou && forYouNowPlayingVisible,
-            onCapsuleVisibleChange = { capsuleSpaceVisible = it },
-            onOpenChange = { open -> playerOpen = open },
-        )
     }
 
     if (!readIntroductoryMessage) {
@@ -542,10 +518,8 @@ private fun HomeContent(
             HomePage.Artists -> ArtistsView(context)
             HomePage.AlbumArtists -> AlbumArtistsView(context)
             HomePage.Genres -> GenresView(context)
-            HomePage.Browser -> BrowserView(context)
             HomePage.Folders -> FoldersView(context)
             HomePage.Playlists -> PlaylistsView(context)
-            HomePage.Tree -> TreeView(context)
         }
     }
 }

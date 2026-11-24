@@ -4,9 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,23 +33,33 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.zyrouge.symphony.ui.components.BentoGenreChip
 import io.github.zyrouge.symphony.ui.components.BentoSmartFilterTile
+import io.github.zyrouge.symphony.ui.components.bentoTooNarrowForText
 import io.github.zyrouge.symphony.ui.components.label
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.LocalStrings
+import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
+import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 
 /**
  * The search field (DESIGN.md 4.3): a 52 dp pill with the search icon, a
- * 15 sp input and a clear button; a 2 dp accent ring while focused.
+ * 15 sp input, a clear button and the [trailing] buttons (the sort button)
+ * inside it; a 2 dp accent ring while focused, else a 1 dp `line` ring in
+ * the Contrast scheme.
  */
 @Composable
 internal fun SearchField(
@@ -57,8 +68,10 @@ internal fun SearchField(
     onTermsChange: (String) -> Unit,
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
+    trailing: @Composable () -> Unit = {},
 ) {
     val colors = LocalBentoColors.current
+    val colorScheme = LocalBentoColorScheme.current
     var focused by remember { mutableStateOf(false) }
     val fieldShape = RoundedCornerShape(BentoRadii.SEARCH_FIELD.dp)
 
@@ -70,6 +83,8 @@ internal fun SearchField(
             .then(
                 when {
                     focused -> Modifier.border(2.dp, colors.accent, fieldShape)
+                    colorScheme == BentoColorScheme.CONTRAST ->
+                        Modifier.border(1.dp, colors.line, fieldShape)
                     else -> Modifier
                 },
             )
@@ -90,6 +105,8 @@ internal fun SearchField(
                 textStyle = TextStyle(
                     fontSize = 15.sp,
                     color = colors.fg,
+                    // BasicTextField does not inherit the app font from the theme.
+                    fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
                 ),
                 cursorBrush = SolidColor(colors.accent),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -99,13 +116,20 @@ internal fun SearchField(
                     .onFocusChanged { focused = it.isFocused },
             )
             if (terms.isEmpty()) {
-                Text(
-                    context.symphony.t.SearchYourMusic,
-                    style = BentoTypography.rowTitle,
-                    color = colors.muted,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                // At a large font or content scale the full hint gives way to a plain "Search".
+                val textMeasurer = rememberTextMeasurer()
+                BoxWithConstraints {
+                    val hint = context.symphony.t.SearchYourMusic
+                    val fits = textMeasurer.measure(hint, BentoTypography.rowTitle, maxLines = 1)
+                        .size.width <= constraints.maxWidth
+                    Text(
+                        if (fits) hint else context.symphony.t.Search,
+                        style = BentoTypography.rowTitle,
+                        color = colors.muted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
         if (terms.isNotEmpty()) {
@@ -120,12 +144,13 @@ internal fun SearchField(
                 onClick = { onTermsChange("") },
             )
         }
+        trailing()
     }
 }
 
 /**
- * The smart filter tiles (DESIGN.md 5.5): a 2 x 2 grid, or stacked 56 dp
- * rows in the wide side column.
+ * The smart filter tiles (DESIGN.md 5.5): two per row, a last odd tile
+ * taking the whole row, or stacked 56 dp rows in the wide side column.
  */
 @Composable
 internal fun BentoSearchFilterTiles(
@@ -135,14 +160,22 @@ internal fun BentoSearchFilterTiles(
     onFilterChange: (BentoSearchFilter?) -> Unit,
     sideColumn: Boolean,
 ) {
+    // A large font or content scale leaves two tiles a row no room for their names.
+    // The window width is converted with the app's density, so the content scale counts.
+    val density = LocalDensity.current
+    val windowWidthDp = with(density) { LocalWindowInfo.current.containerSize.width.toDp().value }
+    val crowded = bentoTooNarrowForText(
+        windowWidthDp - BentoSpacing.GUTTER_COMPACT * 2f,
+        density.fontScale,
+    )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BentoSearchFilter.entries.chunked(2).forEach { rowFilters ->
+        BentoSearchFilter.entries.chunked(if (sideColumn || crowded) 1 else 2).forEach { rowFilters ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 rowFilters.forEach { filter ->
                     Box(modifier = Modifier.weight(1f)) {
                         BentoSmartFilterTile(
                             icon = filter.icon,
-                            label = filter.label,
+                            label = filter.label(LocalStrings.current),
                             count = context.symphony.t.XSongs(
                                 (filterCounts[filter] ?: 0).toString(),
                             ),
@@ -158,9 +191,6 @@ internal fun BentoSearchFilterTiles(
                             },
                         )
                     }
-                }
-                if (rowFilters.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }

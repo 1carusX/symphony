@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.services.radio.Radio
+import io.github.zyrouge.symphony.ui.components.AlbumDropdownMenu
 import io.github.zyrouge.symphony.ui.components.BentoGroupAlbumCover
 import io.github.zyrouge.symphony.ui.components.BentoGroupTile
 import io.github.zyrouge.symphony.ui.components.BentoGroupedTileColumns
@@ -24,6 +25,7 @@ import io.github.zyrouge.symphony.ui.components.LoaderScaffold
 import io.github.zyrouge.symphony.ui.components.bentoAlbumsGroupComparator
 import io.github.zyrouge.symphony.ui.components.bentoGroupTileHeightDp
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
 
@@ -94,7 +96,8 @@ private fun AlbumGroupTile(
     playing: Boolean,
     narrow: Boolean,
 ) {
-    val trackSongIds by remember(album.id) {
+    val grooveVersion = LocalGrooveVersion.current
+    val trackSongIds by remember(album.id, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 album.getSongIds(context.symphony),
@@ -126,20 +129,23 @@ private fun AlbumGroupTile(
         },
         onOpen = { context.navController.navigate(AlbumViewRoute(album.id)) },
         onPlay = {
-            context.symphony.radio.shorty.playQueue(trackSongIds)
+            context.symphony.radio.shorty.playQueue(trackSongIds, source = album.name)
         },
         onPlayAt = { index ->
             context.symphony.radio.shorty.playQueue(
                 trackSongIds,
                 Radio.PlayOptions(index = index),
+                source = album.name,
             )
         },
         trackNumberOf = { _, song -> song.trackNumber },
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " +
-            context.symphony.t.XSongs(album.numberOfTracks.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(album.numberOfTracks.toString())),
         onShowAll = { context.navController.navigate(AlbumViewRoute(album.id)) },
+        menu = { expanded, onDismissRequest ->
+            AlbumDropdownMenu(context, album, expanded, onDismissRequest)
+        },
     )
 }

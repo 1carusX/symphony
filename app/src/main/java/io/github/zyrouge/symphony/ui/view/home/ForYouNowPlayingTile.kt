@@ -63,6 +63,24 @@ import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import kotlin.math.min
 
 /**
+ * The share of a tile's full height that is on screen. [clippedTop] and
+ * [clippedBottom] are its window bounds, already clipped by scrolling
+ * ancestors; dividing by their height instead of [fullHeight] would give
+ * about 1 whenever any pixel shows.
+ */
+internal fun forYouTileVisibleFraction(
+    clippedTop: Float,
+    clippedBottom: Float,
+    windowHeight: Float,
+    fullHeight: Float,
+): Float {
+    if (fullHeight <= 0f) return 0f
+    val visibleHeight = (clippedBottom.coerceAtMost(windowHeight) - clippedTop.coerceAtLeast(0f))
+        .coerceIn(0f, fullHeight)
+    return visibleHeight / fullHeight
+}
+
+/**
  * The Now playing tile (DESIGN.md 5.1): square art, an eyebrow with an
  * equalizer glyph, title, artist, seek bar and prev/play/next; on xl or tall
  * tiles the art fills the tile under a dark gradient with white text and the
@@ -96,11 +114,13 @@ internal fun ForYouNowPlayingTile(
     BentoTile(
         modifier = Modifier.onGloballyPositioned { coordinates ->
             val bounds = coordinates.boundsInWindow()
-            val visibleHeight = (
-                bounds.bottom.coerceAtMost(windowInfo.containerSize.height.toFloat()) -
-                    bounds.top.coerceAtLeast(0f)
-                ).coerceIn(0f, bounds.height)
-            onNowPlayingTileVisibilityChanged(visibleHeight / bounds.height >= 0.35f)
+            val visibleFraction = forYouTileVisibleFraction(
+                clippedTop = bounds.top,
+                clippedBottom = bounds.bottom,
+                windowHeight = windowInfo.containerSize.height.toFloat(),
+                fullHeight = coordinates.size.height.toFloat(),
+            )
+            onNowPlayingTileVisibilityChanged(visibleFraction >= 0.35f)
         },
         tone = BentoTileTone.RAISED,
         sizeClass = geometry.sizeClass,

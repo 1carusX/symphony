@@ -54,15 +54,22 @@ class RadioShorty(private val symphony: Symphony) {
         }
     }
 
+    /**
+     * Replaces the queue with [songIds] and starts playing. [source] names what
+     * the songs were picked from (an album, a playlist, "Search results", ...)
+     * for the player's "Playing from" label; without it the label says "Queue".
+     */
     fun playQueue(
         songIds: List<String>,
         options: Radio.PlayOptions = Radio.PlayOptions(),
         shuffle: Boolean = false,
+        source: String? = null,
     ) {
         symphony.radio.stop(ended = false)
         if (songIds.isEmpty()) {
             return
         }
+        symphony.radio.queue.currentSource = source
         symphony.radio.queue.add(
             songIds,
             options = options.run {
@@ -76,5 +83,6 @@ class RadioShorty(private val symphony: Symphony) {
         songId: String,
         options: Radio.PlayOptions = Radio.PlayOptions(),
         shuffle: Boolean = false,
-    ) = playQueue(listOf(songId), options = options, shuffle = shuffle)
+        source: String? = null,
+    ) = playQueue(listOf(songId), options = options, shuffle = shuffle, source = source)
 }

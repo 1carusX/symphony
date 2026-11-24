@@ -34,4 +34,17 @@ class PluralTest {
         assertEquals("other", pluralTemplate("ru", "3", one = "one", other = "other"))
     }
 
+    @Test
+    fun `folders and files pick the folder count's form`() {
+        val strings = Strings(
+            values = mapOf(
+                "XFoldersYFiles_one" to "%1\$s folder, %2\$s files",
+                "XFoldersYFiles_other" to "%1\$s folders, %2\$s files",
+            ),
+            language = "en",
+        )
+        assertEquals("1 folder, 0 files", strings.XFoldersYFiles("1", "0"))
+        assertEquals("3 folders, 1 files", strings.XFoldersYFiles("3", "1"))
+    }
+
 }

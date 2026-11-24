@@ -1,244 +1,283 @@
 package io.github.zyrouge.symphony.ui.view.player
 
-import io.github.zyrouge.symphony.ui.components.BentoTextButton
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.radio.Radio
-import io.github.zyrouge.symphony.ui.components.BentoSwitch
-import io.github.zyrouge.symphony.ui.components.BentoTextField
-import io.github.zyrouge.symphony.ui.components.ScaffoldDialog
+import io.github.zyrouge.symphony.ui.components.BentoSheetButton
+import io.github.zyrouge.symphony.ui.components.BentoSheetChip
+import io.github.zyrouge.symphony.ui.components.BentoSheetDialog
+import io.github.zyrouge.symphony.ui.components.BentoSheetSwitchRow
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.DurationUtils
+import kotlinx.coroutines.delay
 import java.time.Duration
-import java.util.Timer
-import kotlin.concurrent.timer
+import java.util.Locale
 
+private val sleepTimerPresetMinutes = listOf(15, 30, 45, 60, 120)
+private val sleepTimerExtendMinutes = listOf(5, 15, 30)
+private const val SLEEP_TIMER_DEFAULT_MINUTES = 30
+private const val SLEEP_TIMER_STEP_MINUTES = 5
+private const val SLEEP_TIMER_MAX_MINUTES = 600
 
+/** The running timer: time left, extend chips, quit on end and stop. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NowPlayingSleepTimerDialog(
     context: ViewContext,
     sleepTimer: Radio.SleepTimer,
     onDismissRequest: () -> Unit,
 ) {
-    var updateTimer by remember { mutableStateOf<Timer?>(null) }
-    val endsAtMs by remember { mutableLongStateOf(sleepTimer.endsAt) }
-    var endsIn by remember { mutableLongStateOf(0L) }
+    val locale = LocalConfiguration.current.locales[0]
+    var endsIn by remember(sleepTimer) {
+        mutableLongStateOf(sleepTimer.endsAt - System.currentTimeMillis())
+    }
+    var quitOnEnd by remember(sleepTimer) { mutableStateOf(sleepTimer.quitOnEnd) }
 
-    LaunchedEffect(LocalContext.current) {
-        updateTimer = timer(period = 500L) {
-            endsIn = endsAtMs - System.currentTimeMillis()
+    LaunchedEffect(sleepTimer) {
+        while (true) {
+            endsIn = (sleepTimer.endsAt - System.currentTimeMillis()).coerceAtLeast(0L)
+            delay(500L)
         }
     }
 
-    DisposableEffect(LocalContext.current) {
-        onDispose {
-            updateTimer?.cancel()
-            updateTimer = null
-        }
-    }
-
-    ScaffoldDialog(
+    BentoSheetDialog(
+        title = context.symphony.t.SleepTimer,
         onDismissRequest = onDismissRequest,
-        title = {
-            Text(context.symphony.t.SleepTimer)
-        },
-        content = {
-            Text(
-                DurationUtils.formatMs(endsIn),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = 20.dp,
-                        end = 20.dp,
-                        top = 20.dp,
-                        bottom = 12.dp,
-                    ),
-            )
-        },
         actions = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                var quitOnEnd by remember { mutableStateOf(sleepTimer.quitOnEnd) }
-
-                BentoSwitch(
-                    checked = quitOnEnd,
-                    onCheckedChange = {
-                        quitOnEnd = it
-                        sleepTimer.quitOnEnd = it
-                    }
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    context.symphony.t.QuitAppOnEnd,
-                    style = MaterialTheme.typography.labelLarge,
-                )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            BentoTextButton(
+            BentoSheetButton(
+                label = context.symphony.t.Stop,
                 onClick = {
                     context.symphony.radio.clearSleepTimer()
                     onDismissRequest()
-                }
-            ) {
-                Text(context.symphony.t.Stop)
-            }
+                },
+            )
+            BentoSheetButton(
+                label = context.symphony.t.Done,
+                primary = true,
+                onClick = onDismissRequest,
+            )
         },
-    )
+    ) {
+        SleepTimerReadout(
+            text = DurationUtils.formatMs(endsIn),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        FlowRow(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            sleepTimerExtendMinutes.forEach { minutes ->
+                BentoSheetChip(
+                    label = "+" + formatSleepTimerMinutes(locale, minutes),
+                    selected = false,
+                    onClick = {
+                        val left = (sleepTimer.endsAt - System.currentTimeMillis())
+                            .coerceAtLeast(0L)
+                        context.symphony.radio.setSleepTimer(
+                            duration = left + Duration.ofMinutes(minutes.toLong()).toMillis(),
+                            quitOnEnd = quitOnEnd,
+                        )
+                    },
+                )
+            }
+        }
+        BentoSheetSwitchRow(
+            title = context.symphony.t.QuitAppOnEnd,
+            checked = quitOnEnd,
+            onCheckedChange = {
+                quitOnEnd = it
+                sleepTimer.quitOnEnd = it
+            },
+        )
+    }
 }
 
-private val nowPlayingSleepTimerPresetDurations = listOf(
-    0L to 15L,
-    0L to 30L,
-    1L to 0L,
-    2L to 0L,
-    3L to 0L,
-)
-
+/** Sets a timer: minutes readout with steppers, presets, pause after song, quit on end. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NowPlayingSleepTimerSetDialog(
     context: ViewContext,
     onDismissRequest: () -> Unit,
 ) {
-    val minDurationMs = Duration.ofMinutes(1).toMillis()
-    var inputHours by remember { mutableLongStateOf(0L) }
-    var inputMinutes by remember { mutableLongStateOf(10L) }
+    val locale = LocalConfiguration.current.locales[0]
+    var minutes by remember { mutableIntStateOf(SLEEP_TIMER_DEFAULT_MINUTES) }
     var quitOnEnd by remember { mutableStateOf(false) }
-    val inputDuration by remember(inputHours, inputMinutes) {
-        derivedStateOf {
-            Duration
-                .ofHours(inputHours)
-                .plusMinutes(inputMinutes)
-                .toMillis()
-        }
-    }
-    val isValidDuration by remember(inputDuration, minDurationMs) {
-        derivedStateOf { inputDuration >= minDurationMs }
-    }
+    val pauseOnCurrentSongEnd by context.symphony.radio.observatory.pauseOnCurrentSongEnd
+        .collectAsState()
 
-    ScaffoldDialog(
+    BentoSheetDialog(
+        title = context.symphony.t.SleepTimer,
         onDismissRequest = onDismissRequest,
-        title = {
-            Text(context.symphony.t.SleepTimer)
-        },
-        content = {
-            Column(modifier = Modifier.padding(top = 12.dp)) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(
-                        4.dp,
-                        Alignment.CenterHorizontally
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    nowPlayingSleepTimerPresetDurations.forEach { x ->
-                        val hours = x.first
-                        val minutes = x.second
-                        val shape = RoundedCornerShape(4.dp)
-
-                        Text(
-                            DurationUtils.formatMinSec(0L, 0L, hours, minutes),
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier
-                                .background(
-                                    LocalBentoColors.current.raised,
-                                    shape,
-                                )
-                                .clip(shape)
-                                .clickable {
-                                    inputHours = hours
-                                    inputMinutes = minutes
-                                }
-                                .padding(8.dp, 4.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(modifier = Modifier.padding(20.dp, 0.dp)) {
-                    BentoTextField(
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        label = context.symphony.t.Hours,
-                        value = inputHours.toString(),
-                        onValueChange = {
-                            inputHours = it.toLongOrNull() ?: 0
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    BentoTextField(
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        label = context.symphony.t.Minutes,
-                        value = inputMinutes.toString(),
-                        onValueChange = {
-                            inputMinutes = it.toLongOrNull() ?: 0
-                        }
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp, 0.dp),
-                ) {
-                    BentoSwitch(
-                        checked = quitOnEnd,
-                        onCheckedChange = {
-                            quitOnEnd = it
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(context.symphony.t.QuitAppOnEnd)
-                }
-            }
-        },
         actions = {
-            BentoTextButton(onClick = onDismissRequest) {
-                Text(context.symphony.t.Cancel)
-            }
-            BentoTextButton(
-                enabled = isValidDuration,
+            BentoSheetButton(
+                label = context.symphony.t.Cancel,
+                onClick = onDismissRequest,
+            )
+            BentoSheetButton(
+                label = context.symphony.t.Done,
+                primary = true,
                 onClick = {
                     context.symphony.radio.setSleepTimer(
-                        duration = inputDuration,
+                        duration = Duration.ofMinutes(minutes.toLong()).toMillis(),
                         quitOnEnd = quitOnEnd,
                     )
                     onDismissRequest()
-                }
-            ) {
-                Text(context.symphony.t.Done)
-            }
+                },
+            )
         },
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SleepTimerStepButton(
+                icon = Icons.Rounded.Remove,
+                label = "-" + formatSleepTimerMinutes(locale, SLEEP_TIMER_STEP_MINUTES),
+                enabled = minutes > SLEEP_TIMER_STEP_MINUTES,
+                onClick = {
+                    minutes = (minutes - SLEEP_TIMER_STEP_MINUTES)
+                        .coerceAtLeast(SLEEP_TIMER_STEP_MINUTES)
+                },
+            )
+            SleepTimerReadout(
+                text = when {
+                    minutes < 60 -> minutes.toString()
+                    else -> "%d:%02d".format(locale, minutes / 60, minutes % 60)
+                },
+                modifier = Modifier.widthIn(min = 112.dp),
+            )
+            SleepTimerStepButton(
+                icon = Icons.Rounded.Add,
+                label = "+" + formatSleepTimerMinutes(locale, SLEEP_TIMER_STEP_MINUTES),
+                enabled = minutes < SLEEP_TIMER_MAX_MINUTES,
+                onClick = {
+                    minutes = (minutes + SLEEP_TIMER_STEP_MINUTES)
+                        .coerceAtMost(SLEEP_TIMER_MAX_MINUTES)
+                },
+            )
+        }
+        Text(
+            when {
+                minutes < 60 -> context.symphony.t.Minutes
+                else -> "${context.symphony.t.Hours} : ${context.symphony.t.Minutes}"
+            },
+            style = BentoTypography.secondary,
+            color = LocalBentoColors.current.sub,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        FlowRow(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            sleepTimerPresetMinutes.forEach { preset ->
+                BentoSheetChip(
+                    label = formatSleepTimerMinutes(locale, preset),
+                    selected = preset == minutes,
+                    onClick = { minutes = preset },
+                )
+            }
+        }
+        BentoSheetSwitchRow(
+            title = context.symphony.t.PauseOnCurrentSongEnd,
+            checked = pauseOnCurrentSongEnd,
+            onCheckedChange = { context.symphony.radio.setPauseOnCurrentSongEnd(it) },
+        )
+        BentoSheetSwitchRow(
+            title = context.symphony.t.QuitAppOnEnd,
+            checked = quitOnEnd,
+            onCheckedChange = { quitOnEnd = it },
+        )
+    }
+}
+
+@Composable
+private fun SleepTimerReadout(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text,
+        style = BentoTypography.statLarge.copy(fontFeatureSettings = "tnum"),
+        color = LocalBentoColors.current.fg,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
+        modifier = modifier.padding(vertical = 8.dp),
     )
+}
+
+@Composable
+private fun SleepTimerStepButton(
+    icon: ImageVector,
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    val colors = LocalBentoColors.current
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .alpha(if (enabled) 1f else 0.4f)
+            .clip(CircleShape)
+            .background(colors.raised)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, label, tint = colors.fg)
+    }
+}
+
+/** "15 min", "1 hr", "1 hr, 30 min", in the app language. */
+private fun formatSleepTimerMinutes(locale: Locale, minutes: Int): String {
+    val format = MeasureFormat.getInstance(locale, MeasureFormat.FormatWidth.SHORT)
+    val hours = minutes / 60
+    val rest = minutes % 60
+    return when {
+        hours == 0 -> format.format(Measure(minutes, MeasureUnit.MINUTE))
+        rest == 0 -> format.format(Measure(hours, MeasureUnit.HOUR))
+        else -> format.formatMeasures(
+            Measure(hours, MeasureUnit.HOUR),
+            Measure(rest, MeasureUnit.MINUTE),
+        )
+    }
 }

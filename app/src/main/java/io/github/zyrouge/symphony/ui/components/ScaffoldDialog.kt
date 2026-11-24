@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
@@ -47,7 +46,7 @@ fun ScaffoldDialog(
     val colors = LocalBentoColors.current
     val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
 
-    Dialog(onDismissRequest = onDismissRequest) {
+    BentoAppDialog(onDismissRequest = onDismissRequest) {
         val materialColors = MaterialTheme.colorScheme
         MaterialTheme(
             colorScheme = materialColors.copy(

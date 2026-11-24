@@ -15,7 +15,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +35,7 @@ import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.services.radio.Radio
 import io.github.zyrouge.symphony.services.radio.RadioPlayer
 import io.github.zyrouge.symphony.services.radio.RadioQueue
+import io.github.zyrouge.symphony.ui.components.bentoSystemBottomInset
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoMotion
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
@@ -120,7 +120,7 @@ fun BentoPlayerHost(
     windowClass: BentoWindowClass,
     open: Boolean,
     capsuleSuppressed: Boolean,
-    onCapsuleVisibleChange: (Boolean) -> Unit = {},
+    hasRail: Boolean,
     onOpenChange: (Boolean) -> Unit,
 ) {
     val colors = LocalBentoColors.current
@@ -130,28 +130,41 @@ fun BentoPlayerHost(
     val short = windowClass == BentoWindowClass.SHORT_HEIGHT
     val touch = configuration.touchscreen == Configuration.TOUCHSCREEN_FINGER
     val canResize = compact || touch
-    val navigationWidth = when (windowClass) {
+    val navigationWidth = when {
+        // Pages without a rail (detail pages, search, settings) centre the capsule in the window.
+        !hasRail -> 0
+        else -> when (windowClass) {
         BentoWindowClass.COMPACT -> 0
         BentoWindowClass.MEDIUM, BentoWindowClass.EXPANDED, BentoWindowClass.LARGE ->
             BentoSizes.RAIL_WIDTH
 
         BentoWindowClass.EXTRA_LARGE -> BentoSizes.RAIL_WIDE
         BentoWindowClass.SHORT_HEIGHT -> BentoSizes.RAIL_SHORT
+        }
     }
     val capsuleHiddenOffset = with(density) { 28.dp.roundToPx() }
     val floatingEnterOffset = with(density) { 24.dp.roundToPx() }
 
     BentoPlayerObserver(context) { data ->
-        var level by remember(open, compact, touch) {
-            mutableStateOf(
-                when {
-                    open && !compact && !touch -> BentoPlayerLevel.MEDIUM
-                    else -> BentoPlayerLevel.SMALL
-                },
-            )
+        // Pointer devices open straight at medium (DESIGN.md 6.2).
+        val initialLevel = when {
+            !compact && !touch -> BentoPlayerLevel.MEDIUM
+            else -> BentoPlayerLevel.SMALL
         }
-        var stage by remember(open) { mutableStateOf(BentoPlayerStage.COVER) }
-        var dragScrimAlpha by remember(open) { mutableFloatStateOf(1f) }
+        var level by remember(compact, touch) { mutableStateOf(initialLevel) }
+        var stage by remember { mutableStateOf(BentoPlayerStage.COVER) }
+        var dragScrimAlpha by remember { mutableFloatStateOf(1f) }
+        // Reset when the player opens, not when it closes, so the exit animation
+        // keeps showing the level and stage the person closed it from.
+        var wasOpen by remember { mutableStateOf(open) }
+        if (open != wasOpen) {
+            if (open) {
+                level = initialLevel
+                stage = BentoPlayerStage.COVER
+                dragScrimAlpha = 1f
+            }
+            wasOpen = open
+        }
         var previousSleepTimer by remember { mutableStateOf<Radio.SleepTimer?>(null) }
 
         LaunchedEffect(data == null, open) {
@@ -167,7 +180,7 @@ fun BentoPlayerHost(
             ) {
                 Toast.makeText(
                     context.activity,
-                    "${context.symphony.t.SleepTimer} ended",
+                    context.symphony.t.SleepTimerEnded,
                     Toast.LENGTH_SHORT,
                 ).show()
             }
@@ -257,13 +270,14 @@ fun BentoPlayerHost(
             }
 
             val capsuleVisible = data != null && !open && !capsuleSuppressed
-            LaunchedEffect(capsuleVisible) { onCapsuleVisibleChange(capsuleVisible) }
 
             AnimatedVisibility(
                 visible = capsuleVisible,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .navigationBarsPadding()
+                    // Same bottom inset as scroll content, so the capsule clears the gesture area
+                    // on MIUI/HyperOS versions that report no navigation bar.
+                    .padding(bottom = bentoSystemBottomInset())
                     .padding(
                         start = (16 + navigationWidth).dp,
                         end = 16.dp,

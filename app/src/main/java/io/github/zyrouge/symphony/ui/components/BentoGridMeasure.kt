@@ -59,21 +59,39 @@ data class BentoGridMeasure(
     val totalHeight: Float,
 )
 
+/** The least a tile shares the bottom edge of a square tile may shrink to, in dp. */
+const val BENTO_SQUARE_NEIGHBOUR_MIN_HEIGHT = 72f
+
 /**
  * Resolves tile offsets, sizes and size classes for a placement table on a
  * grid class. Column widths are equal and fill [innerWidthDp]; a tile's pixel
  * size is `span * cell + (span - 1) * gap` per axis.
+ *
+ * Rows have a fixed height while columns follow the window, so a tile that
+ * spans as many rows as columns is rarely square. [squareTileId] makes that
+ * tile square (a cover): its height takes its width, tiles below its last
+ * row move by the difference, and tiles reaching that row from above grow or
+ * shrink with it, so edges stay aligned. Shrinking stops before any of those
+ * tiles drops below [BENTO_SQUARE_NEIGHBOUR_MIN_HEIGHT].
+ *
+ * [rowScale] multiplies the row height, so tiles grow with the font scale.
+ * [reflow] lays the tiles out on two columns instead (see
+ * [reflowBentoPlacements]), for windows too narrow for their text.
  */
 fun measureBentoGrid(
     placements: List<BentoTilePlacement>,
     gridClass: BentoGridClass,
     innerWidthDp: Float,
+    squareTileId: String? = null,
+    rowScale: Float = 1f,
+    reflow: Boolean = false,
 ): BentoGridMeasure {
-    val columns = gridClass.columns.toFloat()
-    val rowHeight = gridClass.rowHeightDp.toFloat()
+    val laidOut = if (reflow) reflowBentoPlacements(placements) else placements
+    val columns = if (reflow) 2f else gridClass.columns.toFloat()
+    val rowHeight = gridClass.rowHeightDp * rowScale
     val gap = gridClass.gapDp.toFloat()
     val columnWidth = (innerWidthDp - (columns - 1f) * gap) / columns
-    val tiles = placements.associate { placement ->
+    val tiles = laidOut.associate { placement ->
         val width = placement.columnSpan * columnWidth +
             (placement.columnSpan - 1f) * gap
         val height = placement.rowSpan * rowHeight + (placement.rowSpan - 1f) * gap
@@ -86,9 +104,81 @@ fun measureBentoGrid(
         )
         placement.tileId to (placement to geometry)
     }
-    val maxRow = placements.maxOfOrNull { it.row + it.rowSpan - 1 } ?: 0
+    val maxRow = laidOut.maxOfOrNull { it.row + it.rowSpan - 1 } ?: 0
     val totalHeight = maxRow * rowHeight + (maxRow - 1f).coerceAtLeast(0f) * gap
-    return BentoGridMeasure(tiles = tiles, totalHeight = totalHeight)
+    val measure = BentoGridMeasure(tiles = tiles, totalHeight = totalHeight)
+    return squareTileId?.let { squareBentoTile(measure, it) } ?: measure
+}
+
+/**
+ * The placements on a two-column grid, in reading order (row, then column):
+ * tiles spanning two or more columns take the full width, and single-column
+ * tiles pair up side by side. Row spans stay, so tiles keep their heights.
+ */
+internal fun reflowBentoPlacements(placements: List<BentoTilePlacement>): List<BentoTilePlacement> {
+    val reflowed = mutableListOf<BentoTilePlacement>()
+    var row = 1
+    // A single-column tile in the left half of `row`, waiting for a partner.
+    var half: BentoTilePlacement? = null
+    placements.sortedWith(compareBy({ it.row }, { it.column })).forEach { placement ->
+        val waiting = half
+        when {
+            placement.columnSpan <= 1 && waiting == null -> {
+                val placed = placement.copy(column = 1, row = row, columnSpan = 1)
+                reflowed += placed
+                half = placed
+            }
+
+            placement.columnSpan <= 1 && waiting != null -> {
+                reflowed += placement.copy(column = 2, row = waiting.row, columnSpan = 1)
+                row = waiting.row + max(waiting.rowSpan, placement.rowSpan)
+                half = null
+            }
+
+            else -> {
+                if (waiting != null) {
+                    row = waiting.row + waiting.rowSpan
+                    half = null
+                }
+                reflowed += placement.copy(column = 1, row = row, columnSpan = 2)
+                row += placement.rowSpan
+            }
+        }
+    }
+    return reflowed
+}
+
+private fun squareBentoTile(measure: BentoGridMeasure, tileId: String): BentoGridMeasure? {
+    val (square, squareGeometry) = measure.tiles[tileId] ?: return null
+    val lastRow = square.row + square.rowSpan - 1
+    // Tiles that end on or below the square's last row but start on or above it.
+    val stretched = measure.tiles.values.filter { (placement, _) ->
+        placement.tileId != tileId &&
+            placement.row <= lastRow &&
+            placement.row + placement.rowSpan - 1 >= lastRow
+    }
+    val floor = stretched.maxOfOrNull { (_, geometry) ->
+        BENTO_SQUARE_NEIGHBOUR_MIN_HEIGHT - geometry.height.coerceAtLeast(BENTO_SQUARE_NEIGHBOUR_MIN_HEIGHT)
+    } ?: Float.NEGATIVE_INFINITY
+    val delta = maxOf(squareGeometry.width - squareGeometry.height, floor)
+    if (delta == 0f) return measure
+    val tiles = measure.tiles.mapValues { (id, placed) ->
+        val (placement, geometry) = placed
+        val adjusted = when {
+            placement.row > lastRow -> geometry.copy(offsetY = geometry.offsetY + delta)
+            id == tileId || placement.row + placement.rowSpan - 1 >= lastRow -> {
+                val height = geometry.height + delta
+                geometry.copy(
+                    height = height,
+                    sizeClass = resolveBentoTileSizeClass(geometry.width, height),
+                )
+            }
+
+            else -> geometry
+        }
+        placement to adjusted
+    }
+    return BentoGridMeasure(tiles = tiles, totalHeight = measure.totalHeight + delta)
 }
 
 /**

@@ -536,8 +536,7 @@ private fun HomeRailSearchFab(
 
 /**
  * Section count for the wide rail rows. The design kit covers Songs,
- * Albums, Artists, Genres, Playlists and Folders; ForYou and the legacy
- * Browser/Tree sections have no count.
+ * Albums, Artists, Genres, Playlists and Folders; ForYou has no count.
  */
 @Composable
 private fun rememberSectionCount(context: ViewContext, section: HomePage): Int? {

@@ -50,13 +50,16 @@ import androidx.compose.ui.window.PopupProperties
 import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.ui.components.AddToPlaylistDialog
 import io.github.zyrouge.symphony.ui.components.MenuRow
+import io.github.zyrouge.symphony.ui.components.bentoScrollbar
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
+import io.github.zyrouge.symphony.ui.theme.BentoAppDensity
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
+import io.github.zyrouge.symphony.ui.theme.bentoAppScale
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
 import io.github.zyrouge.symphony.ui.view.ArtistViewRoute
 import io.github.zyrouge.symphony.utils.Logger
@@ -70,7 +73,8 @@ internal fun BentoPlayerMoreMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onShowSpeed: () -> Unit,
-    onShowPitch: () -> Unit,
+    // Speed and pitch share one sheet, opened through onShowSpeed.
+    @Suppress("UNUSED_PARAMETER") onShowPitch: () -> Unit,
     onShowSleepTimer: () -> Unit,
     onClosePlayer: () -> Unit,
 ) {
@@ -101,35 +105,36 @@ internal fun BentoPlayerMoreMenu(
             onDismissRequest = onDismissRequest,
             properties = PopupProperties(focusable = false),
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(colors.scrim)
-                    .clickable(onClick = onDismissRequest),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-                Column(
+            BentoAppDensity {
+                Box(
                     modifier = Modifier
-                        .padding(8.dp)
-                        .widthIn(max = 560.dp)
-                        .fillMaxWidth()
-                        .shadow(20.dp, RoundedCornerShape(BentoRadii.MENU_SHEET.dp))
-                        .clip(RoundedCornerShape(BentoRadii.MENU_SHEET.dp))
-                        .background(colors.high)
-                        .clickable { }
-                        .padding(10.dp),
+                        .fillMaxSize()
+                        .background(colors.scrim)
+                        .clickable(onClick = onDismissRequest),
+                    contentAlignment = Alignment.BottomCenter,
                 ) {
-                    BentoPlayerMoreMenuContent(
-                        context = context,
-                        data = data,
-                        onDismissRequest = onDismissRequest,
-                        onShowSpeed = onShowSpeed,
-                        onShowPitch = onShowPitch,
-                        onShowSleepTimer = onShowSleepTimer,
-                        onClosePlayer = onClosePlayer,
-                        onAddToPlaylist = { showAddToPlaylistDialog = true },
-                        onLaunchEqualizer = ::launchEqualizer,
-                    )
+                    Column(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .widthIn(max = 560.dp)
+                            .fillMaxWidth()
+                            .shadow(20.dp, RoundedCornerShape(BentoRadii.MENU_SHEET.dp))
+                            .clip(RoundedCornerShape(BentoRadii.MENU_SHEET.dp))
+                            .background(colors.high)
+                            .clickable { }
+                            .padding(10.dp),
+                    ) {
+                        BentoPlayerMoreMenuContent(
+                            context = context,
+                            data = data,
+                            onDismissRequest = onDismissRequest,
+                            onShowSpeed = onShowSpeed,
+                            onShowSleepTimer = onShowSleepTimer,
+                            onClosePlayer = onClosePlayer,
+                            onAddToPlaylist = { showAddToPlaylistDialog = true },
+                            onLaunchEqualizer = ::launchEqualizer,
+                        )
+                    }
                 }
             }
         }
@@ -137,7 +142,7 @@ internal fun BentoPlayerMoreMenu(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = onDismissRequest,
-            modifier = Modifier.width(BentoSizes.MENU_WIDTH.dp),
+            modifier = Modifier.width(BentoSizes.MENU_WIDTH.dp * bentoAppScale()),
             containerColor = colors.high,
             shape = RoundedCornerShape(BentoRadii.MENU.dp),
             shadowElevation = 16.dp,
@@ -146,17 +151,18 @@ internal fun BentoPlayerMoreMenu(
                 else -> null
             },
         ) {
-            BentoPlayerMoreMenuContent(
-                context = context,
-                data = data,
-                onDismissRequest = onDismissRequest,
-                onShowSpeed = onShowSpeed,
-                onShowPitch = onShowPitch,
-                onShowSleepTimer = onShowSleepTimer,
-                onClosePlayer = onClosePlayer,
-                onAddToPlaylist = { showAddToPlaylistDialog = true },
-                onLaunchEqualizer = ::launchEqualizer,
-            )
+            BentoAppDensity {
+                BentoPlayerMoreMenuContent(
+                    context = context,
+                    data = data,
+                    onDismissRequest = onDismissRequest,
+                    onShowSpeed = onShowSpeed,
+                    onShowSleepTimer = onShowSleepTimer,
+                    onClosePlayer = onClosePlayer,
+                    onAddToPlaylist = { showAddToPlaylistDialog = true },
+                    onLaunchEqualizer = ::launchEqualizer,
+                )
+            }
         }
     }
 
@@ -175,17 +181,18 @@ private fun BentoPlayerMoreMenuContent(
     data: BentoPlayerData,
     onDismissRequest: () -> Unit,
     onShowSpeed: () -> Unit,
-    onShowPitch: () -> Unit,
     onShowSleepTimer: () -> Unit,
     onClosePlayer: () -> Unit,
     onAddToPlaylist: () -> Unit,
     onLaunchEqualizer: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
+    val menuScroll = rememberScrollState()
     Column(
         modifier = Modifier
             .heightIn(max = 520.dp)
-            .verticalScroll(rememberScrollState()),
+            .bentoScrollbar(menuScroll, colors.muted, BentoRadii.MENU.dp)
+            .verticalScroll(menuScroll),
     ) {
         Row(
             modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 8.dp, bottom = 12.dp),
@@ -207,15 +214,16 @@ private fun BentoPlayerMoreMenuContent(
                     data.song.title,
                     style = BentoTypography.rowTitle,
                     color = colors.fg,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                data.song.toSamplingInfoString(context.symphony)?.let {
+                // The same "MP3 · 44.1 kHz · 32 kbps" line as under the player title.
+                bentoPlayerFormatLine(context, data.song)?.let {
                     Text(
                         it,
                         style = BentoTypography.secondary,
                         color = colors.sub,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -224,26 +232,21 @@ private fun BentoPlayerMoreMenuContent(
         Spacer(Modifier.height(6.dp))
         PlayerMenuItem(
             icon = { Icon(Icons.Outlined.Speed, null) },
-            label = context.symphony.t.Speed,
-            value = "x${data.currentSpeed}",
+            label = speedAndPitchLabel(context),
+            value = when (data.currentPitch) {
+                1f -> formatPlaybackRate(data.currentSpeed)
+                else -> formatPlaybackRate(data.currentSpeed) + " · " +
+                    formatPlaybackRate(data.currentPitch)
+            },
             onClick = {
                 onDismissRequest()
                 onShowSpeed()
             },
         )
         PlayerMenuItem(
-            icon = { Icon(Icons.Outlined.Speed, null) },
-            label = context.symphony.t.Pitch,
-            value = "x${data.currentPitch}",
-            onClick = {
-                onDismissRequest()
-                onShowPitch()
-            },
-        )
-        PlayerMenuItem(
             icon = { Icon(Icons.Outlined.Timer, null) },
             label = context.symphony.t.SleepTimer,
-            value = if (data.sleepTimer != null) context.symphony.t.Enabled else context.symphony.t.Disabled,
+            value = if (data.sleepTimer != null) context.symphony.t.On else context.symphony.t.Off,
             onClick = {
                 onDismissRequest()
                 onShowSleepTimer()
@@ -252,7 +255,7 @@ private fun BentoPlayerMoreMenuContent(
         PlayerMenuItem(
             icon = { Icon(Icons.Filled.MotionPhotosPaused, null) },
             label = context.symphony.t.PauseOnCurrentSongEnd,
-            value = if (data.pauseOnCurrentSongEnd) context.symphony.t.Enabled else context.symphony.t.Disabled,
+            value = if (data.pauseOnCurrentSongEnd) context.symphony.t.On else context.symphony.t.Off,
             onClick = {
                 onDismissRequest()
                 context.symphony.radio.setPauseOnCurrentSongEnd(!data.pauseOnCurrentSongEnd)

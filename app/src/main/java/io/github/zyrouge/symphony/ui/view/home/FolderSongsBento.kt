@@ -1,194 +1,96 @@
 package io.github.zyrouge.symphony.ui.view.home
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import io.github.zyrouge.symphony.services.radio.Radio
-import io.github.zyrouge.symphony.ui.components.bentoGestureBarPadding
-import io.github.zyrouge.symphony.ui.components.BentoActionTile
-import io.github.zyrouge.symphony.ui.components.BentoSongRow
-import io.github.zyrouge.symphony.ui.components.BentoTile
-import io.github.zyrouge.symphony.ui.components.BentoTileSizeClass
-import io.github.zyrouge.symphony.ui.components.BentoTileTone
-import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
-import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
-import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
-import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
-import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
-import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
+import io.github.zyrouge.symphony.ui.view.BentoCollectionPage
+import io.github.zyrouge.symphony.ui.view.DetailSideTile
+import io.github.zyrouge.symphony.ui.view.detail.DetailFolderEntry
+import io.github.zyrouge.symphony.ui.view.detail.DetailFoldersTile
+import io.github.zyrouge.symphony.ui.view.detail.DetailIconCoverTile
+import io.github.zyrouge.symphony.ui.view.detail.detailListRowSpan
 import io.github.zyrouge.symphony.utils.SimpleFileSystem
 
+/** The subfolders tile shows at most this many rows before it scrolls. */
+private const val FOLDER_SUBFOLDER_ROWS = 6
+
+/**
+ * The folder detail page in the album frame: the folder icon, the songs
+ * directly inside the folder, and its subfolders as a side tile that opens
+ * them through [onOpenFolder].
+ */
 @Composable
 internal fun FolderSongsView(
     context: ViewContext,
     folder: SimpleFileSystem.Folder,
     onBack: () -> Unit,
+    onOpenFolder: (SimpleFileSystem.Folder) -> Unit,
 ) {
-    val colors = LocalBentoColors.current
-    val windowClass = rememberBentoWindowClass()
-    val songIds by remember(folder) {
-        derivedStateOf {
-            folder.children.values.mapNotNull {
-                when (it) {
-                    is SimpleFileSystem.File -> it.data as String
-                    else -> null
+    val grooveVersion = LocalGrooveVersion.current
+    val songIds = remember(folder, grooveVersion) {
+        folder.children.values.mapNotNull { (it as? SimpleFileSystem.File)?.data as? String }
+    }
+    val subfolders = remember(folder, grooveVersion) {
+        folder.children.values
+            .mapNotNull { it as? SimpleFileSystem.Folder }
+            .filterNot { it.isEmpty }
+            .sortedBy { it.name }
+    }
+    val parentPath = remember(folder) {
+        folder.parent?.fullPath?.parts
+            ?.drop(1)
+            ?.mapIndexed { index, part ->
+                when (index) {
+                    0 -> part.removePrefix("primary:")
+                    else -> part
                 }
             }
-        }
+            ?.filter { it.isNotEmpty() }
+            ?.joinToString(" / ")
+            ?.takeIf { it.isNotEmpty() }
     }
-    val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
-    val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
-    val sortedSongIds by remember(folder, sortBy, sortReverse) {
-        derivedStateOf {
-            context.symphony.groove.song.sort(songIds, sortBy, sortReverse)
-        }
+    val entries = subfolders.map { subfolder ->
+        val folderCount = subfolder.childFoldersCount
+        val songCount = subfolder.children.values.count { it is SimpleFileSystem.File }
+        DetailFolderEntry(
+            name = subfolder.name,
+            sub = listOfNotNull(
+                folderCount.takeIf { it > 0 }
+                    ?.let { context.symphony.t.XFolders(it.toString()) },
+                context.symphony.t.XSongs(songCount.toString()),
+            ).joinToString(" · "),
+            onClick = { onOpenFolder(subfolder) },
+        )
     }
-    val songs by remember(sortedSongIds) {
-        derivedStateOf { context.symphony.groove.song.get(sortedSongIds) }
-    }
-    val playingSong = rememberBentoPlayingSong(context)
-    val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
-    val titleStyle = BentoTypography.title.copy(fontFamily = appFontFamily)
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(colors.bg),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .statusBarsPadding(),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp, end = 24.dp, top = 14.dp, bottom = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack,
-                        null,
-                        tint = colors.fg,
+    BentoCollectionPage(
+        context = context,
+        label = context.symphony.t.Folder,
+        title = folder.name,
+        songIds = songIds,
+        onBack = onBack,
+        emptyMessage = context.symphony.t.DamnThisIsSoEmpty,
+        cover = { geometry -> DetailIconCoverTile(Icons.Rounded.Folder, geometry) },
+        metaPrefix = parentPath,
+        sideTiles = when {
+            entries.isEmpty() -> emptyList()
+            else -> listOf(
+                DetailSideTile(
+                    id = "folders",
+                    leading = true,
+                    rowSpan = { detailListRowSpan(it, minOf(entries.size, FOLDER_SUBFOLDER_ROWS)) },
+                ) { geometry ->
+                    DetailFoldersTile(
+                        label = context.symphony.t.Folders,
+                        countLabel = context.symphony.t.XFolders(entries.size.toString()),
+                        folders = entries,
+                        geometry = geometry,
                     )
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        folder.name,
-                        style = titleStyle,
-                        color = colors.fg,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    folder.parent?.let { parent ->
-                        Text(
-                            parent.fullPath.toString().removePrefix("root/primary:"),
-                            style = BentoTypography.secondary,
-                            color = colors.sub,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-            }
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(modifier = Modifier.weight(2f)) {
-                        BentoActionTile(
-                            icon = Icons.Filled.PlayArrow,
-                            label = context.symphony.t.PlayAll,
-                            sub = context.symphony.t.XSongs(songs.size.toString()) + " · " +
-                                formatBentoDurationMinutes(songs.sumOf { it.duration }),
-                            tone = BentoTileTone.ACCENT,
-                            main = true,
-                            narrow = windowClass ==
-                                BentoWindowClass.COMPACT,
-                            onClick = {
-                                context.symphony.radio.shorty.playQueue(sortedSongIds)
-                            },
-                        )
-                    }
-                    Box(modifier = Modifier.weight(1f)) {
-                        BentoActionTile(
-                            icon = Icons.Filled.Shuffle,
-                            label = context.symphony.t.ShufflePlay,
-                            sub = "Random order",
-                            tone = BentoTileTone.TONAL,
-                            narrow = windowClass ==
-                                BentoWindowClass.COMPACT,
-                            onClick = {
-                                context.symphony.radio.shorty.playQueue(
-                                    sortedSongIds,
-                                    shuffle = true,
-                                )
-                            },
-                        )
-                    }
-                }
-                BentoTile(
-                    tone = BentoTileTone.PLAIN,
-                    sizeClass = BentoTileSizeClass.L,
-                    contentPadding = 8.dp,
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(BentoRadii.ROW.dp)),
-                    ) {
-                        songs.forEachIndexed { index, song ->
-                            BentoSongRow(
-                                context = context,
-                                song = song,
-                                playing = playingSong.songId == song.id,
-                                isPlaying = playingSong.isPlaying,
-                                onClick = {
-                                    context.symphony.radio.shorty.playQueue(
-                                        sortedSongIds,
-                                        options = Radio.PlayOptions(
-                                            index = index,
-                                        ),
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
-                Box(Modifier.bentoGestureBarPadding())
-            }
-        }
-    }
+                },
+            )
+        },
+    )
 }

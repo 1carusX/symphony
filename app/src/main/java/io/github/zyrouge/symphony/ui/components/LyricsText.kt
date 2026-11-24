@@ -106,11 +106,6 @@ fun LyricsText(
                 duration = playbackPosition.played,
                 padding = padding,
                 style = style,
-                onSeek = {
-                    targetLyrics.pairs.getOrNull(it)?.first?.let { to ->
-                        context.symphony.radio.seek(to)
-                    }
-                }
             )
 
             else -> Box(

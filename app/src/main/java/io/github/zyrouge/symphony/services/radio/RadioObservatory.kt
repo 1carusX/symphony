@@ -18,6 +18,8 @@ class RadioObservatory(private val symphony: Symphony) {
     val queueIndex = _queueIndex.asStateFlow()
     private val _queue = MutableStateFlow(emptyList<String>())
     val queue = _queue.asStateFlow()
+    private val _queueSource = MutableStateFlow<String?>(null)
+    val queueSource = _queueSource.asStateFlow()
     private val _loopMode = MutableStateFlow(RadioQueue.LoopMode.None)
     val loopMode = _loopMode.asStateFlow()
     private val _shuffleMode = MutableStateFlow(false)
@@ -102,6 +104,9 @@ class RadioObservatory(private val symphony: Symphony) {
     private fun emitQueue() {
         _queue.update {
             symphony.radio.queue.currentQueue.toList()
+        }
+        _queueSource.update {
+            symphony.radio.queue.currentSource
         }
     }
 }

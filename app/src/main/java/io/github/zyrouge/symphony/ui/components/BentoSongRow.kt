@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,7 +49,8 @@ import io.github.zyrouge.symphony.utils.DurationUtils
  * A song row (DESIGN.md 4.4): 60 dp (56 in column mode), 44 dp art, the
  * title (accent while playing, with an equalizer glyph over the art), the
  * artist - album line and the duration. Column mode swaps the line for
- * artist and album cells.
+ * artist and album cells. With a [menu], a More button ends the row and a
+ * long press opens the menu too (unless [onLongClick] is set).
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -59,6 +62,7 @@ fun BentoSongRow(
     columns: Boolean = false,
     trailing: (@Composable RowScope.() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
+    menu: (@Composable (expanded: Boolean, onDismissRequest: () -> Unit) -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     val colors = LocalBentoColors.current
@@ -67,14 +71,16 @@ fun BentoSongRow(
     val pressed by interactionSource.collectIsPressedAsState()
     val durationStyle = bentoTabularStyle(BentoTypography.secondary)
     val artistsLine = song.artists.joinToString()
+    var menuExpanded by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .then(
+                // Grows with a large font instead of clipping the two lines.
                 when {
-                    !columns -> Modifier.height(BentoSizes.SONG_ROW.dp)
-                    else -> Modifier.height(BentoSizes.SONG_ROW_COLUMNS.dp)
+                    !columns -> Modifier.heightIn(min = BentoSizes.SONG_ROW.dp)
+                    else -> Modifier.heightIn(min = BentoSizes.SONG_ROW_COLUMNS.dp)
                 },
             )
             .hoverable(interactionSource)
@@ -82,7 +88,7 @@ fun BentoSongRow(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick,
-                onLongClick = onLongClick,
+                onLongClick = onLongClick ?: menu?.let { { menuExpanded = true } },
             )
             .clip(RoundedCornerShape(BentoRadii.ROW.dp))
             .background(
@@ -153,38 +159,61 @@ fun BentoSongRow(
                 modifier = Modifier.width(52.dp),
             )
         } else {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    song.title,
-                    style = BentoTypography.rowTitle,
-                    color = when {
-                        playing -> colors.accent
-                        else -> colors.fg
-                    },
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (artistsLine.isNotEmpty() || !song.album.isNullOrEmpty()) {
+            // At a large scale the duration (and any badge) gives way to the title.
+            BentoTextWithMeta(
+                modifier = Modifier.weight(1f),
+                gap = 12.dp,
+                em = BentoTypography.rowTitle.fontSize,
+                meta = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        trailing?.invoke(this)
+                        Text(
+                            DurationUtils.formatMs(song.duration),
+                            style = durationStyle,
+                            color = colors.muted,
+                            maxLines = 1,
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                },
+            ) {
+                Column {
                     Text(
-                        listOfNotNull(
-                            artistsLine.takeIf { it.isNotEmpty() },
-                            song.album,
-                        ).joinToString(" · "),
-                        style = BentoTypography.secondary,
-                        color = colors.sub,
+                        song.title,
+                        style = BentoTypography.rowTitle,
+                        color = when {
+                            playing -> colors.accent
+                            else -> colors.fg
+                        },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                    if (artistsLine.isNotEmpty() || !song.album.isNullOrEmpty()) {
+                        Text(
+                            listOfNotNull(
+                                artistsLine.takeIf { it.isNotEmpty() },
+                                song.album,
+                            ).joinToString(" · "),
+                            style = BentoTypography.secondary,
+                            color = colors.sub,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
-            trailing?.invoke(this)
-            Text(
-                DurationUtils.formatMs(song.duration),
-                style = durationStyle,
-                color = colors.muted,
-                maxLines = 1,
-                textAlign = TextAlign.End,
-            )
+        }
+        menu?.let {
+            Box {
+                BentoMoreButton(
+                    contentDescription = context.symphony.t.More,
+                    onClick = { menuExpanded = true },
+                )
+                it(menuExpanded) { menuExpanded = false }
+            }
         }
     }
 }
@@ -251,5 +280,7 @@ fun BentoSongColumnHeader(
             textAlign = TextAlign.End,
             modifier = Modifier.width(52.dp),
         )
+        // The More button that ends each row, so the labels stay over their cells.
+        Spacer(Modifier.width(40.dp))
     }
 }

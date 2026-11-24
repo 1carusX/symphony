@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.github.zyrouge.symphony.services.groove.AlbumArtist
 import io.github.zyrouge.symphony.services.radio.Radio
+import io.github.zyrouge.symphony.ui.components.AlbumArtistDropdownMenu
 import io.github.zyrouge.symphony.ui.components.BentoGroupArtistCover
 import io.github.zyrouge.symphony.ui.components.BentoGroupTile
 import io.github.zyrouge.symphony.ui.components.BentoGroupedTileColumns
@@ -21,6 +22,7 @@ import io.github.zyrouge.symphony.ui.components.LoaderScaffold
 import io.github.zyrouge.symphony.ui.components.bentoGroupTileHeightDp
 import io.github.zyrouge.symphony.ui.components.bentoNamesGroupComparator
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.AlbumArtistViewRoute
 
@@ -92,7 +94,8 @@ private fun AlbumArtistGroupTile(
 ) {
     val sortBy by context.symphony.settings.lastUsedSongsSortBy.flow.collectAsState()
     val sortReverse by context.symphony.settings.lastUsedSongsSortReverse.flow.collectAsState()
-    val songIds by remember(artist.name, sortBy, sortReverse) {
+    val grooveVersion = LocalGrooveVersion.current
+    val songIds by remember(artist.name, sortBy, sortReverse, grooveVersion) {
         derivedStateOf {
             context.symphony.groove.song.sort(
                 artist.getSongIds(context.symphony),
@@ -124,20 +127,23 @@ private fun AlbumArtistGroupTile(
         },
         onOpen = { context.navController.navigate(AlbumArtistViewRoute(artist.name)) },
         onPlay = {
-            context.symphony.radio.shorty.playQueue(songIds)
+            context.symphony.radio.shorty.playQueue(songIds, source = artist.name)
         },
         onPlayAt = { index ->
             context.symphony.radio.shorty.playQueue(
                 songIds,
                 Radio.PlayOptions(index = index),
+                source = artist.name,
             )
         },
         rowSecondaryOf = { it.album },
         playingSongId = playingSongId,
         playing = playing,
         narrow = narrow,
-        showAllLabel = "Show all " +
-            context.symphony.t.XSongs(artist.numberOfTracks.toString()),
+        showAllLabel = context.symphony.t.ShowAllX(context.symphony.t.XSongs(artist.numberOfTracks.toString())),
         onShowAll = { context.navController.navigate(AlbumArtistViewRoute(artist.name)) },
+        menu = { expanded, onDismissRequest ->
+            AlbumArtistDropdownMenu(context, artist, expanded, onDismissRequest)
+        },
     )
 }

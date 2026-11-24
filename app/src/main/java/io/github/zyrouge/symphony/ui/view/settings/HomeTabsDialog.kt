@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.components.BentoDialog
+import io.github.zyrouge.symphony.ui.components.bentoScrollbar
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
@@ -45,19 +46,22 @@ fun HomeTabsDialog(context: ViewContext, onDismiss: () -> Unit) {
         onDismiss = onDismiss,
     ) {
         Text(
-            context.symphony.t.SelectAtleast2orAtmost5Tabs,
+            context.symphony.t.SelectAtLeast2Tabs,
             style = BentoTypography.secondary,
             color = colors.sub,
         )
+        val tabsScroll = rememberScrollState()
         Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
+            modifier = Modifier
+                .bentoScrollbar(tabsScroll, colors.muted)
+                .verticalScroll(tabsScroll),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             HomePage.entries.chunked(2).forEach { rowEntries ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     rowEntries.forEach { page ->
                         val selected = page in homeTabs
-                        val canToggle = if (selected) homeTabs.size > 2 else homeTabs.size < 5
+                        val canToggle = !selected || homeTabs.size > 2
                         HomeTabOption(
                             label = page.label(context),
                             selected = selected,

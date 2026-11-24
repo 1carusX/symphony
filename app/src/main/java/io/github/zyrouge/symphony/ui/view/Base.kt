@@ -11,6 +11,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
+import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
+import io.github.zyrouge.symphony.ui.helpers.rememberGrooveVersion
+import io.github.zyrouge.symphony.ui.theme.bento.bentoWallpaperHue
+import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
+import io.github.zyrouge.symphony.ui.view.player.BentoPlayerHost
+import io.github.zyrouge.symphony.ui.view.player.BentoPlayerHostState
+import io.github.zyrouge.symphony.ui.view.player.LocalBentoCapsuleSpace
+import io.github.zyrouge.symphony.ui.view.player.LocalBentoPlayerHost
+import io.github.zyrouge.symphony.ui.view.player.bentoCapsuleSpace
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraphBuilder
@@ -26,12 +41,6 @@ import io.github.zyrouge.symphony.ui.helpers.SlideTransition
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.SymphonyTheme
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsView
-import io.github.zyrouge.symphony.ui.view.settings.AppearanceSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsView
-import io.github.zyrouge.symphony.ui.view.settings.GrooveSettingsViewRoute
-import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsView
-import io.github.zyrouge.symphony.ui.view.settings.PlayerSettingsViewRoute
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.serializer
 
@@ -50,11 +59,38 @@ fun BaseView(symphony: Symphony, activity: MainActivity) {
         val bentoThemeMode by context.symphony.settings.bentoThemeMode.flow.collectAsState()
         val bentoColorScheme by context.symphony.settings.bentoColorScheme.flow.collectAsState()
         val bentoPrimaryHue by context.symphony.settings.bentoPrimaryHue.flow.collectAsState()
+        val bentoWallpaperColors by context.symphony.settings.bentoWallpaperColors.flow.collectAsState()
+        // A wallpaper change updates the configuration, which re-reads the hue.
+        val configuration = LocalConfiguration.current
+        val wallpaperHue = remember(bentoWallpaperColors, configuration) {
+            if (bentoWallpaperColors) bentoWallpaperHue(context.activity) else null
+        }
         BentoTheme(
             mode = bentoThemeMode,
             scheme = bentoColorScheme,
             hue = bentoPrimaryHue,
+            hueDegrees = wallpaperHue,
         ) {
+            val windowClass = rememberBentoWindowClass()
+            val playerHost = rememberSaveable(saver = BentoPlayerHostState.Saver) {
+                BentoPlayerHostState()
+            }
+            val queue by context.symphony.radio.observatory.queue.collectAsState()
+            val queueIndex by context.symphony.radio.observatory.queueIndex.collectAsState()
+            val hasSong = queue.getOrNull(queueIndex) != null
+            // The space follows "a song is loaded", not the capsule's visibility, so
+            // pages do not jump when the player opens or the For you tile hides it.
+            val capsuleSpace by animateDpAsState(
+                targetValue = if (hasSong) bentoCapsuleSpace(windowClass) else 0.dp,
+                animationSpec = spring(dampingRatio = 0.8f, stiffness = 380f),
+                label = "capsule-space",
+            )
+            val grooveVersion by rememberGrooveVersion(context.symphony)
+            CompositionLocalProvider(
+                LocalBentoPlayerHost provides playerHost,
+                LocalBentoCapsuleSpace provides capsuleSpace,
+                LocalGrooveVersion provides grooveVersion,
+            ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -88,16 +124,18 @@ fun BaseView(symphony: Symphony, activity: MainActivity) {
                     baseComposable<SettingsViewRoute> {
                         SettingsView(context, it.toRoute())
                     }
-                    baseComposable<AppearanceSettingsViewRoute> {
-                        AppearanceSettingsView(context)
-                    }
-                    baseComposable<GrooveSettingsViewRoute> {
-                        GrooveSettingsView(context, it.toRoute())
-                    }
-                    baseComposable<PlayerSettingsViewRoute> {
-                        PlayerSettingsView(context)
-                    }
                 }
+
+                // Above the navigation graph so every page keeps the capsule and the player.
+                BentoPlayerHost(
+                    context = context,
+                    windowClass = windowClass,
+                    open = playerHost.open,
+                    capsuleSuppressed = playerHost.capsuleSuppressed,
+                    hasRail = playerHost.hasRail,
+                    onOpenChange = { open -> playerHost.open = open },
+                )
+            }
             }
         }
     }
