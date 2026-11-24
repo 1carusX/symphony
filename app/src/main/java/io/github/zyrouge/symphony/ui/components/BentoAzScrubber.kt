@@ -3,12 +3,11 @@ package io.github.zyrouge.symphony.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,14 +25,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 /** The A-Z letters of the scrubber, in order (DESIGN.md 4.6). */
@@ -98,7 +98,7 @@ fun BentoLetterHeader(letter: String) {
 
 /**
  * The A-Z scrubber (DESIGN.md 4.6): a 24 dp column of letters at the right
- * edge, vertically centered on screen, min(520, window height - 260) tall.
+ * edge, as tall as the space it is given (up to 520 dp) and centered in it.
  * Letters with songs use `accent`, the others render dimmed and are skipped
  * while scrubbing. A 56 dp accent bubble shows the current letter while
  * dragging and the caller jumps the list to that letter's header.
@@ -110,11 +110,6 @@ fun BentoAzScrubber(
 ) {
     val colors = LocalBentoColors.current
     val density = LocalDensity.current
-    val windowInfo = LocalWindowInfo.current
-    val height = minOf(
-        BentoSizes.AZ_SCRUBBER_MAX_HEIGHT.dp,
-        windowInfo.containerDpSize.height - 260.dp,
-    ).coerceAtLeast(120.dp)
     var dragY by remember { mutableStateOf<Float?>(null) }
     var bubbleLetter by remember { mutableStateOf<String?>(null) }
     // The gesture blocks below outlive recompositions; without this they would
@@ -140,8 +135,9 @@ fun BentoAzScrubber(
     Box(
         modifier = Modifier
             .width(30.dp)
-            .height(height)
-            .pointerInput(presentLetters, height) {
+            .heightIn(max = BentoSizes.AZ_SCRUBBER_MAX_HEIGHT.dp)
+            .fillMaxHeight()
+            .pointerInput(presentLetters) {
                 detectVerticalDragGestures(
                     onDragStart = { offset -> scrubAt(offset.y, size.height.toFloat()) },
                     onVerticalDrag = { change, _ ->
@@ -158,7 +154,7 @@ fun BentoAzScrubber(
                     },
                 )
             }
-            .pointerInput(presentLetters, height) {
+            .pointerInput(presentLetters) {
                 detectTapGestures { offset ->
                     scrubAt(offset.y, size.height.toFloat())
                     dragY = null
@@ -166,25 +162,44 @@ fun BentoAzScrubber(
                 }
             },
     ) {
-        Column(
+        // Each letter sits in its own 1/27 band, the band scrubAt maps a touch
+        // to. When a band is shorter than a letter (a short tile or a large
+        // font scale), only every few letters are shown; scrubbing still
+        // reaches all of them.
+        Layout(
             modifier = Modifier
                 .width(BentoSizes.AZ_SCRUBBER_WIDTH.dp)
                 .fillMaxHeight()
                 .padding(vertical = 10.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            BENTO_AZ_LETTERS.forEach { letter ->
-                val present = letter in presentLetters
-                Text(
-                    letter,
-                    style = BentoTypography.index,
-                    color = when {
-                        present -> colors.accent
-                        else -> colors.muted.copy(alpha = 0.45f)
-                    },
-                    maxLines = 1,
-                )
+            content = {
+                BENTO_AZ_LETTERS.forEach { letter ->
+                    val present = letter in presentLetters
+                    Text(
+                        letter,
+                        style = BentoTypography.index,
+                        color = when {
+                            present -> colors.accent
+                            else -> colors.muted.copy(alpha = 0.45f)
+                        },
+                        maxLines = 1,
+                    )
+                }
+            },
+        ) { measurables, constraints ->
+            val placeables = measurables.map {
+                it.measure(constraints.copy(minWidth = 0, minHeight = 0))
+            }
+            val band = constraints.maxHeight.toFloat() / placeables.size
+            val step = ceil(placeables.maxOf { it.height } / band).toInt().coerceAtLeast(1)
+            layout(constraints.maxWidth, constraints.maxHeight) {
+                placeables.forEachIndexed { index, placeable ->
+                    if (index % step == 0) {
+                        placeable.place(
+                            (constraints.maxWidth - placeable.width) / 2,
+                            ((index + 0.5f) * band - placeable.height / 2f).roundToInt(),
+                        )
+                    }
+                }
             }
         }
         val y = dragY
