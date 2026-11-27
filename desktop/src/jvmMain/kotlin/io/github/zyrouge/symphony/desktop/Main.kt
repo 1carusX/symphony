@@ -1,5 +1,10 @@
 package io.github.zyrouge.symphony.desktop
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -18,12 +23,18 @@ fun main(args: Array<String>) {
         ?.takeIf { it.isNotBlank() }
         ?.let { Path.of(it) }
     application {
+        var shortcuts by remember { mutableStateOf<((KeyEvent) -> Boolean)?>(null) }
         Window(
             onCloseRequest = ::exitApplication,
             title = "Symphony Desktop",
             state = rememberWindowState(width = 980.dp, height = 660.dp),
+            onPreviewKeyEvent = { event -> shortcuts?.invoke(event) ?: false },
         ) {
-            DesktopApp(window, initialDirectory)
+            DesktopApp(
+                window = window,
+                initialDirectory = initialDirectory,
+                onShortcutsAvailable = { shortcuts = it },
+            )
         }
     }
 }

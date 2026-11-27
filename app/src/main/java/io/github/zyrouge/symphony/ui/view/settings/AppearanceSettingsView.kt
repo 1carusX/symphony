@@ -7,9 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalConfiguration
 import io.github.zyrouge.symphony.services.locales.localeNativeName
 import io.github.zyrouge.symphony.services.locales.localeTag
-import io.github.zyrouge.symphony.services.locales.symphonyLocales
 import io.github.zyrouge.symphony.ui.components.AppearanceFontOption
-import io.github.zyrouge.symphony.ui.components.AppearanceLanguageOption
+import io.github.zyrouge.symphony.ui.components.appearanceLanguageOptions
 import io.github.zyrouge.symphony.ui.components.BentoAppearanceSettingsSheet
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.LocalStrings
@@ -31,21 +30,11 @@ fun AppearanceSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit)
     val strings = LocalStrings.current
 
     val systemLanguage = LocalConfiguration.current.locales[0].language
-    val systemLanguageName = strings.SystemX(localeNativeName(systemLanguage))
-    val languages = listOf(
-        AppearanceLanguageOption(
-            code = "",
-            nativeName = systemLanguageName,
-            englishName = null,
-        ),
-    ) + symphonyLocales.map { info ->
-        AppearanceLanguageOption(
-            code = info.code,
-            nativeName = info.nativeName,
-            englishName = java.util.Locale.forLanguageTag(localeTag(info.code))
-                .getDisplayName(java.util.Locale.ENGLISH)
-                .takeIf { it.isNotBlank() && !it.equals(info.nativeName, ignoreCase = true) },
-        )
+    val languages = appearanceLanguageOptions(
+        systemLanguageName = strings.SystemX(localeNativeName(systemLanguage)),
+    ) { code ->
+        java.util.Locale.forLanguageTag(localeTag(code))
+            .getDisplayName(java.util.Locale.ENGLISH)
     }
     val fonts = SymphonyTypography.all.map { (id, font) ->
         AppearanceFontOption(id = id, label = font.fontName)

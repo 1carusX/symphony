@@ -38,6 +38,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -51,8 +57,7 @@ import io.github.zyrouge.symphony.i18n.Strings
 import io.github.zyrouge.symphony.i18n.rememberStrings
 import io.github.zyrouge.symphony.services.locales.localeNativeName
 import io.github.zyrouge.symphony.services.locales.localeTag
-import io.github.zyrouge.symphony.services.locales.symphonyLocales
-import io.github.zyrouge.symphony.ui.components.AppearanceLanguageOption
+import io.github.zyrouge.symphony.ui.components.appearanceLanguageOptions
 import io.github.zyrouge.symphony.ui.components.BentoAppearanceSettingsSheet
 import io.github.zyrouge.symphony.ui.components.HomeNavItem
 import io.github.zyrouge.symphony.ui.components.HomePageHeader
@@ -178,7 +183,11 @@ private sealed interface DesktopDetail {
 }
 
 @Composable
-fun DesktopApp(window: Window, initialDirectory: Path? = null) {
+fun DesktopApp(
+    window: Window,
+    initialDirectory: Path? = null,
+    onShortcutsAvailable: (((KeyEvent) -> Boolean)?) -> Unit = {},
+) {
     val settingsStore = remember { DesktopSettingsStore() }
     val initialSettings = remember { settingsStore.load() }
     val systemLocale = remember { Locale.getDefault() }
@@ -238,6 +247,7 @@ fun DesktopApp(window: Window, initialDirectory: Path? = null) {
     var playerLevel by remember { mutableStateOf(BentoPlayerLevel.SMALL) }
     var searchExpanded by remember { mutableStateOf(false) }
     var showSettingsPage by remember { mutableStateOf(false) }
+    var forYouNowPlayingVisible by remember { mutableStateOf(false) }
     val searchFocusRequester = remember { FocusRequester() }
     val nowMs = remember { System.currentTimeMillis() }
     val currentSong = queue.getOrNull(queueIndex)?.let { id -> songs.firstOrNull { it.id == id } }
@@ -300,6 +310,42 @@ fun DesktopApp(window: Window, initialDirectory: Path? = null) {
     fun playQueue(entries: List<UiSong>, startIndex: Int = 0, shuffle: Boolean = false) {
         uiApp.playback.playQueue(entries.map { it.id }, startIndex = startIndex, shuffle = shuffle)
     }
+
+    // Ctrl-based shortcuts so typing in the search field never loses a key.
+    val shortcuts: (KeyEvent) -> Boolean = { event ->
+        when {
+            event.type != KeyEventType.KeyDown || !event.isCtrlPressed -> false
+            event.key == Key.Spacebar -> {
+                uiApp.playback.togglePlayPause()
+                true
+            }
+
+            event.key == Key.DirectionLeft -> {
+                uiApp.playback.seekTo((positionMs - 5_000L).coerceAtLeast(0L))
+                true
+            }
+
+            event.key == Key.DirectionRight -> {
+                uiApp.playback.seekTo(positionMs + 5_000L)
+                true
+            }
+
+            event.key == Key.DirectionUp -> {
+                volume = (volume + 5).coerceAtMost(100)
+                uiApp.playback.setVolume(volume)
+                true
+            }
+
+            event.key == Key.DirectionDown -> {
+                volume = (volume - 5).coerceAtLeast(0)
+                uiApp.playback.setVolume(volume)
+                true
+            }
+
+            else -> false
+        }
+    }
+    LaunchedEffect(shortcuts) { onShortcutsAvailable(shortcuts) }
 
     BentoTheme(
         mode = themeMode,
@@ -593,7 +639,9 @@ fun DesktopApp(window: Window, initialDirectory: Path? = null) {
                                             onPrevious = { uiApp.playback.skipToPrevious() },
                                             onPlayPause = { uiApp.playback.togglePlayPause() },
                                             onNext = { uiApp.playback.skipToNext() },
-                                            onVisibilityChanged = {},
+                                            onVisibilityChanged = {
+                                                forYouNowPlayingVisible = it
+                                            },
                                         )
                                     },
                                     artworkAlbum = { album, modifier ->
@@ -738,7 +786,9 @@ fun DesktopApp(window: Window, initialDirectory: Path? = null) {
                             }
                         }
                     }
-                    if (currentSong != null) {
+                    val capsuleHidden = browseTab == DesktopTab.FOR_YOU &&
+                        forYouNowPlayingVisible
+                    if (currentSong != null && !capsuleHidden) {
                         NowPlayingBar(
                         strings = strings,
                         song = currentSong,
@@ -884,23 +934,12 @@ private fun DesktopSettingsDialog(
     onLanguage: (String?) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val systemLanguageName = strings.SystemX(
-        localeNativeName(Locale.getDefault().language),
-    )
-    val languages = listOf(
-        AppearanceLanguageOption(
-            code = "",
-            nativeName = systemLanguageName,
-            englishName = null,
+    val languages = appearanceLanguageOptions(
+        systemLanguageName = strings.SystemX(
+            localeNativeName(Locale.getDefault().language),
         ),
-    ) + symphonyLocales.map { info ->
-        AppearanceLanguageOption(
-            code = info.code,
-            nativeName = info.nativeName,
-            englishName = Locale.forLanguageTag(localeTag(info.code))
-                .getDisplayName(Locale.ENGLISH)
-                .takeIf { it.isNotBlank() && !it.equals(info.nativeName, ignoreCase = true) },
-        )
+    ) { code ->
+        Locale.forLanguageTag(localeTag(code)).getDisplayName(Locale.ENGLISH)
     }
     CompositionLocalProvider(LocalStrings provides strings) {
         BentoAppearanceSettingsSheet(
