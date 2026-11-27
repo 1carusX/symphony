@@ -9,20 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.repeatable
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import io.github.zyrouge.symphony.Symphony
 import io.github.zyrouge.symphony.services.groove.Groove
-import io.github.zyrouge.symphony.ui.helpers.TransitionDurations
-import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import io.github.zyrouge.symphony.ui.components.BentoSheetButton
 import io.github.zyrouge.symphony.ui.components.BentoSheetDialog
@@ -38,7 +26,6 @@ import kotlin.math.roundToInt
 import io.github.zyrouge.symphony.utils.ImageQuality
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.foundation.background
@@ -583,39 +570,5 @@ private fun refreshMediaLibrary(symphony: Symphony, clearCache: Boolean = false)
             resetPersistentCache = clearCache,
         )
         symphony.groove.fetch(options)
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun SpotlightTile(isInSpotlight: Boolean, content: @Composable (() -> Unit)) {
-    val bringIntoViewRequester = remember { BringIntoViewRequester() }
-    val highlightAlphaAnimated = remember { Animatable(0f) }
-    val highlightColor = LocalBentoColors.current.accent
-
-    LaunchedEffect(isInSpotlight) {
-        if (isInSpotlight) {
-            bringIntoViewRequester.bringIntoView()
-            delay(100)
-            highlightAlphaAnimated.animateTo(
-                targetValue = 0.3f,
-                animationSpec = repeatable(
-                    2,
-                    TransitionDurations.Fast.asTween(easing = LinearEasing)
-                ),
-            )
-            highlightAlphaAnimated.snapTo(0f)
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .bringIntoViewRequester(bringIntoViewRequester)
-            .drawWithContent {
-                drawContent()
-                drawRect(color = highlightColor, alpha = highlightAlphaAnimated.value)
-            }
-    ) {
-        content()
     }
 }

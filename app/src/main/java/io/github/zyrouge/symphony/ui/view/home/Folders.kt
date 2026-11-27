@@ -23,8 +23,6 @@ import androidx.compose.material.icons.filled.FolderCopy
 import androidx.compose.material.icons.rounded.AccountTree
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -62,6 +60,9 @@ import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.utils.SimpleFileSystem
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop
 import java.util.Stack
 
 /** The two views of the Folders section (the prototype's folder view switch). */
@@ -181,6 +182,9 @@ fun FoldersView(context: ViewContext) {
                                         bentoGroupTileHeightDp(folder.getSortedSongIds(context).size)
                                     },
                                     modifier = Modifier.padding(top = 4.dp),
+                                    bottomInset = bentoBottomInset(),
+                                    contentAtEnd = LocalHomeContentAtEnd.current,
+                                    contentAtTop = LocalHomeContentAtTop.current,
                                 ) { folderValue, tileWidth ->
                                     FolderGroupTile(
                                         context = context,

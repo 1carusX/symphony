@@ -11,7 +11,6 @@ import io.github.zyrouge.symphony.services.groove.repositories.GenreRepository
 import io.github.zyrouge.symphony.services.groove.repositories.PlaylistRepository
 import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.services.radio.RadioQueue
-import io.github.zyrouge.symphony.ui.components.ResponsiveGridColumns
 import io.github.zyrouge.symphony.ui.theme.ThemeMode
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorScheme
 import io.github.zyrouge.symphony.ui.theme.bento.BentoPrimaryHue
@@ -162,14 +161,6 @@ class Settings(private val symphony: Symphony) {
         ArtistRepository.SortBy.ARTIST_NAME,
     )
     val lastUsedArtistsSortReverse = BooleanEntry("last_used_artists_sort_reverse", false)
-    val lastUsedArtistsHorizontalGridColumns = IntEntry(
-        "last_used_artists_horizontal_grid_columns",
-        ResponsiveGridColumns.DEFAULT_HORIZONTAL_COLUMNS,
-    )
-    val lastUsedArtistsVerticalGridColumns = IntEntry(
-        "last_used_artists_vertical_grid_columns",
-        ResponsiveGridColumns.DEFAULT_VERTICAL_COLUMNS,
-    )
     val lastUsedAlbumArtistsSortBy = EnumEntry(
         "last_used_album_artists_sort_by",
         enumEntries<AlbumArtistRepository.SortBy>(),
@@ -177,42 +168,18 @@ class Settings(private val symphony: Symphony) {
     )
     val lastUsedAlbumArtistsSortReverse =
         BooleanEntry("last_used_album_artists_sort_reverse", false)
-    val lastUsedAlbumArtistsHorizontalGridColumns = IntEntry(
-        "last_used_album_artists_horizontal_grid_columns",
-        ResponsiveGridColumns.DEFAULT_HORIZONTAL_COLUMNS,
-    )
-    val lastUsedAlbumArtistsVerticalGridColumns = IntEntry(
-        "last_used_album_artists_vertical_grid_columns",
-        ResponsiveGridColumns.DEFAULT_VERTICAL_COLUMNS,
-    )
     val lastUsedAlbumsSortBy = EnumEntry(
         "last_used_albums_sort_by",
         enumEntries<AlbumRepository.SortBy>(),
         AlbumRepository.SortBy.ALBUM_NAME,
     )
     val lastUsedAlbumsSortReverse = BooleanEntry("last_used_albums_sort_reverse", false)
-    val lastUsedAlbumsHorizontalGridColumns = IntEntry(
-        "last_used_albums_horizontal_grid_columns",
-        ResponsiveGridColumns.DEFAULT_HORIZONTAL_COLUMNS,
-    )
-    val lastUsedAlbumsVerticalGridColumns = IntEntry(
-        "last_used_albums_vertical_grid_columns",
-        ResponsiveGridColumns.DEFAULT_VERTICAL_COLUMNS,
-    )
     val lastUsedGenresSortBy = EnumEntry(
         "last_used_genres_sort_by",
         enumEntries<GenreRepository.SortBy>(),
         GenreRepository.SortBy.GENRE,
     )
     val lastUsedGenresSortReverse = BooleanEntry("last_used_genres_sort_reverse", false)
-    val lastUsedGenresHorizontalGridColumns = IntEntry(
-        "last_used_genres_horizontal_grid_columns",
-        ResponsiveGridColumns.DEFAULT_HORIZONTAL_COLUMNS,
-    )
-    val lastUsedGenresVerticalGridColumns = IntEntry(
-        "last_used_genres_vertical_grid_columns",
-        ResponsiveGridColumns.DEFAULT_VERTICAL_COLUMNS,
-    )
     val lastUsedBrowserSortBy = EnumEntry(
         "last_used_folder_sort_by",
         enumEntries<SongRepository.SortBy>(),
@@ -226,14 +193,6 @@ class Settings(private val symphony: Symphony) {
         PlaylistRepository.SortBy.CUSTOM,
     )
     val lastUsedPlaylistsSortReverse = BooleanEntry("last_used_playlists_sort_reverse", false)
-    val lastUsedPlaylistsHorizontalGridColumns = IntEntry(
-        "last_used_playlists_horizontal_grid_columns",
-        ResponsiveGridColumns.DEFAULT_HORIZONTAL_COLUMNS,
-    )
-    val lastUsedPlaylistsVerticalGridColumns = IntEntry(
-        "last_used_playlists_vertical_grid_columns",
-        ResponsiveGridColumns.DEFAULT_VERTICAL_COLUMNS,
-    )
     val lastUsedPlaylistSongsSortBy = EnumEntry(
         "last_used_playlist_songs_sort_by",
         enumEntries<SongRepository.SortBy>(),
@@ -259,14 +218,6 @@ class Settings(private val symphony: Symphony) {
         StringListUtils.SortBy.NAME,
     )
     val lastUsedFoldersSortReverse = BooleanEntry("last_used_folders_sort_reverse", false)
-    val lastUsedFoldersHorizontalGridColumns = IntEntry(
-        "last_used_folders_horizontal_grid_columns",
-        ResponsiveGridColumns.DEFAULT_HORIZONTAL_COLUMNS,
-    )
-    val lastUsedFoldersVerticalGridColumns = IntEntry(
-        "last_used_folders_vertical_grid_columns",
-        ResponsiveGridColumns.DEFAULT_VERTICAL_COLUMNS,
-    )
     val lastDisabledTreePaths = StringSetEntry("last_disabled_tree_paths", emptySet())
     val previousSongQueue = object : Entry<RadioQueue.Serialized?>("previous_song_queue") {
         override fun getValueInternal() = getSharedPreferences().getString(key, null)?.let {

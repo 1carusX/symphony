@@ -59,12 +59,6 @@ data class BentoPlayerData(
     val pauseOnCurrentSongEnd: Boolean,
 )
 
-enum class BentoPlayerStage {
-    COVER,
-    LYRICS,
-    QUEUE,
-}
-
 @Composable
 fun BentoPlayerObserver(
     context: ViewContext,

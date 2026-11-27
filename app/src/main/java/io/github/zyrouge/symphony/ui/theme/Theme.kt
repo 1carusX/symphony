@@ -3,9 +3,14 @@ package io.github.zyrouge.symphony.ui.theme
 import android.app.Activity
 import android.content.res.Configuration
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,9 +19,17 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
 import io.github.zyrouge.symphony.Symphony
 import io.github.zyrouge.symphony.i18n.rememberStrings
+import io.github.zyrouge.symphony.ui.components.BentoAppDialog
+import io.github.zyrouge.symphony.ui.components.BentoPlatformMetrics
+import io.github.zyrouge.symphony.ui.components.LocalBentoBackHandler
+import io.github.zyrouge.symphony.ui.components.LocalBentoDialogHost
+import io.github.zyrouge.symphony.ui.components.LocalBentoPlatformMetrics
+import io.github.zyrouge.symphony.ui.components.bentoSystemBottomInset
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoColorMode
 import io.github.zyrouge.symphony.ui.theme.bento.toBentoColorMode
@@ -103,6 +116,33 @@ fun SymphonyTheme(
                 LocalStrings provides strings,
                 LocalDensity provides appDensity,
                 LocalBentoAppDensity provides appDensity,
+                LocalBentoPlatformMetrics provides BentoPlatformMetrics(
+                    bottomInset = bentoSystemBottomInset(),
+                    topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                    windowScale = bentoAppScale(),
+                ),
+                LocalBentoBackHandler provides { enabled, onBack ->
+                    BackHandler(enabled = enabled, onBack = onBack)
+                },
+                LocalBentoDialogHost provides { window, onDismissRequest, content ->
+                    BentoAppDialog(
+                        onDismissRequest = onDismissRequest,
+                        properties = DialogProperties(
+                            dismissOnBackPress = window.dismissOnBackPress,
+                            dismissOnClickOutside = window.dismissOnClickOutside,
+                            usePlatformDefaultWidth = window.usePlatformDefaultWidth,
+                            decorFitsSystemWindows = !window.edgeToEdge,
+                        ),
+                    ) {
+                        if (window.edgeToEdge) {
+                            val view = LocalView.current
+                            LaunchedEffect(view) {
+                                (view as? DialogWindowProvider)?.window?.setDimAmount(0f)
+                            }
+                        }
+                        content()
+                    }
+                },
             ) {
                 content()
             }

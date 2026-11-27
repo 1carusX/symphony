@@ -23,5 +23,6 @@ include(":app")
 include(":core")
 include(":i18n")
 include(":metaphony")
+include(":shared-ui")
 
 include(":desktop")

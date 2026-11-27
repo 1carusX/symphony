@@ -12,6 +12,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import io.github.zyrouge.symphony.ui.components.GenericSongListDropdown
 import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
@@ -62,10 +64,17 @@ fun GenreView(context: ViewContext, route: GenreViewRoute) {
                         label = context.symphony.t.Artists,
                         people = artists.take(12).map { artistName ->
                             DetailPerson(
-                                artistName,
-                                context.symphony.groove.artist
-                                    .createArtworkImageRequest(artistName)
-                                    .build(),
+                                name = artistName,
+                                artwork = { modifier ->
+                                    AsyncImage(
+                                        context.symphony.groove.artist
+                                            .createArtworkImageRequest(artistName)
+                                            .build(),
+                                        artistName,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = modifier,
+                                    )
+                                },
                             ) {
                                 context.navController.navigate(ArtistViewRoute(artistName))
                             }

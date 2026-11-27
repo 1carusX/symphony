@@ -15,13 +15,11 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -137,4 +135,3 @@ fun <T : Enum<T>> MediaSortBar(
         }
     }
 }
-

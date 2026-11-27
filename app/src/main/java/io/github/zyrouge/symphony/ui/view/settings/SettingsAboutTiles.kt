@@ -37,7 +37,6 @@ import androidx.core.net.toUri
 import io.github.zyrouge.symphony.ui.helpers.libraryRescanAction
 import io.github.zyrouge.symphony.R
 import io.github.zyrouge.symphony.services.AppMeta
-import io.github.zyrouge.symphony.services.groove.Groove
 import io.github.zyrouge.symphony.ui.components.BentoCallToActionPill
 import io.github.zyrouge.symphony.ui.components.BentoStatContent
 import io.github.zyrouge.symphony.ui.components.BentoTile

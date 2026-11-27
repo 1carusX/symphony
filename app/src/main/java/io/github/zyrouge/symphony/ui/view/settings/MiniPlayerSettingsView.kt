@@ -34,9 +34,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import io.github.zyrouge.symphony.ui.components.BentoSheetButton
-import io.github.zyrouge.symphony.ui.components.BentoSheetDialog
-import io.github.zyrouge.symphony.ui.components.BentoSheetSwitchRow
+import io.github.zyrouge.symphony.ui.components.BentoSettingsRow
+import io.github.zyrouge.symphony.ui.components.BentoSettingsSheet
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
@@ -64,41 +63,41 @@ fun MiniPlayerSettingsDialog(context: ViewContext, onDismissRequest: () -> Unit)
     val wideCapsule = windowClass != BentoWindowClass.COMPACT &&
         windowClass != BentoWindowClass.SHORT_HEIGHT
 
-    BentoSheetDialog(
+    BentoSettingsSheet(
         title = context.symphony.t.MiniPlayer,
+        doneLabel = context.symphony.t.Done,
         onDismissRequest = onDismissRequest,
-        actions = {
-            BentoSheetButton(
-                label = context.symphony.t.Done,
-                primary = true,
-                onClick = onDismissRequest,
-            )
-        },
-    ) {
-        MiniPlayerPreview(
-            context = context,
-            showPrevious = trackControls && wideCapsule,
-            showNext = trackControls,
-            showSeek = seekControls,
-        )
-        BentoSheetSwitchRow(
-            title = context.symphony.t.PreviousAndNext,
-            subtitle = context.symphony.t.PreviousOnWideOnly,
-            checked = trackControls,
-            onCheckedChange = { settings.miniPlayerTrackControls.setValue(it) },
-        )
-        BentoSheetSwitchRow(
-            title = context.symphony.t.BackAndForward,
-            subtitle = context.symphony.t.JumpXBackYAhead(seekBack.toString(), seekForward.toString()),
-            checked = seekControls,
-            onCheckedChange = { settings.miniPlayerSeekControls.setValue(it) },
-        )
-        BentoSheetSwitchRow(
-            title = context.symphony.t.ScrollLongTitles,
-            checked = marquee,
-            onCheckedChange = { settings.miniPlayerTextMarquee.setValue(it) },
-        )
-    }
+        rows = listOf(
+            BentoSettingsRow.Content {
+                MiniPlayerPreview(
+                    context = context,
+                    showPrevious = trackControls && wideCapsule,
+                    showNext = trackControls,
+                    showSeek = seekControls,
+                )
+            },
+            BentoSettingsRow.Switch(
+                title = context.symphony.t.PreviousAndNext,
+                subtitle = context.symphony.t.PreviousOnWideOnly,
+                checked = trackControls,
+                onCheckedChange = { settings.miniPlayerTrackControls.setValue(it) },
+            ),
+            BentoSettingsRow.Switch(
+                title = context.symphony.t.BackAndForward,
+                subtitle = context.symphony.t.JumpXBackYAhead(
+                    seekBack.toString(),
+                    seekForward.toString(),
+                ),
+                checked = seekControls,
+                onCheckedChange = { settings.miniPlayerSeekControls.setValue(it) },
+            ),
+            BentoSettingsRow.Switch(
+                title = context.symphony.t.ScrollLongTitles,
+                checked = marquee,
+                onCheckedChange = { settings.miniPlayerTextMarquee.setValue(it) },
+            ),
+        ),
+    )
 }
 
 /**

@@ -1,43 +1,21 @@
 package io.github.zyrouge.symphony.ui.view
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Album
@@ -45,23 +23,15 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Sell
 import androidx.compose.material.icons.rounded.SupervisorAccount
-import androidx.compose.material.icons.rounded.Tune
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import io.github.zyrouge.symphony.ui.view.player.LocalBentoPlayerHost
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -72,30 +42,15 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.groove.Groove
 import io.github.zyrouge.symphony.ui.components.IntroductoryDialog
+import io.github.zyrouge.symphony.ui.components.HomePageHeader
 import io.github.zyrouge.symphony.ui.helpers.ScaleTransition
 import io.github.zyrouge.symphony.ui.helpers.SlideTransition
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
-import io.github.zyrouge.symphony.ui.helpers.rememberGrooveFolderCount
-import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
-import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
-import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
-import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
 import io.github.zyrouge.symphony.ui.view.home.AlbumArtistsView
@@ -106,9 +61,7 @@ import io.github.zyrouge.symphony.ui.view.home.ForYouView
 import io.github.zyrouge.symphony.ui.view.home.GenresView
 import io.github.zyrouge.symphony.ui.view.home.PlaylistsView
 import io.github.zyrouge.symphony.ui.view.home.SongsView
-import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
-import kotlin.math.roundToInt
 
 /**
  * Home page sections. The order follows the bento design spec (DESIGN.md
@@ -398,93 +351,23 @@ private fun HomeHeader(
     navigation: HomeNavigation,
     currentTab: HomePage,
 ) {
-    val colors = LocalBentoColors.current
-    val appFontFamily = MaterialTheme.typography.titleLarge.fontFamily
-    val (titleStyle, paddings, minHeight) = when (navigation) {
-        HomeNavigation.TABS -> Triple(
-            BentoTypography.pageTitleCompact.copy(fontFamily = appFontFamily),
-            PaddingValues(
-                start = BentoSpacing.GUTTER_COMPACT.dp,
-                end = 8.dp,
-                top = 14.dp,
-                bottom = 6.dp,
-            ),
-            BentoSizes.HEADER_MIN_HEIGHT_PHONE.dp,
-        )
-
-        HomeNavigation.RAIL_SHORT -> Triple(
-            BentoTypography.pageTitleShort.copy(fontFamily = appFontFamily),
-            PaddingValues(
-                start = BentoSpacing.GUTTER_OTHER.dp,
-                end = 12.dp,
-                top = 8.dp,
-                bottom = 6.dp,
-            ),
-            BentoSizes.HEADER_MIN_HEIGHT_SHORT.dp,
-        )
-
-        else -> Triple(
-            BentoTypography.pageTitle.copy(fontFamily = appFontFamily),
-            PaddingValues(
-                start = BentoSpacing.GUTTER_OTHER.dp,
-                end = BentoSpacing.GUTTER_OTHER.dp,
-                top = 22.dp,
-                bottom = 14.dp,
-            ),
-            BentoSizes.HEADER_MIN_HEIGHT.dp,
-        )
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = minHeight)
-            .padding(paddings),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Crossfade(
-            label = "home-title",
-            targetState = currentTab,
-            modifier = Modifier.weight(1f),
-        ) { tab ->
-            Text(
-                tab.label(context),
-                style = titleStyle,
-                color = colors.fg,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-            if (navigation == HomeNavigation.TABS) {
-                IconButton(
-                    content = {
-                        Icon(
-                            Icons.Rounded.Search,
-                            context.symphony.t.SearchYourMusic,
-                            tint = colors.fg,
-                        )
-                    },
-                    onClick = {
-                        context.navController.navigate(SearchViewRoute(currentTab.kind?.name))
-                    },
-                )
-                IconButton(
-                    content = {
-                        Icon(
-                            Icons.Rounded.Tune,
-                            context.symphony.t.Settings,
-                            tint = colors.fg,
-                        )
-                    },
-                    onClick = {
-                        context.navController.navigate(SettingsViewRoute())
-                    },
-                )
-            }
-        }
-    }
+    HomePageHeader(
+        title = currentTab.label(context),
+        windowClass = when (navigation) {
+            HomeNavigation.TABS -> BentoWindowClass.COMPACT
+            HomeNavigation.RAIL_SHORT -> BentoWindowClass.SHORT_HEIGHT
+            else -> BentoWindowClass.LARGE
+        },
+        showActions = navigation == HomeNavigation.TABS,
+        onSearch = {
+            context.navController.navigate(SearchViewRoute(currentTab.kind?.name))
+        },
+        onSettings = {
+            context.navController.navigate(SettingsViewRoute())
+        },
+        searchLabel = context.symphony.t.SearchYourMusic,
+        settingsLabel = context.symphony.t.Settings,
+    )
 }
 
 /**

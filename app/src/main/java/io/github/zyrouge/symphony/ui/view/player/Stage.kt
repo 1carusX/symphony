@@ -1,21 +1,14 @@
 package io.github.zyrouge.symphony.ui.view.player
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -30,7 +23,6 @@ import io.github.zyrouge.symphony.ui.components.KeepScreenAwake
 import io.github.zyrouge.symphony.ui.components.LyricsText
 import io.github.zyrouge.symphony.ui.components.TimedContentTextStyle
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
-import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 
@@ -44,78 +36,64 @@ internal fun BentoPlayerStageView(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalBentoColors.current
-    Box(modifier = modifier) {
-        when (stage) {
-            BentoPlayerStage.COVER -> BoxWithConstraints(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                val coverSize = minOf(maxWidth, maxHeight, 640.dp)
-                AsyncImage(
-                    data.song.createArtworkImageRequest(context.symphony).build(),
-                    data.song.title,
-                    contentScale = ContentScale.Crop,
-                    filterQuality = FilterQuality.High,
-                    modifier = Modifier
-                        .size(coverSize)
-                        .clip(RoundedCornerShape(BentoRadii.PLAYER_COVER.dp))
-                        .clickable { onStageChange(BentoPlayerStage.LYRICS) },
-                )
-            }
-
-            BentoPlayerStage.LYRICS -> {
-                val keepScreenAwake by context.symphony.settings.lyricsKeepScreenAwake.flow.collectAsState()
-                if (keepScreenAwake) {
-                    KeepScreenAwake()
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(BentoRadii.PLAYER_COVER.dp))
-                        .background(colors.raised)
-                        .clickable { onStageChange(BentoPlayerStage.COVER) },
-                ) {
-                    CompositionLocalProvider(
-                        LocalTextStyle provides BentoTypography.body.copy(color = colors.muted),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer {
-                                    compositingStrategy = CompositingStrategy.Offscreen
-                                }
-                                .drawWithContent {
-                                    drawContent()
-                                    drawRect(
-                                        brush = Brush.verticalGradient(
-                                            0f to Color.Transparent,
-                                            0.08f to Color.Black,
-                                            0.92f to Color.Black,
-                                            1f to Color.Transparent,
-                                        ),
-                                        blendMode = BlendMode.DstIn,
-                                    )
-                                },
-                        ) {
-                            LyricsText(
-                                context = context,
-                                padding = PaddingValues(horizontal = 22.dp, vertical = 42.dp),
-                                style = TimedContentTextStyle(
-                                    highlighted = BentoTypography.title.copy(color = colors.muted),
-                                    active = BentoTypography.title.copy(color = colors.fg),
-                                    inactive = BentoTypography.title.copy(color = colors.muted),
-                                    spacing = 8.dp,
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
-
-            BentoPlayerStage.QUEUE -> BentoPlayerQueue(
-                context = context,
-                modifier = Modifier.fillMaxSize(),
+    PlayerStage(
+        stage = stage,
+        onStageChange = onStageChange,
+        modifier = modifier,
+        cover = { coverModifier ->
+            AsyncImage(
+                data.song.createArtworkImageRequest(context.symphony).build(),
+                data.song.title,
+                contentScale = ContentScale.Crop,
+                filterQuality = FilterQuality.High,
+                modifier = coverModifier,
             )
-        }
-    }
+        },
+        lyrics = { lyricsModifier ->
+            val keepScreenAwake by context.symphony.settings.lyricsKeepScreenAwake.flow
+                .collectAsState()
+            if (keepScreenAwake) {
+                KeepScreenAwake()
+            }
+            CompositionLocalProvider(
+                LocalTextStyle provides BentoTypography.body.copy(color = colors.muted),
+            ) {
+                Box(
+                    modifier = lyricsModifier
+                        .graphicsLayer {
+                            compositingStrategy = CompositingStrategy.Offscreen
+                        }
+                        .drawWithContent {
+                            drawContent()
+                            drawRect(
+                                brush = Brush.verticalGradient(
+                                    0f to Color.Transparent,
+                                    0.08f to Color.Black,
+                                    0.92f to Color.Black,
+                                    1f to Color.Transparent,
+                                ),
+                                blendMode = BlendMode.DstIn,
+                            )
+                        },
+                ) {
+                    LyricsText(
+                        context = context,
+                        padding = PaddingValues(horizontal = 22.dp, vertical = 42.dp),
+                        style = TimedContentTextStyle(
+                            highlighted = BentoTypography.title.copy(color = colors.muted),
+                            active = BentoTypography.title.copy(color = colors.fg),
+                            inactive = BentoTypography.title.copy(color = colors.muted),
+                            spacing = 8.dp,
+                        ),
+                    )
+                }
+            }
+        },
+        queue = { queueModifier ->
+            BentoPlayerQueue(
+                context = context,
+                modifier = queueModifier,
+            )
+        },
+    )
 }

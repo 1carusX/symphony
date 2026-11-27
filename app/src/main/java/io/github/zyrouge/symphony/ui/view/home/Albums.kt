@@ -10,9 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.services.radio.Radio
@@ -28,6 +26,9 @@ import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop
 
 /**
  * The Albums page (DESIGN.md 5.3): one grouped tile per album, ordered by
@@ -75,6 +76,9 @@ fun AlbumsView(context: ViewContext) {
                 entries = sortedAlbums,
                 entryHeightDp = { bentoGroupTileHeightDp(it.numberOfTracks) },
                 modifier = Modifier.fillMaxSize(),
+                bottomInset = bentoBottomInset(),
+                contentAtEnd = LocalHomeContentAtEnd.current,
+                contentAtTop = LocalHomeContentAtTop.current,
             ) { album, tileWidth ->
                 AlbumGroupTile(
                     context = context,

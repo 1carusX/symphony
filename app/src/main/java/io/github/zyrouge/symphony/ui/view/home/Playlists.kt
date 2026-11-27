@@ -53,6 +53,9 @@ import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.PlaylistViewRoute
 import io.github.zyrouge.symphony.utils.ActivityUtils
 import io.github.zyrouge.symphony.utils.Logger
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop
 
 /**
  * The Playlists page (DESIGN.md 5.3): one grouped tile per playlist, in
@@ -121,6 +124,9 @@ fun PlaylistsView(context: ViewContext) {
                     entries = playlists,
                     entryHeightDp = { bentoGroupTileHeightDp(it.numberOfTracks) },
                     modifier = Modifier.weight(1f),
+                    bottomInset = bentoBottomInset(),
+                    contentAtEnd = LocalHomeContentAtEnd.current,
+                    contentAtTop = LocalHomeContentAtTop.current,
                 ) { playlist, tileWidth ->
                     PlaylistGroupTile(
                         context = context,

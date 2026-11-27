@@ -1,51 +1,16 @@
 package io.github.zyrouge.symphony.ui.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,95 +21,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import io.github.zyrouge.symphony.i18n.Strings
-import io.github.zyrouge.symphony.services.groove.Song
 import io.github.zyrouge.symphony.services.groove.repositories.SongRepository
 import io.github.zyrouge.symphony.services.radio.Radio
-import io.github.zyrouge.symphony.ui.components.BentoGenreChip
-import io.github.zyrouge.symphony.ui.components.BentoMiniButton
-import io.github.zyrouge.symphony.ui.components.BentoSearchHitChip
-import io.github.zyrouge.symphony.ui.components.BentoSmartFilterTile
-import io.github.zyrouge.symphony.ui.components.BentoSongRow
-import io.github.zyrouge.symphony.ui.components.BentoSortMenu
-import io.github.zyrouge.symphony.ui.components.BentoSortOption
-import io.github.zyrouge.symphony.ui.components.BentoTileTone
-import io.github.zyrouge.symphony.ui.components.IconTextBody
+import io.github.zyrouge.symphony.ui.components.matches
 import io.github.zyrouge.symphony.ui.components.bentoAlbumMatchesQuery
 import io.github.zyrouge.symphony.ui.components.bentoArtistNameMatchesQuery
 import io.github.zyrouge.symphony.ui.components.bentoBottomInset
 import io.github.zyrouge.symphony.ui.components.bentoSongMatchesQuery
-import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
-import io.github.zyrouge.symphony.ui.components.formatBentoDaysAgo
-import io.github.zyrouge.symphony.ui.components.isBentoLosslessSong
-import io.github.zyrouge.symphony.ui.components.isBentoRecentlyAddedSong
-import io.github.zyrouge.symphony.ui.components.label
 import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
-import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
-import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
-import io.github.zyrouge.symphony.ui.theme.bento.BentoSpacing
-import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
-import io.github.zyrouge.symphony.ui.theme.bento.BentoWindowClass
+import io.github.zyrouge.symphony.ui.model.BentoSearchFilter
+import io.github.zyrouge.symphony.ui.model.UiSongSort
+import io.github.zyrouge.symphony.ui.adapters.toUiSong
+import io.github.zyrouge.symphony.ui.components.SearchPage
+import io.github.zyrouge.symphony.ui.components.SongDropdownMenu
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.ui.theme.bento.rememberBentoWindowClass
+import io.github.zyrouge.symphony.utils.DurationUtils
+import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import io.github.zyrouge.symphony.ui.model.BentoSearchResults
+import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-
-/**
- * The smart filters of the search page (DESIGN.md 5.5). "Most played" has no
- * data source in the app (the service layer does not track play counts and
- * stays untouched), so it is omitted.
- */
-enum class BentoSearchFilter(
-    val icon: ImageVector,
-) {
-    FAVORITES(Icons.Filled.Favorite),
-    RECENTLY_ADDED(Icons.Filled.Schedule),
-    LOSSLESS(Icons.Filled.GraphicEq),
-}
-
-/** The filter's name in the app language. */
-internal fun BentoSearchFilter.label(t: Strings) = when (this) {
-    BentoSearchFilter.FAVORITES -> t.Favorites
-    BentoSearchFilter.RECENTLY_ADDED -> t.RecentlyAdded
-    BentoSearchFilter.LOSSLESS -> t.Lossless
-}
-
-/** The query-dependent half of the results; filters apply on top of it. */
-internal data class BentoSearchResults(
-    val songIds: List<String>,
-    val artistNames: List<String>,
-    val albumIds: List<String>,
-)
-
-/** Whether a song passes a smart filter. */
-private fun BentoSearchFilter.test(song: Song, favorites: List<String>, nowMs: Long) =
-    when (this) {
-        BentoSearchFilter.FAVORITES -> favorites.contains(song.id)
-        BentoSearchFilter.RECENTLY_ADDED -> isBentoRecentlyAddedSong(song.dateModified, nowMs)
-        BentoSearchFilter.LOSSLESS -> isBentoLosslessSong(song.path, song.encoder)
-    }
 
 @Serializable
 data class SearchViewRoute(val initialChip: String?)
@@ -176,16 +82,12 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
     var selectedFilter by remember { mutableStateOf<BentoSearchFilter?>(null) }
     var selectedGenre by remember { mutableStateOf<String?>(null) }
     var results by remember { mutableStateOf<BentoSearchResults?>(null) }
-    var isSearching by remember { mutableStateOf(false) }
-    var showSortMenu by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val textFieldFocusRequester = remember { FocusRequester() }
-    var initialFocusRequested by remember { mutableStateOf(false) }
     var currentTermsRoutine by remember { mutableStateOf<Job?>(null) }
 
     fun setTerms(nTerms: String) {
         terms = nTerms
-        isSearching = true
         currentTermsRoutine?.cancel()
         currentTermsRoutine = coroutineScope.launch {
             withContext(Dispatchers.Default) {
@@ -225,7 +127,6 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
                     artistNames = artistNames,
                     albumIds = albumIds,
                 )
-                isSearching = false
             }
         }
     }
@@ -239,7 +140,16 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
         derivedStateOf {
             val songs = allSongIds.mapNotNull { context.symphony.groove.song.get(it) }
             BentoSearchFilter.entries.associateWith { filter ->
-                songs.count { filter.test(it, favorites, nowMs) }
+                songs.count { song ->
+                    filter.matches(
+                        songId = song.id,
+                        dateModifiedMs = song.dateModified,
+                        path = song.path,
+                        encoder = song.encoder,
+                        favorites = favorites,
+                        nowMs = nowMs,
+                    )
+                }
             }
         }
     }
@@ -250,7 +160,15 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
             val activeFilter = selectedFilter
             val activeGenre = selectedGenre
             val filtered = songs.filter { song ->
-                (activeFilter == null || activeFilter.test(song, favorites, nowMs)) &&
+                val matchesFilter = activeFilter == null || activeFilter.matches(
+                    songId = song.id,
+                    dateModifiedMs = song.dateModified,
+                    path = song.path,
+                    encoder = song.encoder,
+                    favorites = favorites,
+                    nowMs = nowMs,
+                )
+                matchesFilter &&
                     (activeGenre == null || song.genres.contains(activeGenre))
             }
             when (activeFilter) {
@@ -268,79 +186,20 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
         }
     }
 
-    val windowInfo = LocalWindowInfo.current
-    val compactWindow = windowInfo.containerDpSize.width < 600.dp
-    val gutter = when {
-        compactWindow -> BentoSpacing.GUTTER_COMPACT.dp
-        else -> BentoSpacing.GUTTER_OTHER.dp
+    val t = context.symphony.t
+    val uiSongs = remember(resultSongs) { resultSongs.map { it.toUiSong() } }
+    val songsById = remember(resultSongs) { resultSongs.associateBy { it.id } }
+    val hits = remember(results?.artistNames, results?.albumIds) {
+        searchHitsOf(
+            context = context,
+            t = t,
+            artistNames = results?.artistNames ?: emptyList(),
+            albumIds = results?.albumIds ?: emptyList(),
+        )
     }
-    val tileGap = when {
-        compactWindow -> BentoSpacing.GAP_COMPACT.dp
-        else -> BentoSpacing.GAP_OTHER.dp
-    }
-
-    // The back button and the search field with the sort button inside it (DESIGN.md 4.3, 5.5).
-    val header: @Composable () -> Unit = {
-        LaunchedEffect(Unit) {
-            // Once per visit: on compact windows the header scrolls out and back in.
-            if (!initialFocusRequested) {
-                initialFocusRequested = true
-                textFieldFocusRequester.requestFocus()
-            }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = gutter, end = gutter, top = 8.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            IconButton(
-                content = {
-                    Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack,
-                        context.symphony.t.SearchYourMusic,
-                        tint = colors.fg,
-                    )
-                },
-                onClick = { context.navController.popBackStack() },
-            )
-            SearchField(
-                context = context,
-                terms = terms,
-                onTermsChange = { setTerms(it) },
-                focusRequester = textFieldFocusRequester,
-                modifier = Modifier.weight(1f),
-                trailing = {
-                    Box {
-                        IconButton(
-                            content = {
-                                Icon(
-                                    Icons.AutoMirrored.Rounded.Sort,
-                                    context.symphony.t.SortSongsBy,
-                                    tint = colors.sub,
-                                )
-                            },
-                            onClick = { showSortMenu = !showSortMenu },
-                        )
-                        BentoSortMenu(
-                            expanded = showSortMenu,
-                            onDismissRequest = { showSortMenu = false },
-                            title = context.symphony.t.SortSongsBy,
-                            options = SongRepository.SortBy.entries.map {
-                                BentoSortOption(it, it.label(context))
-                            },
-                            selected = sortBy,
-                            onSelect = { sortBy = it },
-                            reverse = sortReverse,
-                            reverseLabel = context.symphony.t.ReverseOrder,
-                            onReverseChange = { sortReverse = it },
-                        )
-                    }
-                },
-            )
-        }
-    }
+    val narrowed = terms.isNotBlank() ||
+        selectedFilter != null ||
+        selectedGenre != null
 
     Box(
         modifier = Modifier
@@ -349,122 +208,78 @@ fun SearchView(context: ViewContext, route: SearchViewRoute) {
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
             .statusBarsPadding(),
     ) {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val innerWidth = maxWidth - gutter * 2
-            val wide = innerWidth >= 720.dp &&
-                rememberBentoWindowClass() != BentoWindowClass.SHORT_HEIGHT
-
-            when {
-                // Wide layout (DESIGN.md 5.5): the filters move to a 320 dp
-                // sticky left column and the genre chips wrap.
-                wide -> Column(modifier = Modifier.fillMaxSize()) {
-                    header()
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(horizontal = gutter),
-                        horizontalArrangement = Arrangement.spacedBy(tileGap),
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .width(BentoSizes.SIDE_COLUMN.dp)
-                                .verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            BentoSearchFilterTiles(
-                                context = context,
-                                selectedFilter = selectedFilter,
-                                filterCounts = filterCounts,
-                                onFilterChange = { selectedFilter = it },
-                                sideColumn = true,
-                            )
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                BentoGenreChips(
-                                    context = context,
-                                    genreNames = genreNames,
-                                    selectedGenre = selectedGenre,
-                                    onGenreChange = { selectedGenre = it },
-                                )
-                            }
-                        }
-                        SearchResultsTile(
-                            context = context,
-                            results = results,
-                            resultSongs = resultSongs,
-                            artistNames = results?.artistNames ?: emptyList(),
-                            albumIds = results?.albumIds ?: emptyList(),
-                            selectedFilter = selectedFilter,
-                            narrowed = terms.isNotBlank() ||
-                                selectedFilter != null ||
-                                selectedGenre != null,
-                            playingSongId = playingSong.songId,
-                            isPlaying = playingSong.isPlaying,
-                            nowMs = nowMs,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                }
-
-                // Compact and short windows: one list, so the filters scroll away
-                // with the results instead of staying pinned above them.
-                else -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    // Clear the floating capsule at the end of the results.
-                    contentPadding = PaddingValues(bottom = bentoBottomInset()),
-                ) {
-                    item(key = "header") {
-                        header()
-                    }
-                    item(key = "filters") {
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = gutter)
-                                .padding(bottom = tileGap),
-                        ) {
-                            BentoSearchFilterTiles(
-                                context = context,
-                                selectedFilter = selectedFilter,
-                                filterCounts = filterCounts,
-                                onFilterChange = { selectedFilter = it },
-                                sideColumn = false,
-                            )
-                        }
-                    }
-                    item(key = "genres") {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = gutter, end = gutter, bottom = tileGap)
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            BentoGenreChips(
-                                context = context,
-                                genreNames = genreNames,
-                                selectedGenre = selectedGenre,
-                                onGenreChange = { selectedGenre = it },
-                            )
-                        }
-                    }
-                    searchResultsTileItems(
-                        context = context,
-                        results = results,
-                        resultSongs = resultSongs,
-                        artistNames = results?.artistNames ?: emptyList(),
-                        albumIds = results?.albumIds ?: emptyList(),
-                        selectedFilter = selectedFilter,
-                        narrowed = terms.isNotBlank() ||
-                            selectedFilter != null ||
-                            selectedGenre != null,
-                        playingSongId = playingSong.songId,
-                        isPlaying = playingSong.isPlaying,
-                        favoriteSongIds = favorites,
-                        nowMs = nowMs,
-                        modifier = Modifier.padding(horizontal = gutter),
-                    )
-                }
+    SearchPage(
+        strings = t,
+        terms = terms,
+        onTermsChange = { setTerms(it) },
+        focusRequester = textFieldFocusRequester,
+        sortBy = UiSongSort.valueOf(sortBy.name),
+        sortReverse = sortReverse,
+        onSortByChange = { sortBy = SongRepository.SortBy.valueOf(it.name) },
+        onSortReverseChange = { sortReverse = it },
+        filterCounts = filterCounts,
+        selectedFilter = selectedFilter,
+        onFilterChange = { selectedFilter = it },
+        genreNames = genreNames,
+        selectedGenre = selectedGenre,
+        onGenreChange = { selectedGenre = it },
+        songs = uiSongs,
+        hits = hits,
+        ready = results != null,
+        narrowed = narrowed,
+        playingSongId = playingSong.songId,
+        isPlaying = playingSong.isPlaying,
+        nowMs = nowMs,
+        durationText = { DurationUtils.formatMs(it.durationMillis) },
+        artwork = { song, artworkModifier ->
+            songsById[song.id]?.let { original ->
+                AsyncImage(
+                    original.createArtworkImageRequest(context.symphony).build(),
+                    null,
+                    contentScale = ContentScale.Crop,
+                    modifier = artworkModifier,
+                )
+            } ?: Box(artworkModifier.background(LocalBentoColors.current.raised))
+        },
+        hitArtwork = { hit, artworkModifier ->
+            SearchHitArtwork(context, hit, artworkModifier)
+        },
+        menu = { song, expanded, onDismissRequest ->
+            songsById[song.id]?.let { original ->
+                SongDropdownMenu(
+                    context = context,
+                    song = original,
+                    isFavorite = favorites.contains(song.id),
+                    expanded = expanded,
+                    onDismissRequest = onDismissRequest,
+                )
             }
-        }
+        },
+        onPlayAll = { list ->
+            context.symphony.radio.shorty.playQueue(
+                list.map { it.id },
+                source = t.SearchResults,
+            )
+        },
+        onShuffleAll = { list ->
+            context.symphony.radio.shorty.playQueue(
+                list.map { it.id },
+                shuffle = true,
+                source = t.SearchResults,
+            )
+        },
+        onSongClick = { song ->
+            context.symphony.radio.shorty.playQueue(
+                uiSongs.map { it.id },
+                Radio.PlayOptions(
+                    index = uiSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0),
+                ),
+                source = t.SearchResults,
+            )
+        },
+        onHitClick = { hit -> openSearchHit(context, hit) },
+        onBack = { context.navController.popBackStack() },
+        bottomInset = bentoBottomInset(),
+    )
     }
 }

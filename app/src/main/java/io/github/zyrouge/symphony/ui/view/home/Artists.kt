@@ -25,6 +25,9 @@ import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.ArtistViewRoute
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop
 
 /**
  * The Artists page (DESIGN.md 5.3): one grouped tile per artist, in name
@@ -71,6 +74,9 @@ fun ArtistsView(context: ViewContext) {
                 entries = sortedArtists,
                 entryHeightDp = { bentoGroupTileHeightDp(it.numberOfTracks) },
                 modifier = Modifier.fillMaxSize(),
+                bottomInset = bentoBottomInset(),
+                contentAtEnd = LocalHomeContentAtEnd.current,
+                contentAtTop = LocalHomeContentAtTop.current,
             ) { artist, tileWidth ->
                 ArtistGroupTile(
                     context = context,

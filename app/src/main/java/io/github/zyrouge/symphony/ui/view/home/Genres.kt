@@ -25,6 +25,9 @@ import io.github.zyrouge.symphony.ui.components.rememberBentoPlayingSong
 import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.view.GenreViewRoute
+import io.github.zyrouge.symphony.ui.components.bentoBottomInset
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtEnd
+import io.github.zyrouge.symphony.ui.view.LocalHomeContentAtTop
 
 /**
  * The Genres page (DESIGN.md 5.3): one grouped tile per genre, in name
@@ -71,6 +74,9 @@ fun GenresView(context: ViewContext) {
                 entries = sortedGenres,
                 entryHeightDp = { bentoGroupTileHeightDp(it.numberOfTracks) },
                 modifier = Modifier.fillMaxSize(),
+                bottomInset = bentoBottomInset(),
+                contentAtEnd = LocalHomeContentAtEnd.current,
+                contentAtTop = LocalHomeContentAtTop.current,
             ) { genre, tileWidth ->
                 GenreGroupTile(
                     context = context,

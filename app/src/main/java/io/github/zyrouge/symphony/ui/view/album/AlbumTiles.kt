@@ -1,36 +1,23 @@
 package io.github.zyrouge.symphony.ui.view
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -41,32 +28,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import io.github.zyrouge.symphony.services.groove.Album
-import io.github.zyrouge.symphony.services.groove.Song
-import io.github.zyrouge.symphony.services.radio.Radio
 import io.github.zyrouge.symphony.ui.components.BentoCoverGrid
-import io.github.zyrouge.symphony.ui.components.BentoEqualizerGlyph
-import io.github.zyrouge.symphony.ui.components.BentoMoreButton
-import io.github.zyrouge.symphony.ui.components.BentoStatContent
-import io.github.zyrouge.symphony.ui.components.BentoTextWithMeta
 import io.github.zyrouge.symphony.ui.components.BentoTile
 import io.github.zyrouge.symphony.ui.components.BentoTileGeometry
 import io.github.zyrouge.symphony.ui.components.BentoTileHeader
 import io.github.zyrouge.symphony.ui.components.BentoTileSizeClass
 import io.github.zyrouge.symphony.ui.components.BentoTileTone
-import io.github.zyrouge.symphony.ui.components.IconTextBody
 import io.github.zyrouge.symphony.ui.components.LocalBentoTileContentColors
-import io.github.zyrouge.symphony.ui.components.SongDropdownMenu
-import io.github.zyrouge.symphony.ui.components.bentoStatValueStyle
-import io.github.zyrouge.symphony.ui.components.bentoTabularStyle
 import io.github.zyrouge.symphony.ui.components.bentoTilePaddingDp
 import io.github.zyrouge.symphony.ui.components.fitBentoCoverGrid
 import io.github.zyrouge.symphony.ui.components.formatBentoDurationMinutes
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
 import io.github.zyrouge.symphony.ui.theme.bento.BentoRadii
-import io.github.zyrouge.symphony.ui.theme.bento.BentoSizes
 import io.github.zyrouge.symphony.ui.theme.bento.BentoTypography
 import io.github.zyrouge.symphony.ui.theme.bento.LocalBentoColors
-import io.github.zyrouge.symphony.utils.DurationUtils
 
 /** The album cover tile (DESIGN.md 5.4): the artwork fills the tile. */
 @Composable
@@ -186,147 +161,6 @@ private fun albumGenresOf(context: ViewContext, album: Album): Set<String> {
     return genres
 }
 
-/** The Length stat tile (DESIGN.md 5.4, wider grids only). */
-@Composable
-internal fun AlbumLengthStatTile(
-    context: ViewContext,
-    geometry: BentoTileGeometry,
-    appFontFamily: FontFamily?,
-    songs: List<Song>,
-) {
-    BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
-        BentoStatContent(
-            label = context.symphony.t.Length,
-            value = formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
-            valueStyle = bentoStatValueStyle(geometry.sizeClass, appFontFamily),
-            sub = context.symphony.t.XSongs(songs.size.toString()),
-            geometry = geometry,
-        )
-    }
-}
-
-/**
- * The Tracks tile (DESIGN.md 5.4): 48 dp rows with track numbers, as tall
- * as all tracks need. Each row ends with a More button that opens the song
- * menu; a long press opens it too.
- */
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-internal fun AlbumTracksTile(
-    context: ViewContext,
-    songs: List<Song>,
-    trackSongIds: List<String>,
-    source: String,
-    geometry: BentoTileGeometry,
-    playingSongId: String?,
-    playing: Boolean,
-) {
-    val colors = LocalBentoColors.current
-    val tileColors = LocalBentoTileContentColors.current
-    val favoriteSongIds by context.symphony.groove.playlist.favorites.collectAsState()
-    var menuSongId by remember { mutableStateOf<String?>(null) }
-
-    BentoTile(tone = BentoTileTone.PLAIN, sizeClass = geometry.sizeClass) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            BentoTileHeader(
-                label = context.symphony.t.Tracks,
-                actionLabel = formatBentoDurationMinutes(songs.sumOf { it.duration }, context.symphony.t),
-                showAction = true,
-                onAction = null,
-            )
-            songs.forEachIndexed { index, song ->
-                val isPlayingSong = song.id == playingSongId
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = BentoSizes.TILE_LIST_ROW.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .combinedClickable(
-                            onClick = {
-                                context.symphony.radio.shorty.playQueue(
-                                    trackSongIds,
-                                    Radio.PlayOptions(index = index),
-                                    source = source,
-                                )
-                            },
-                            onLongClick = { menuSongId = song.id },
-                        )
-                        .padding(start = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    Box(
-                        modifier = Modifier.width(22.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (isPlayingSong) {
-                            BentoEqualizerGlyph(color = colors.accent, playing = playing)
-                        } else {
-                            Text(
-                                song.trackNumber?.toString()
-                                    ?: context.symphony.t.UnknownSymbol,
-                                style = bentoTabularStyle(BentoTypography.secondary),
-                                color = tileColors.sub,
-                                maxLines = 1,
-                            )
-                        }
-                    }
-                    // At a large scale the duration gives way to the title.
-                    BentoTextWithMeta(
-                        modifier = Modifier.weight(1f),
-                        gap = 10.dp,
-                        em = 14.sp,
-                        meta = {
-                            Text(
-                                DurationUtils.formatMs(song.duration),
-                                style = bentoTabularStyle(BentoTypography.label),
-                                color = tileColors.sub,
-                                maxLines = 1,
-                            )
-                        },
-                    ) {
-                        Column {
-                            Text(
-                                song.title,
-                                style = BentoTypography.rowTitle.copy(fontSize = 14.sp),
-                                color = when {
-                                    isPlayingSong -> colors.accent
-                                    else -> tileColors.fg
-                                },
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            song.artists.takeIf { it.isNotEmpty() }?.let {
-                                Text(
-                                    it.joinToString(),
-                                    style = BentoTypography.label,
-                                    color = tileColors.sub,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        }
-                    }
-                    Box {
-                        BentoMoreButton(
-                            contentDescription = context.symphony.t.More,
-                            onClick = { menuSongId = song.id },
-                            size = 36.dp,
-                        )
-                        SongDropdownMenu(
-                            context = context,
-                            song = song,
-                            isFavorite = favoriteSongIds.contains(song.id),
-                            expanded = menuSongId == song.id,
-                            onDismissRequest = { menuSongId = null },
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
 /**
  * The "More like this" tile (DESIGN.md 5.4): albums by the same artist
  * first, then the same genre.
@@ -392,16 +226,4 @@ internal fun AlbumMoreLikeThisTile(
             }
         }
     }
-}
-
-@Composable
-internal fun UnknownAlbum(context: ViewContext, albumId: String) {
-    IconTextBody(
-        icon = { modifier ->
-            Icon(Icons.Filled.Album, null, modifier = modifier)
-        },
-        content = {
-            Text(context.symphony.t.UnknownAlbumX(albumId))
-        },
-    )
 }

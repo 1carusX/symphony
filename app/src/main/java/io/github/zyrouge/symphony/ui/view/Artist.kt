@@ -7,6 +7,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import io.github.zyrouge.symphony.ui.helpers.LocalGrooveVersion
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
@@ -121,7 +123,17 @@ internal fun ArtistCollectionPage(
                     DetailPeopleTile(
                         label = context.symphony.t.SuggestedArtists,
                         people = similar.map { other ->
-                            DetailPerson(other, artworkOf(other)) {
+                            DetailPerson(
+                                name = other,
+                                artwork = { modifier ->
+                                    AsyncImage(
+                                        artworkOf(other),
+                                        other,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = modifier,
+                                    )
+                                },
+                            ) {
                                 context.navController.navigate(
                                     when {
                                         albumArtist -> AlbumArtistViewRoute(other)

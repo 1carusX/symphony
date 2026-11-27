@@ -11,6 +11,7 @@ on:
             - app/**
             - core/**
             - i18n/**
+            - shared-ui/**
             - gradle/**
     pull_request:
         types:
@@ -21,6 +22,7 @@ on:
             - app/**
             - core/**
             - i18n/**
+            - shared-ui/**
             - gradle/**
     workflow_dispatch:
 
@@ -57,7 +59,7 @@ jobs:
               run: |
                   chmod +x ./gradlew
                   ./gradlew :i18n:verifyI18n
-                  ./gradlew :app:testDebugUnitTest :core:jvmTest
+                  ./gradlew :app:testDebugUnitTest :core:jvmTest :shared-ui:jvmTest
 
             - name: ✅ Verify unit test results
               run: |

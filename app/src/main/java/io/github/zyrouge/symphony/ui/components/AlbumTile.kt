@@ -1,60 +1,12 @@
 package io.github.zyrouge.symphony.ui.components
 
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import io.github.zyrouge.symphony.services.groove.Album
 import io.github.zyrouge.symphony.ui.helpers.ViewContext
-import io.github.zyrouge.symphony.ui.view.AlbumViewRoute
-
-@Composable
-fun AlbumTile(context: ViewContext, album: Album) {
-    SquareGrooveTile(
-        image = album.createArtworkImageRequest(context.symphony).build(),
-        options = { expanded, onDismissRequest ->
-            AlbumDropdownMenu(
-                context,
-                album,
-                expanded = expanded,
-                onDismissRequest = onDismissRequest,
-            )
-        },
-        content = {
-            Text(
-                album.name,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (album.artists.isNotEmpty()) {
-                Text(
-                    album.artists.joinToString(),
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        },
-        onPlay = {
-            context.symphony.radio.shorty.playQueue(
-                album.getSortedSongIds(context.symphony),
-                source = album.name,
-            )
-        },
-        onClick = {
-            context.navController.navigate(AlbumViewRoute(album.id))
-        }
-    )
-}
 
 @Composable
 fun AlbumDropdownMenu(

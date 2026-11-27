@@ -25,24 +25,23 @@ internal fun PlayerSmallContent(
     onShowSleepTimer: () -> Unit,
     onClosePlayer: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        BentoPlayerSeek(context, data)
-        BentoPlayerTransport(context, data, short, onShowSleepTimer)
-        BentoPlayerExtras(
-            context = context,
-            data = data,
-            stage = stage,
-            compact = compact,
-            onStageChange = onStageChange,
-            onShowSpeed = onShowSpeed,
-            onShowPitch = onShowPitch,
-            onShowSleepTimer = onShowSleepTimer,
-            onClosePlayer = onClosePlayer,
-        )
-    }
+    PlayerControlsContent(
+        seek = { BentoPlayerSeek(context, data) },
+        transport = { BentoPlayerTransport(context, data, short, onShowSleepTimer) },
+        extras = {
+            BentoPlayerExtras(
+                context = context,
+                data = data,
+                stage = stage,
+                compact = compact,
+                onStageChange = onStageChange,
+                onShowSpeed = onShowSpeed,
+                onShowPitch = onShowPitch,
+                onShowSleepTimer = onShowSleepTimer,
+                onClosePlayer = onClosePlayer,
+            )
+        },
+    )
 }
 
 @Composable

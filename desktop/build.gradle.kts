@@ -17,8 +17,12 @@ kotlin {
             dependencies {
                 implementation(project(":core"))
                 implementation(project(":i18n"))
+                implementation(project(":shared-ui"))
                 implementation(compose.desktop.currentOs)
                 implementation(compose.material3)
+                implementation(compose.materialIconsExtended)
+                implementation(libs.jaudiotagger)
+                implementation(libs.kotlinx.coroutines.core)
                 implementation("uk.co.caprica:vlcj:4.12.1")
             }
         }

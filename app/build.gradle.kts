@@ -117,6 +117,7 @@ dependencies {
     implementation(project(":metaphony"))
     implementation(project(":core"))
     implementation(project(":i18n"))
+    implementation(project(":shared-ui"))
     implementation(libs.activity.compose)
     implementation(libs.coil)
     implementation(libs.compose.material.icons.extended)

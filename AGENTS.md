@@ -9,8 +9,10 @@ Symphony is an offline music player with two frontends:
 - `:app` — the full Android application (Android 9+).
 - `:desktop` — a minimal Compose Desktop application for Linux.
 
-Shared, platform-neutral logic lives in `:core`. The desktop UI is intentionally
-separate from the Android UI; do not assume the two frontends have feature parity.
+Shared, platform-neutral logic lives in `:core`; the Bento UI components and
+pages live in `:shared-ui` and are consumed by both frontends. The two apps
+still differ: Android keeps `ViewContext` wrappers for platform services, and
+the desktop shell is intentionally minimal — do not assume feature parity.
 
 Read `README.md` for product context and `docs/ROADMAP.md` before changing
 dependencies, SDK levels, or long-planned architecture. For audio metadata,
@@ -24,6 +26,7 @@ artwork, or lyrics work, also read `docs/audio-metadata-invariants.md`.
 | `:core`      | Android/JVM shared utilities and the audio metadata contract/resolver   |
 | `:desktop`   | Compose Desktop UI, filesystem library scan, VLCJ playback              |
 | `:i18n`      | Compose Resources translations and pluralization                        |
+| `:shared-ui` | Cross-platform Bento theme, UI models/contracts, and shared components  |
 | `:metaphony` | Android JNI wrapper around TagLib, built with NDK and CMake             |
 | `buildSrc`   | Release/version/helper Gradle tasks                                     |
 
@@ -50,7 +53,7 @@ Common commands:
 
 ```bash
 # Host tests across all modules plus the translation catalog check
-./gradlew :i18n:verifyI18n :app:testDebugUnitTest :core:jvmTest :i18n:jvmTest :desktop:jvmTest
+./gradlew :i18n:verifyI18n :app:testDebugUnitTest :core:jvmTest :i18n:jvmTest :shared-ui:jvmTest :desktop:jvmTest
 
 # Android debug build
 ./gradlew :app:assembleDebug
@@ -113,6 +116,22 @@ playback; state that explicitly when reporting verification.
   `FileSystemScanner` belong in `core/src/jvmMain`.
 - Put testable logic here rather than duplicating it in the Android and
   desktop modules.
+- `:shared-ui` holds the platform-neutral Bento theme, UI models/contracts, and
+  shared components. Keep Android and desktop service types out of its `commonMain`.
+- Shared pages and player surfaces live in `shared-ui/src/commonMain/.../ui`:
+  `components/SongsPage.kt`, `components/ForYouPage.kt`, `view/CollectionPage.kt`,
+  `view/player/PhonePlayerSheet.kt`, `view/player/FloatingPlayerWindow.kt`,
+  `components/MiniPlayerCapsule.kt`, `components/QueuePanel.kt`,
+  `components/SettingsRootPage.kt` and the settings sheets.
+- Platform code supplies data through `UiSong`/`UiAlbum`/... models and slots
+  (`artwork`, `nowPlaying`, `themeTile`, player `header`/`stage`/`title`/`controls`);
+  keep navigation, storage and playback APIs on the platform side.
+- `:app` keeps its `ViewContext` adapters under `app/src/main/.../ui/view`; they
+  stay thin and delegate layout to the shared components. The `UiApp` contract
+  adapters in `app/src/main/.../ui/adapters` are scaffolding for the desktop
+  shell and are not yet consumed by Android screens.
+- Shared UI tests belong in `shared-ui/src/jvmTest` (JUnit Jupiter), next to
+  the moved logic tests such as `PlayerGesturesTest` and `ForYouNowPlayingTileTest`.
 
 ### Desktop
 
